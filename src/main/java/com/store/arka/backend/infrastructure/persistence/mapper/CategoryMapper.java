@@ -1,0 +1,72 @@
+package com.store.arka.backend.infrastructure.persistence.mapper;
+
+import com.store.arka.backend.domain.model.Category;
+import com.store.arka.backend.infrastructure.persistence.entity.CategoryEntity;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+@Component
+public class CategoryMapper {
+  public Category toDomain(CategoryEntity entity) {
+    return new Category(
+        entity.getId(),
+        entity.getName(),
+        entity.getDescription(),
+        entity.getStatus(),
+        entity.getCreatedAt(),
+        entity.getUpdatedAt()
+    );
+  }
+
+  public CategoryEntity toEntity(Category domain) {
+    return new CategoryEntity(
+        domain.getId(),
+        domain.getName(),
+        domain.getDescription(),
+        null,
+        domain.getStatus(),
+        domain.getCreatedAt(),
+        domain.getUpdatedAt()
+    );
+  }
+
+  public Set<Category> toDomain(Set<CategoryEntity> listEntity) {
+    if (listEntity == null) {
+      return Collections.emptySet();
+    }
+    Set<Category> listCategory = new HashSet<>();
+    listEntity.forEach(entity -> {
+      listCategory.add(new Category(
+          entity.getId(),
+          entity.getName(),
+          entity.getDescription(),
+          entity.getStatus(),
+          entity.getCreatedAt(),
+          entity.getUpdatedAt()
+      ));
+    });
+    return listCategory;
+  }
+
+  public Set<CategoryEntity> toEntity(Set<Category> listDomain) {
+    if (listDomain == null) {
+      return Collections.emptySet();
+    }
+    Set<CategoryEntity> listEntity = new HashSet<>();
+    listDomain.forEach(domain -> {
+      listEntity.add(new CategoryEntity(
+          domain.getId(),
+          domain.getName(),
+          domain.getDescription(),
+          null,
+          domain.getStatus(),
+          domain.getCreatedAt(),
+          domain.getUpdatedAt()
+      ));
+    });
+    return listEntity;
+  }
+}
