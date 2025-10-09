@@ -2,7 +2,6 @@ package com.store.arka.backend.infrastructure.web.controller;
 
 import com.store.arka.backend.application.port.in.IProductUseCase;
 import com.store.arka.backend.domain.enums.ProductStatus;
-import com.store.arka.backend.domain.exception.InvalidEnumValueException;
 import com.store.arka.backend.domain.model.Product;
 import com.store.arka.backend.infrastructure.web.dto.MessageResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.product.request.CreateProductDto;
@@ -12,6 +11,7 @@ import com.store.arka.backend.infrastructure.web.dto.product.request.UpdateField
 import com.store.arka.backend.infrastructure.web.dto.product.response.CheckProductResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseDto;
 import com.store.arka.backend.infrastructure.web.mapper.ProductDtoMapper;
+import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -37,20 +37,31 @@ public class ProductController {
   }
 
   @GetMapping("/id/{id}")
-  public ResponseEntity<ProductResponseDto> getProductById(@PathVariable("id") UUID id) {
-    return ResponseEntity.ok(mapper.toDto(productUseCase.getProductById(id)));
+  public ResponseEntity<ProductResponseDto> getProductById(@PathVariable("id") String id) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    return ResponseEntity.ok(mapper.toDto(productUseCase.getProductById(uuid)));
   }
 
   @GetMapping("/id/{id}/status/{status}")
   public ResponseEntity<ProductResponseDto> getProductByIdAndStatus(
-      @PathVariable("id") UUID id, @PathVariable("status") String status) {
-    ProductStatus statusEnum = parseStatusOrThrow(status);
-    return ResponseEntity.ok(mapper.toDto(productUseCase.getProductByIdAndStatus(id, statusEnum)));
+      @PathVariable("id") String id,
+      @PathVariable("status") String status) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    ProductStatus statusEnum = PathUtils.validateEnumOrThrow(ProductStatus.class, status, "ProductStatus");
+    return ResponseEntity.ok(mapper.toDto(productUseCase.getProductByIdAndStatus(uuid, statusEnum)));
   }
 
   @GetMapping("/sku/{sku}")
   public ResponseEntity<ProductResponseDto> getProductIsNotDeletedBySku(@PathVariable("sku") String sku) {
     return ResponseEntity.ok(mapper.toDto(productUseCase.getProductBySku(sku)));
+  }
+
+  @GetMapping("/sku/{sku}/status/{status}")
+  public ResponseEntity<ProductResponseDto> getProductIsNotDeletedBySkuAndStatus(
+      @PathVariable("sku") String sku,
+      @PathVariable("status") String status) {
+    ProductStatus statusEnum = PathUtils.validateEnumOrThrow(ProductStatus.class, status, "ProductStatus");
+    return ResponseEntity.ok(mapper.toDto(productUseCase.getProductBySkuAndStatus(sku, statusEnum)));
   }
 
   @GetMapping
@@ -60,44 +71,51 @@ public class ProductController {
 
   @GetMapping("/status/{status}")
   public ResponseEntity<List<ProductResponseDto>> getAllProductsByStatus(@PathVariable("status") String status) {
-    ProductStatus statusEnum = parseStatusOrThrow(status);
+    ProductStatus statusEnum = PathUtils.validateEnumOrThrow(ProductStatus.class, status, "ProductStatus");
     return ResponseEntity.ok(productUseCase.getAllProductsByStatus(statusEnum)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
   @PutMapping("/id/{id}")
-  public ResponseEntity<ProductResponseDto> putFieldsProduct(
-      @PathVariable("id") UUID id, @RequestBody UpdateFieldsProductDto dto) {
-    return ResponseEntity.ok(mapper.toDto(productUseCase.updateFieldsProduct(id, mapper.toDomain(dto))));
+  public ResponseEntity<ProductResponseDto> putFieldsProductById(
+      @PathVariable("id") String id,
+      @RequestBody UpdateFieldsProductDto dto) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    return ResponseEntity.ok(mapper.toDto(productUseCase.updateFieldsProduct(uuid, mapper.toDomain(dto))));
   }
 
   @PutMapping("/id/{id}/categories")
-  public ResponseEntity<ProductResponseDto> putProductCategories(
-      @PathVariable("id") UUID id, @RequestBody UpdateProductCategoriesDto dto) {
-    return ResponseEntity.ok(mapper.toDto(productUseCase.updateCategories(id, dto.categories())));
+  public ResponseEntity<ProductResponseDto> putProductCategoriesById(
+      @PathVariable("id") String id,
+      @RequestBody UpdateProductCategoriesDto dto) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    return ResponseEntity.ok(mapper.toDto(productUseCase.updateCategories(uuid, dto.categories())));
   }
 
   @PutMapping("/id/{id}/decrease")
-  public ResponseEntity<MessageResponseDto> decreaseStockProduct(
-      @PathVariable("id") UUID id,
+  public ResponseEntity<MessageResponseDto> decreaseStockProductById(
+      @PathVariable("id") String id,
       @RequestBody @Valid ModifyStockRequestDto decrease) {
-    productUseCase.decreaseStock(id, decrease.quantity());
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    productUseCase.decreaseStock(uuid, decrease.quantity());
     return ResponseEntity.ok(new MessageResponseDto("Successful decrease for product with id: " + id));
   }
 
   @PutMapping("/id/{id}/increase")
-  public ResponseEntity<MessageResponseDto> increaseStockProduct(
-      @PathVariable("id") UUID id,
+  public ResponseEntity<MessageResponseDto> increaseStockProductById(
+      @PathVariable("id") String id,
       @RequestBody @Valid ModifyStockRequestDto increase) {
-    productUseCase.increaseStock(id, increase.quantity());
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    productUseCase.increaseStock(uuid, increase.quantity());
     return ResponseEntity.ok(new MessageResponseDto("Successful increase for product with id: " + id));
   }
 
   @GetMapping("/id/{id}/availability")
   public ResponseEntity<CheckProductResponseDto> checkAvailabilityById(
-      @PathVariable("id") UUID id,
+      @PathVariable("id") String id,
       @RequestParam("quantity") @Min(1) int quantity) {
-    Product product = productUseCase.getProductByIdAndStatus(id, ProductStatus.ACTIVE);
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    Product product = productUseCase.getProductByIdAndStatus(uuid, ProductStatus.ACTIVE);
     return ResponseEntity.ok(new CheckProductResponseDto(
         product.isAvailable(quantity),
         quantity,
@@ -106,21 +124,14 @@ public class ProductController {
   }
 
   @DeleteMapping("/id/{id}")
-  public ResponseEntity<MessageResponseDto> deleteProduct(@PathVariable("id") UUID id) {
-    productUseCase.deleteProductById(id);
+  public ResponseEntity<MessageResponseDto> deleteProductById(@PathVariable("id") String id) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    productUseCase.deleteProductById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Product has been successfully deleted with id: " + id));
   }
 
   @PutMapping("/sku/{sku}/restore")
-  public ResponseEntity<ProductResponseDto> restoreProduct(@PathVariable("sku") String name) {
-    return ResponseEntity.ok(mapper.toDto(productUseCase.restoreProductBySku(name)));
-  }
-
-  private ProductStatus parseStatusOrThrow(String status) {
-    try {
-      return ProductStatus.valueOf(status.toUpperCase());
-    } catch (IllegalArgumentException ex) {
-      throw new InvalidEnumValueException("Invalid ProductStatus: " + status);
-    }
+  public ResponseEntity<ProductResponseDto> restoreProductBySku(@PathVariable("sku") String sku) {
+    return ResponseEntity.ok(mapper.toDto(productUseCase.restoreProductBySku(sku)));
   }
 }

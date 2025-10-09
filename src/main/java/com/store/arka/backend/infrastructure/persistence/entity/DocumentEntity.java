@@ -1,14 +1,13 @@
 package com.store.arka.backend.infrastructure.persistence.entity;
 
-import com.store.arka.backend.domain.enums.CategoryStatus;
+import com.store.arka.backend.domain.enums.DocumentStatus;
+import com.store.arka.backend.domain.enums.DocumentType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -16,29 +15,33 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "categories")
+@Table(name = "documents")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class CategoryEntity {
+@ToString(onlyExplicitlyIncluded = true)
+public class DocumentEntity {
   @Id
   @EqualsAndHashCode.Include
   @Column(updatable = false, nullable = false)
-  private UUID id;
-  @Column(unique = true, nullable = false)
-  private String name;
-  private String description;
-  @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
-  private Set<ProductEntity> products = new HashSet<>();
+  UUID id;
+  @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  private CategoryStatus status;
+  DocumentType type;
+  @Column(nullable = false, unique = true)
+  String number;
+  @OneToOne(mappedBy = "document")
+  CustomerEntity customer;
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  DocumentStatus status;
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
-  private LocalDateTime createdAt;
+  LocalDateTime createdAt;
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
-  private LocalDateTime updatedAt;
+  LocalDateTime updatedAt;
 
   @PrePersist
-  public void prePersist() {
+  private void prePersist() {
     if (id == null) id = UUID.randomUUID();
   }
 }

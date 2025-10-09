@@ -25,10 +25,6 @@ public class ProductEntity {
   @EqualsAndHashCode.Include
   @Column(updatable = false, nullable = false)
   private UUID id;
-  @PrePersist
-  public void prePersist() {
-    if (id == null) id = UUID.randomUUID();
-  }
   @Version
   private Long version;
   @Column(unique = true, nullable = false)
@@ -56,4 +52,9 @@ public class ProductEntity {
   @UpdateTimestamp
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
+
+  @PrePersist
+  public void prePersist() {
+    if (id == null) id = UUID.randomUUID();
+  }
 }

@@ -27,21 +27,15 @@ public class ProductService implements IProductUseCase {
 
   @Override
   public Product createProduct(Product product) {
-    if (product == null) {
-      log.warn("ProductService, createProduct, cannot be null");
-      throw new ModelNullException("Product cannot be null");
-    }
+    if (product == null) throw new ModelNullException("Product cannot be null");
     String normalizedSku = product.getSku().trim();
     String normalizedName = product.getName().trim().toLowerCase();
     String normalizedDescription = product.getDescription().trim();
     List<String> forbiddenNames = List.of("null", "default", "admin");
-
     if (forbiddenNames.contains(normalizedName)) {
-      log.warn("ProductService, createProduct, product name is not allowed");
       throw new InvalidArgumentException("This product name is not allowed");
     }
     if (productAdapterPort.existsProductBySku(product.getSku())) {
-      log.warn("ProductService, createProduct, product with SKU " + product.getSku() + " already exists");
       throw new FieldAlreadyExistsException("SKU " + product.getSku() + " already exists");
     }
     Product created = Product.create(
@@ -51,39 +45,38 @@ public class ProductService implements IProductUseCase {
         product.getPrice(),
         product.getStock()
     );
-    return productAdapterPort.saveProduct(created);
+    return productAdapterPort.saveCreateProduct(created);
   }
 
   @Override
   @Transactional
   public Product getProductById(UUID id) {
+    if (id == null) throw new InvalidArgumentException("Id is required");
     return productAdapterPort.findProductById(id)
-        .orElseThrow(() -> {
-          log.warn("ProductService, getProductById, product with id " + id + " not found");
-          throw new ModelNotFoundException("Product with id " + id + " not found");
-        });
+        .orElseThrow(() -> new ModelNotFoundException("Product with id " + id + " not found"));
   }
 
   @Override
   @Transactional
   public Product getProductByIdAndStatus(UUID id, ProductStatus status) {
-    Product found = getProductById(id);
-    if (!found.getStatus().equals(status)) {
-      log.warn("ProductService, getProductByIdAndStatus, product with id " + id + " not " + status.toString());
-      throw new ModelNotFoundException("Product with id " + id + " not " + status.toString());
-    }
-    return found;
+    if (id == null) throw new InvalidArgumentException("Id is required");
+    return productAdapterPort.findProductByIdAndStatus(id, status)
+        .orElseThrow(() -> new ModelNotFoundException("Product with id " + id + " and status " + status + " not found"));
   }
 
   @Override
   @Transactional
   public Product getProductBySku(String sku) {
+    if (sku == null || sku.isBlank()) throw new InvalidArgumentException("SKU is required");
     return productAdapterPort.findProductBySku(sku)
-        .filter(product -> !product.getStatus().equals(ProductStatus.ELIMINATED))
-        .orElseThrow(() -> {
-          log.warn("ProductService, getProductBySku, product with SKU " + sku + " not found");
-          throw new ModelNotFoundException("Product with SKU " + sku + " not found");
-        });
+        .orElseThrow(() -> new ModelNotFoundException("Product with SKU " + sku + " not found"));
+  }
+
+  @Override
+  public Product getProductBySkuAndStatus(String sku, ProductStatus status) {
+    if (sku == null || sku.isBlank()) throw new InvalidArgumentException("SKU is required");
+    return productAdapterPort.findProductBySkuAndStatus(sku, status)
+        .orElseThrow(() -> new ModelNotFoundException("Product with SKU " + sku + " and status " + status + " not found"));
   }
 
   @Override
@@ -101,38 +94,30 @@ public class ProductService implements IProductUseCase {
   @Override
   @Transactional
   public Product updateFieldsProduct(UUID id, Product product) {
+    if (product == null) throw new ModelNullException("Product cannot be null");
     String normalizedName = product.getName().trim().toLowerCase();
     String normalizedDescription = product.getDescription().trim();
     List<String> forbiddenNames = List.of("null", "default", "admin");
-
     if (forbiddenNames.contains(normalizedName)) {
-      log.warn("ProductService, createProduct, product name is not allowed");
       throw new InvalidArgumentException("This product name is not allowed");
     }
     Product found = getProductByIdAndStatus(id, ProductStatus.ACTIVE);
     found.updateFields(normalizedName, normalizedDescription, product.getPrice());
-    return productAdapterPort.saveProduct(found);
+    return productAdapterPort.saveUpdateProduct(found);
   }
 
   @Override
   @Transactional
   public Product updateCategories(UUID id, Set<UUID> categories) {
-    Product found = getProductById(id);
-    if (found.getStatus().equals(ProductStatus.ELIMINATED)) {
-      log.warn("ProductService, updateCategories, product deleted previously");
-      throw new ModelDeletionException("Product deleted previously");
-    }
+    Product found = getProductByIdAndStatus(id, ProductStatus.ACTIVE);
     Set<Category> newCategories = new HashSet<>();
     categories.forEach(uuid -> {
       newCategories.add(categoryAdapterPort.findCategoryById(uuid)
           .filter(category -> category.getStatus().equals(CategoryStatus.ACTIVE))
-          .orElseThrow(() -> {
-            log.warn("ProductService, updateCategories, category with id " + uuid + " not found");
-            throw new ModelNotFoundException("Category with id " + uuid + " not found");
-          }));
+          .orElseThrow(() -> new ModelNotFoundException("Category with id " + uuid + " not found")));
     });
     found.updateCategories(newCategories);
-    return productAdapterPort.saveProduct(found);
+    return productAdapterPort.saveUpdateProduct(found);
   }
 
   @Override
@@ -140,7 +125,7 @@ public class ProductService implements IProductUseCase {
   public void decreaseStock(UUID id, Integer quantity) {
     Product found = getProductByIdAndStatus(id, ProductStatus.ACTIVE);
     found.decreaseStock(quantity);
-    productAdapterPort.saveProduct(found);
+    productAdapterPort.saveUpdateProduct(found);
   }
 
   @Override
@@ -148,27 +133,22 @@ public class ProductService implements IProductUseCase {
   public void increaseStock(UUID id, Integer quantity) {
     Product found = getProductById(id);
     found.increaseStock(quantity);
-    productAdapterPort.saveProduct(found);
+    productAdapterPort.saveUpdateProduct(found);
   }
 
   @Override
   @Transactional
   public void deleteProductById(UUID id) {
-    Product found = getProductById(id);
+    Product found = getProductByIdAndStatus(id, ProductStatus.ACTIVE);
     found.delete();
-    productAdapterPort.saveProduct(found);
+    productAdapterPort.saveUpdateProduct(found);
   }
 
   @Override
   @Transactional
   public Product restoreProductBySku(String sku) {
-    Product found = productAdapterPort.findProductBySku(sku)
-        .filter(product -> product.getStatus().equals(ProductStatus.ELIMINATED))
-        .orElseThrow(() -> {
-          log.warn("ProductService, restoreProductBySku, product with SKU " + sku + " not found");
-          throw new ModelNotFoundException("Product with SKU " + sku + " not found");
-        });
+    Product found = getProductBySku(sku);
     found.restore();
-    return productAdapterPort.saveProduct(found);
+    return productAdapterPort.saveUpdateProduct(found);
   }
 }

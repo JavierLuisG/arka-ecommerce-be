@@ -15,6 +15,8 @@ public interface ICategoryUseCase {
 
   Category getCategoryByName(String name);
 
+  Category getCategoryByNameAndStatus(String name, CategoryStatus status);
+
   List<Category> getAllCategories();
 
   List<Category> getAllCategoriesByStatus(CategoryStatus status);

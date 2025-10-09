@@ -30,8 +30,18 @@ public class CategoryPersistenceAdapter implements ICategoryAdapterPort {
   }
 
   @Override
+  public Optional<Category> findCategoryByIdAndStatus(UUID id, CategoryStatus status) {
+    return jpaCategoryRepository.findByIdAndStatus(id, status).map(mapper::toDomain);
+  }
+
+  @Override
   public Optional<Category> findCategoryByName(String name) {
     return jpaCategoryRepository.findByName(name).map(mapper::toDomain);
+  }
+
+  @Override
+  public Optional<Category> findCategoryByNameAndStatus(String name, CategoryStatus status) {
+    return jpaCategoryRepository.findByNameAndStatus(name, status).map(mapper::toDomain);
   }
 
   @Override

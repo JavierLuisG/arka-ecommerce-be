@@ -2,12 +2,12 @@ package com.store.arka.backend.infrastructure.web.controller;
 
 import com.store.arka.backend.application.port.in.ICategoryUseCase;
 import com.store.arka.backend.domain.enums.CategoryStatus;
-import com.store.arka.backend.domain.exception.InvalidEnumValueException;
 import com.store.arka.backend.infrastructure.web.dto.MessageResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.category.request.CreateCategoryDto;
 import com.store.arka.backend.infrastructure.web.dto.category.request.UpdateCategoryDto;
 import com.store.arka.backend.infrastructure.web.dto.category.response.CategoryResponseDto;
 import com.store.arka.backend.infrastructure.web.mapper.CategoryDtoMapper;
+import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,20 +32,31 @@ public class CategoryController {
   }
 
   @GetMapping("/id/{id}")
-  public ResponseEntity<CategoryResponseDto> getCategoryById(@PathVariable("id") UUID id) {
-    return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryById(id)));
+  public ResponseEntity<CategoryResponseDto> getCategoryById(@PathVariable("id") String id) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryById(uuid)));
   }
 
   @GetMapping("/id/{id}/status/{status}")
   public ResponseEntity<CategoryResponseDto> getCategoryByIdAndStatus(
-      @PathVariable("id") UUID id, @PathVariable("status") String status) {
-    CategoryStatus statusEnum = parseStatusOrThrow(status);
-    return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryByIdAndStatus(id, statusEnum)));
+      @PathVariable("id") String id,
+      @PathVariable("status") String status) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    CategoryStatus statusEnum = PathUtils.validateEnumOrThrow(CategoryStatus.class, status, "CategoryStatus");
+    return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryByIdAndStatus(uuid, statusEnum)));
   }
 
   @GetMapping("/name/{name}")
   public ResponseEntity<CategoryResponseDto> getCategoryByName(@PathVariable("name") String name) {
     return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryByName(name)));
+  }
+
+  @GetMapping("/name/{name}/status/{status}")
+  public ResponseEntity<CategoryResponseDto> getCategoryByNameAndStatus(
+      @PathVariable("name") String name,
+      @PathVariable("status") String status) {
+    CategoryStatus statusEnum = PathUtils.validateEnumOrThrow(CategoryStatus.class, status, "CategoryStatus");
+    return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryByNameAndStatus(name, statusEnum)));
   }
 
   @GetMapping
@@ -56,32 +67,28 @@ public class CategoryController {
 
   @GetMapping("/status/{status}")
   public ResponseEntity<List<CategoryResponseDto>> getAllCategoriesByStatus(@PathVariable("status") String status) {
-    CategoryStatus statusEnum = parseStatusOrThrow(status);
+    CategoryStatus statusEnum = PathUtils.validateEnumOrThrow(CategoryStatus.class, status, "CategoryStatus");
     return ResponseEntity.ok(
         categoryUseCase.getAllCategoriesByStatus(statusEnum).stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
   @PutMapping("/id/{id}")
-  public ResponseEntity<CategoryResponseDto> putCategory(@PathVariable("id") UUID id, @RequestBody UpdateCategoryDto dto) {
-    return ResponseEntity.ok(mapper.toDto(categoryUseCase.updateFieldsCategory(id, mapper.toDomain(dto))));
+  public ResponseEntity<CategoryResponseDto> putCategoryById(
+      @PathVariable("id") String id,
+      @RequestBody @Valid UpdateCategoryDto dto) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    return ResponseEntity.ok(mapper.toDto(categoryUseCase.updateFieldsCategory(uuid, mapper.toDomain(dto))));
   }
 
   @DeleteMapping("/id/{id}")
-  public ResponseEntity<MessageResponseDto> deleteCategory(@PathVariable("id") UUID id) {
-    categoryUseCase.deleteCategoryById(id);
+  public ResponseEntity<MessageResponseDto> deleteCategoryById(@PathVariable("id") String id) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    categoryUseCase.deleteCategoryById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Category with id " + id + " eliminated successfully"));
   }
 
   @PutMapping("/name/{name}/restore")
-  public ResponseEntity<CategoryResponseDto> restoreCategory(@PathVariable("name") String name) {
+  public ResponseEntity<CategoryResponseDto> restoreCategoryByName(@PathVariable("name") String name) {
     return ResponseEntity.ok(mapper.toDto(categoryUseCase.restoreCategoryByName(name)));
-  }
-
-  private CategoryStatus parseStatusOrThrow(String status) {
-    try {
-      return CategoryStatus.valueOf(status.toUpperCase());
-    } catch (IllegalArgumentException ex) {
-      throw new InvalidEnumValueException("Invalid CategoryStatus: " + status);
-    }
   }
 }

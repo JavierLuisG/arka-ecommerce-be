@@ -23,20 +23,14 @@ public class CategoryService implements ICategoryUseCase {
 
   @Override
   public Category createCategory(Category category) {
-    if (category == null) {
-      log.warn("CategoryService, createCategory, cannot be null");
-      throw new ModelNullException("Category cannot be null");
-    }
+    if (category == null) throw new ModelNullException("Category cannot be null");
     String normalizedName = category.getName().trim().toLowerCase();
     String normalizedDescription = category.getDescription().trim();
     List<String> forbiddenNames = List.of("null", "default", "admin");
-
     if (forbiddenNames.contains(normalizedName)) {
-      log.warn("CategoryService, createCategory, category name is not allowed");
       throw new InvalidArgumentException("This category name is not allowed");
     }
     if (categoryAdapterPort.existsCategoryByName(normalizedName)) {
-      log.warn("CategoryService, createCategory, category name " + normalizedName + " already exists");
       throw new FieldAlreadyExistsException("Category name " + normalizedName + " already exists");
     }
     Category created = Category.create(normalizedName, normalizedDescription);
@@ -45,31 +39,30 @@ public class CategoryService implements ICategoryUseCase {
 
   @Override
   public Category getCategoryById(UUID id) {
+    if (id == null) throw new InvalidArgumentException("Id is required");
     return categoryAdapterPort.findCategoryById(id)
-        .orElseThrow(() -> {
-          log.warn("CategoryService, getCategoryById, category with id " + id + " not found");
-          throw new ModelNotFoundException("Category with id " + id + " not found");
-        });
+        .orElseThrow(() -> new ModelNotFoundException("Category with id " + id + " not found"));
   }
 
   @Override
   public Category getCategoryByIdAndStatus(UUID id, CategoryStatus status) {
-    Category found = getCategoryById(id);
-    if (!found.getStatus().equals(status)) {
-      log.warn("CategoryService, getCategoryByIdAndStatus, category with id " + id + " not " + status.toString());
-      throw new ModelNotFoundException("Category with id " + id + " not " + status.toString());
-    }
-    return found;
+    if (id == null) throw new InvalidArgumentException("Id is required");
+    return categoryAdapterPort.findCategoryByIdAndStatus(id, status)
+        .orElseThrow(() -> new ModelNotFoundException("Category with id " + id + " and status " + status + " not found"));
   }
 
   @Override
   public Category getCategoryByName(String name) {
+    if (name == null || name.isBlank()) throw new InvalidArgumentException("Name is required");
     return categoryAdapterPort.findCategoryByName(name)
-        .filter(category -> category.getStatus().equals(CategoryStatus.ACTIVE))
-        .orElseThrow(() -> {
-          log.warn("CategoryService, getCategoryByName, product with name " + name + " not found");
-          throw new ModelNotFoundException("Category with name " + name + " not found");
-        });
+        .orElseThrow(() -> new ModelNotFoundException("Category with name " + name + " not found"));
+  }
+
+  @Override
+  public Category getCategoryByNameAndStatus(String name, CategoryStatus status) {
+    if (name == null || name.isBlank()) throw new InvalidArgumentException("Name is required");
+    return categoryAdapterPort.findCategoryByNameAndStatus(name, status)
+        .orElseThrow(() -> new ModelNotFoundException("Category with name " + name + " and status " + status + " not found"));
   }
 
   @Override
@@ -84,27 +77,23 @@ public class CategoryService implements ICategoryUseCase {
 
   @Override
   public Category updateFieldsCategory(UUID id, Category category) {
-    Category found = getCategoryByIdAndStatus(id, CategoryStatus.ACTIVE);
+    if (category == null) throw new ModelNullException("Category cannot be null");
     String normalizedDescription = category.getDescription().trim();
+    Category found = getCategoryByIdAndStatus(id, CategoryStatus.ACTIVE);
     found.update(normalizedDescription);
     return categoryAdapterPort.saveCategory(found);
   }
 
   @Override
   public void deleteCategoryById(UUID id) {
-    Category found = getCategoryById(id);
+    Category found = getCategoryByIdAndStatus(id, CategoryStatus.ACTIVE);
     found.delete();
     categoryAdapterPort.saveCategory(found);
   }
 
   @Override
   public Category restoreCategoryByName(String name) {
-    Category found = categoryAdapterPort.findCategoryByName(name)
-        .filter(category -> category.getStatus().equals(CategoryStatus.ELIMINATED))
-        .orElseThrow(() -> {
-          log.warn("CategoryService, restoreCategoryByName, category with name " + name + " not found");
-          throw new ModelNotFoundException("Category with name " + name + " not found");
-        });
+    Category found = getCategoryByNameAndStatus(name, CategoryStatus.ELIMINATED);
     found.restore();
     return categoryAdapterPort.saveCategory(found);
   }

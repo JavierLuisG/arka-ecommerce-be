@@ -64,11 +64,9 @@ public class Product {
 
   private static boolean validateStock(Integer stock) {
     if (stock == null) {
-      log.warn("Product, stock null");
       throw new InvalidArgumentException("Stock cannot be null");
     }
     if (stock < 0) {
-      log.warn("Product, stock less than 0");
       throw new InvalidArgumentException("Stock cannot be less than 0");
     }
     return stock > 0;
@@ -76,18 +74,15 @@ public class Product {
 
   private static void validatePrice(BigDecimal price) {
     if (price == null) {
-      log.warn("Product, price null");
       throw new InvalidArgumentException("Price cannot be null");
     }
     if (price.signum() <= 0) {
-      log.warn("Product, price less than 0");
       throw new InvalidArgumentException("Price cannot be less than 0");
     }
   }
 
   private static void validateNotNullOrEmpty(String value, String field) {
     if (value == null || value.trim().isEmpty()) {
-      log.warn("Product, null or empty");
       throw new InvalidArgumentException(field + " cannot be null or empty");
     }
   }
@@ -102,16 +97,13 @@ public class Product {
 
   public void validateAvailability(int quantity) {
     if (quantity <= 0) {
-      log.warn("Product, quantity less than 0");
       throw new QuantityBadRequestException("Quantity must be greater than 0");
     }
     if (this.stock < quantity) {
-      log.warn("Product, stock less than quantity");
       throw new QuantityBadRequestException("Stock must be greater than or equal to quantity");
     }
     if (!isNotDeleted()) {
-      log.warn("Product, not active");
-      throw new ModelNotAvailable("Product is not active");
+      throw new ModelNotAvailableException("Product is not active");
     }
   }
 
@@ -125,11 +117,9 @@ public class Product {
 
   public void increaseStock(int quantity) {
     if (this.status == ProductStatus.ELIMINATED) {
-      log.warn("Product, with status deleted");
       throw new ModelDeletionException("Product deleted previously");
     }
     if (quantity <= 0) {
-      log.warn("Product, quantity less than or equal to 0");
       throw new QuantityBadRequestException("Quantity must be greater than 0");
     }
     this.stock += quantity;
@@ -144,7 +134,6 @@ public class Product {
 
   public void delete() {
     if (!isNotDeleted()) {
-      log.warn("Product, cannot be deleted");
       throw new ModelDeletionException("Product already deleted previously");
     }
     this.status = ProductStatus.ELIMINATED;
@@ -152,7 +141,6 @@ public class Product {
 
   public void restore() {
     if (isNotDeleted()) {
-      log.warn("Product, cannot be restored");
       throw new ModelActivationException("Product already active previously");
     }
     if (this.stock == 0) {

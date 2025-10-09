@@ -9,7 +9,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IJpaCategoryRepository extends JpaRepository<CategoryEntity, UUID> {
+  Optional<CategoryEntity> findByIdAndStatus(UUID id, CategoryStatus status);
+
   Optional<CategoryEntity> findByName(String name);
+
+  Optional<CategoryEntity> findByNameAndStatus(String name, CategoryStatus status);
 
   List<CategoryEntity> findAllByStatus(CategoryStatus status);
 

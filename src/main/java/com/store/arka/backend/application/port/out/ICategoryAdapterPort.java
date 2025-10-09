@@ -12,7 +12,11 @@ public interface ICategoryAdapterPort {
 
   Optional<Category> findCategoryById(UUID id);
 
+  Optional<Category> findCategoryByIdAndStatus(UUID id, CategoryStatus status);
+
   Optional<Category> findCategoryByName(String name);
+
+  Optional<Category> findCategoryByNameAndStatus(String name, CategoryStatus status);
 
   List<Category> findAllCategories();
 

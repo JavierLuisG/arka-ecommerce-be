@@ -11,6 +11,7 @@ public class ProductMapper {
   private final CategoryMapper categoryMapper;
 
   public Product toDomain(ProductEntity entity) {
+    if (entity == null) return null;
     return new Product(
         entity.getId(),
         entity.getSku(),
@@ -26,6 +27,7 @@ public class ProductMapper {
   }
 
   public ProductEntity toCreateEntity(Product domain) {
+    if (domain == null) return null;
     return new ProductEntity(
         domain.getId(),
         null,
@@ -42,6 +44,7 @@ public class ProductMapper {
   }
 
   public ProductEntity toUpdateEntity(ProductEntity entity, Product domain) {
+    if (entity == null || domain == null) return entity;
     if (domain.getName() != null && !domain.getName().equals(entity.getName()))
       entity.setName(domain.getName());
     if (!domain.getDescription().equals(entity.getDescription()))

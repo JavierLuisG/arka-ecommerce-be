@@ -8,11 +8,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IProductAdapterPort {
-  Product saveProduct(Product product);
+  Product saveCreateProduct(Product product);
+
+  Product saveUpdateProduct(Product product);
 
   Optional<Product> findProductById(UUID id);
 
+  Optional<Product> findProductByIdAndStatus(UUID id, ProductStatus status);
+
   Optional<Product> findProductBySku(String sku);
+
+  Optional<Product> findProductBySkuAndStatus(String sku, ProductStatus status);
 
   List<Product> findAllProducts();
 

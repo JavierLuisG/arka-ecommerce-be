@@ -11,6 +11,7 @@ import java.util.Set;
 @Component
 public class CategoryMapper {
   public Category toDomain(CategoryEntity entity) {
+    if (entity == null) return null;
     return new Category(
         entity.getId(),
         entity.getName(),
@@ -22,6 +23,7 @@ public class CategoryMapper {
   }
 
   public CategoryEntity toEntity(Category domain) {
+    if (domain == null) return null;
     return new CategoryEntity(
         domain.getId(),
         domain.getName(),

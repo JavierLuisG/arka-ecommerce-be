@@ -16,6 +16,8 @@ public interface IProductUseCase {
 
   Product getProductBySku(String sku);
 
+  Product getProductBySkuAndStatus(String sku, ProductStatus status);
+
   List<Product> getAllProducts();
 
   List<Product> getAllProductsByStatus(ProductStatus status);

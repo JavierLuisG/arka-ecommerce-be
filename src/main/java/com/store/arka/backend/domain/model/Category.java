@@ -41,7 +41,6 @@ public class Category {
 
   private static void validateNotNullOrEmpty(String value, String field) {
     if (value == null || value.trim().isEmpty()) {
-      log.warn("Category, validate not null or empty");
       throw new InvalidArgumentException(field + " cannot be null or empty");
     }
   }
@@ -52,7 +51,6 @@ public class Category {
 
   public void delete() {
     if (!isNotDeleted()) {
-      log.warn("Category, delete");
       throw new ModelDeletionException("Category already deleted previously");
     }
     this.status = CategoryStatus.ELIMINATED;
@@ -60,7 +58,6 @@ public class Category {
 
   public void restore() {
     if (isNotDeleted()) {
-      log.warn("Category, restore");
       throw new ModelActivationException("Category already active previously");
     }
     this.status = CategoryStatus.ACTIVE;
