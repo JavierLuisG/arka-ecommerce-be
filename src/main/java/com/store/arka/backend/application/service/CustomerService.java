@@ -3,6 +3,7 @@ package com.store.arka.backend.application.service;
 import com.store.arka.backend.application.port.in.ICustomerUseCase;
 import com.store.arka.backend.application.port.in.IDocumentUseCase;
 import com.store.arka.backend.application.port.out.ICustomerAdapterPort;
+import com.store.arka.backend.application.port.out.IDocumentAdapterPort;
 import com.store.arka.backend.domain.enums.Country;
 import com.store.arka.backend.domain.enums.CustomerStatus;
 import com.store.arka.backend.domain.exception.FieldAlreadyExistsException;
@@ -10,7 +11,9 @@ import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.model.Customer;
+import com.store.arka.backend.domain.model.Document;
 import com.store.arka.backend.shared.util.PathUtils;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,9 +25,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CustomerService implements ICustomerUseCase {
   private final ICustomerAdapterPort customerAdapterPort;
+  private final IDocumentAdapterPort documentAdapterPort;
   private final IDocumentUseCase documentUseCase;
 
   @Override
+  @Transactional
   public Customer createCustomer(Customer customer) {
     if (customer == null) throw new ModelNullException("Customer cannot be null");
     String normalizedFirstName = customer.getFirstName().trim().toLowerCase();
@@ -40,8 +45,9 @@ public class CustomerService implements ICustomerUseCase {
     if (customerAdapterPort.existsCustomerByDocumentNumber(customer.getDocument().getNumber())) {
       throw new FieldAlreadyExistsException("Document number already exist");
     }
+    Document document = documentUseCase.createDocument(customer.getDocument());
     Customer created = Customer.create(
-        documentUseCase.createDocument(customer.getDocument()),
+        document,
         normalizedFirstName,
         normalizedLastName,
         normalizedEmail,
@@ -55,14 +61,14 @@ public class CustomerService implements ICustomerUseCase {
 
   @Override
   public Customer getCustomerById(UUID id) {
-    if (id == null) throw new InvalidArgumentException("Id is required");
+    ValidateAttributesUtils.throwIfIdNull(id);
     return customerAdapterPort.findCustomerById(id)
         .orElseThrow(() -> new ModelNotFoundException("Customer with id " + id + " not found"));
   }
 
   @Override
   public Customer getCustomerByIdAndStatus(UUID id, CustomerStatus status) {
-    if (id == null) throw new InvalidArgumentException("Id is required");
+    ValidateAttributesUtils.throwIfIdNull(id);
     return customerAdapterPort.findCustomerByIdAndStatus(id, status)
         .orElseThrow(() -> new ModelNotFoundException("Customer with id " + id + " and status " + status + " not found"));
   }
@@ -92,6 +98,7 @@ public class CustomerService implements ICustomerUseCase {
   }
 
   @Override
+  @Transactional
   public Customer updateFieldsCustomer(UUID id, Customer customer) {
     if (customer == null) throw new ModelNullException("Customer cannot be null");
     Customer found = getCustomerByIdAndStatus(id, CustomerStatus.ACTIVE);

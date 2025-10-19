@@ -28,7 +28,7 @@ public class CustomerMapper {
     );
   }
 
-  public CustomerEntity toCreateEntity(Customer domain) {
+  public CustomerEntity toEntity(Customer domain) {
     if (domain == null) return null;
     return new CustomerEntity(
         domain.getId(),
@@ -46,24 +46,10 @@ public class CustomerMapper {
     );
   }
 
-  public CustomerEntity toUpdateEntity(CustomerEntity entity, Customer domain) {
-    if (entity == null || domain == null) return entity;
-    if (domain.getFirstName() != null && !domain.getFirstName().equals(entity.getFirstName()))
-      entity.setFirstName(domain.getFirstName());
-    if (domain.getLastName() != null && !domain.getLastName().equals(entity.getLastName()))
-      entity.setLastName(domain.getLastName());
-    if (domain.getEmail() != null && !domain.getEmail().equals(entity.getEmail()))
-      entity.setEmail(domain.getEmail());
-    if (domain.getPhone() != null && !domain.getPhone().equals(entity.getPhone()))
-      entity.setPhone(domain.getPhone());
-    if (domain.getAddress() != null && !domain.getAddress().equals(entity.getAddress()))
-      entity.setAddress(domain.getAddress());
-    if (domain.getCity() != null && !domain.getCity().equals(entity.getCity()))
-      entity.setCity(domain.getCity());
-    if (domain.getCountry() != null && !domain.getCountry().equals(entity.getCountry()))
-      entity.setCountry(domain.getCountry());
-    if (domain.getStatus() != null && !domain.getStatus().equals(entity.getStatus()))
-      entity.setStatus(domain.getStatus());
+  public CustomerEntity toReference(Customer domain) {
+    if (domain == null) return null;
+    CustomerEntity entity = new CustomerEntity();
+    entity.setId(domain.getId());
     return entity;
   }
 }

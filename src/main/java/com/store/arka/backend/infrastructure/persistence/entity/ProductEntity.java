@@ -15,11 +15,11 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "products")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(onlyExplicitlyIncluded = true)
 public class ProductEntity {
   @Id
   @EqualsAndHashCode.Include
@@ -35,11 +35,10 @@ public class ProductEntity {
   @Column(nullable = false, precision = 10, scale = 2)
   private BigDecimal price;
   @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-      name = "product_category",
+  @JoinTable(name = "product_category",
       joinColumns = @JoinColumn(name = "product_id"),
-      inverseJoinColumns = @JoinColumn(name = "category_id")
-  )
+      inverseJoinColumns = @JoinColumn(name = "category_id"))
+  @ToString.Exclude
   private Set<CategoryEntity> categories = new HashSet<>();
   @Column(nullable = false)
   private Integer stock;
@@ -50,7 +49,7 @@ public class ProductEntity {
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
   @UpdateTimestamp
-  @Column(name = "updated_at")
+  @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
 
   @PrePersist

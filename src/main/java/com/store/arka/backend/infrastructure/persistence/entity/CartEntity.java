@@ -1,14 +1,13 @@
 package com.store.arka.backend.infrastructure.persistence.entity;
 
-import com.store.arka.backend.domain.enums.DocumentStatus;
-import com.store.arka.backend.domain.enums.DocumentType;
+import com.store.arka.backend.domain.enums.CartStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @Setter
@@ -16,30 +15,31 @@ import java.util.UUID;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "documents")
+@Table(name = "carts")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class DocumentEntity {
+public class CartEntity {
   @Id
   @EqualsAndHashCode.Include
-  @Column(updatable = false, nullable = false)
+  @Column(nullable = false, updatable = false, unique = true)
   private UUID id;
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  private DocumentType type;
-  @Column(nullable = false, unique = true)
-  private String number;
-  @OneToOne(mappedBy = "document")
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "customer_id", nullable = false, foreignKey = @ForeignKey(name = "fk_cart_customer"))
   @ToString.Exclude
   private CustomerEntity customer;
+  @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @ToString.Exclude
+  private List<CartItemEntity> items = new ArrayList<>();
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  private DocumentStatus status;
+  private CartStatus status;
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
+  @Column(name = "abandoned_at")
+  private LocalDateTime abandonedAt;
 
   @PrePersist
   private void prePersist() {

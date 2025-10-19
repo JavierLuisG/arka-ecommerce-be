@@ -5,6 +5,8 @@ import com.store.arka.backend.infrastructure.persistence.entity.ProductEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class ProductMapper {
@@ -26,7 +28,7 @@ public class ProductMapper {
     );
   }
 
-  public ProductEntity toCreateEntity(Product domain) {
+  public ProductEntity toEntity(Product domain) {
     if (domain == null) return null;
     return new ProductEntity(
         domain.getId(),
@@ -35,7 +37,7 @@ public class ProductMapper {
         domain.getName(),
         domain.getDescription(),
         domain.getPrice(),
-        categoryMapper.toEntity(domain.getCategories()),
+        categoryMapper.toReference(domain.getCategories()),
         domain.getStock(),
         domain.getStatus(),
         domain.getCreatedAt(),
@@ -43,20 +45,10 @@ public class ProductMapper {
     );
   }
 
-  public ProductEntity toUpdateEntity(ProductEntity entity, Product domain) {
-    if (entity == null || domain == null) return entity;
-    if (domain.getName() != null && !domain.getName().equals(entity.getName()))
-      entity.setName(domain.getName());
-    if (!domain.getDescription().equals(entity.getDescription()))
-      entity.setDescription(domain.getDescription());
-    if (!domain.getPrice().equals(entity.getPrice()))
-      entity.setPrice(domain.getPrice());
-    if (domain.getCategories() != null)
-      entity.setCategories(categoryMapper.toEntity(domain.getCategories()));
-    if (domain.getStock() != null)
-      entity.setStock(domain.getStock());
-    if (domain.getStatus() != null && !domain.getStatus().equals(entity.getStatus()))
-      entity.setStatus(domain.getStatus());
+  public ProductEntity toReference(UUID productId) {
+    if (productId == null) return null;
+    ProductEntity entity = new ProductEntity();
+    entity.setId(productId);
     return entity;
   }
 }

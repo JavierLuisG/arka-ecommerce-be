@@ -8,6 +8,7 @@ import com.store.arka.backend.domain.enums.ProductStatus;
 import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.domain.model.Category;
 import com.store.arka.backend.domain.model.Product;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ public class ProductService implements IProductUseCase {
   private final ICategoryAdapterPort categoryAdapterPort;
 
   @Override
+  @Transactional
   public Product createProduct(Product product) {
     if (product == null) throw new ModelNullException("Product cannot be null");
     String normalizedSku = product.getSku().trim();
@@ -51,7 +53,7 @@ public class ProductService implements IProductUseCase {
   @Override
   @Transactional
   public Product getProductById(UUID id) {
-    if (id == null) throw new InvalidArgumentException("Id is required");
+    ValidateAttributesUtils.throwIfIdNull(id);
     return productAdapterPort.findProductById(id)
         .orElseThrow(() -> new ModelNotFoundException("Product with id " + id + " not found"));
   }
@@ -59,7 +61,7 @@ public class ProductService implements IProductUseCase {
   @Override
   @Transactional
   public Product getProductByIdAndStatus(UUID id, ProductStatus status) {
-    if (id == null) throw new InvalidArgumentException("Id is required");
+    ValidateAttributesUtils.throwIfIdNull(id);
     return productAdapterPort.findProductByIdAndStatus(id, status)
         .orElseThrow(() -> new ModelNotFoundException("Product with id " + id + " and status " + status + " not found"));
   }
@@ -73,6 +75,7 @@ public class ProductService implements IProductUseCase {
   }
 
   @Override
+  @Transactional
   public Product getProductBySkuAndStatus(String sku, ProductStatus status) {
     if (sku == null || sku.isBlank()) throw new InvalidArgumentException("SKU is required");
     return productAdapterPort.findProductBySkuAndStatus(sku, status)

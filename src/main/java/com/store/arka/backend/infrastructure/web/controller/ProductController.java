@@ -85,7 +85,7 @@ public class ProductController {
   }
 
   @PutMapping("/id/{id}/categories")
-  public ResponseEntity<ProductResponseDto> putProductCategoriesById(
+  public ResponseEntity<ProductResponseDto> putCategoriesToProductById(
       @PathVariable("id") String id,
       @RequestBody UpdateProductCategoriesDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);

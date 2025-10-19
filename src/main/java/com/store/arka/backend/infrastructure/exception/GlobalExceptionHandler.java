@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponseDto> handleDataIntegrityViolationException(
       DataIntegrityViolationException ex, WebRequest request) {
     String message = "Data integrity violation";
-    if (ex.getRootCause() != null && ex.getRootCause().getMessage().contains("llave duplicada")) {
+    if (ex.getRootCause() != null && ex.getRootCause().getMessage().contains("Llave duplicada")) {
       message = "Duplicate entry: " + extractFieldName(ex.getRootCause().getMessage());
     }
     log.error("[GlobalExceptionHandler][DataIntegrityViolation] {}", ex.getMessage(), ex);
@@ -59,10 +60,21 @@ public class GlobalExceptionHandler {
     return "unknown field";
   }
 
-  @ExceptionHandler(InvalidEnumValueException.class)
-  public ResponseEntity<ErrorResponseDto> handleInvalidEnumValueException(
-      InvalidEnumValueException ex, WebRequest request) {
-    log.warn("[GlobalExceptionHandler][InvalidEnumValue] Value enum does not exist: {}", ex.getMessage());
+  @ExceptionHandler(CartAlreadyConfirmedException.class)
+  public ResponseEntity<ErrorResponseDto> handleCartAlreadyConfirmedException(
+      CartAlreadyConfirmedException ex, WebRequest request) {
+    log.warn("[GlobalExceptionHandler][CartAlreadyConfirmed] Cart confirmed previously: {}", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
+        HttpStatus.BAD_REQUEST.value(),
+        ex.getMessage(),
+        request.getDescription(false)
+    ));
+  }
+
+  @ExceptionHandler(CartItemsEmptyException.class)
+  public ResponseEntity<ErrorResponseDto> handleCartEmptyException(
+      CartItemsEmptyException ex, WebRequest request) {
+    log.warn("[GlobalExceptionHandler][CartEmpty] Cart empty in items: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
         HttpStatus.BAD_REQUEST.value(),
         ex.getMessage(),
@@ -87,6 +99,17 @@ public class GlobalExceptionHandler {
         HttpStatus.BAD_REQUEST.value(),
         ex.getMessage(),
         webRequest.getDescription(false)));
+  }
+
+  @ExceptionHandler(InvalidEnumValueException.class)
+  public ResponseEntity<ErrorResponseDto> handleInvalidEnumValueException(
+      InvalidEnumValueException ex, WebRequest request) {
+    log.warn("[GlobalExceptionHandler][InvalidEnumValue] Value enum does not exist: {}", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
+        HttpStatus.BAD_REQUEST.value(),
+        ex.getMessage(),
+        request.getDescription(false)
+    ));
   }
 
   @ExceptionHandler(InvalidIdException.class)
@@ -145,6 +168,16 @@ public class GlobalExceptionHandler {
         webRequest.getDescription(false)));
   }
 
+  @ExceptionHandler(ProductNotFoundInCartException.class)
+  public ResponseEntity<ErrorResponseDto> handlerProductNotFoundInCartException(
+      ProductNotFoundInCartException ex, WebRequest webRequest) {
+    log.error("[GlobalExceptionHandler][ProductNotFoundInCart] {}", ex.getMessage(), ex);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
+        HttpStatus.BAD_REQUEST.value(),
+        ex.getMessage(),
+        webRequest.getDescription(false)));
+  }
+
   @ExceptionHandler(QuantityBadRequestException.class)
   public ResponseEntity<ErrorResponseDto> handlerInvalidStockException(
       QuantityBadRequestException ex, WebRequest webRequest) {
@@ -173,6 +206,11 @@ public class GlobalExceptionHandler {
         HttpStatus.CONFLICT.value(),
         "The resource was modified by another user. Please refresh and try again.",
         webRequest.getDescription(false)));
+  }
+
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<Void> handleNoResourceFound(NoResourceFoundException ex) {
+    return ResponseEntity.notFound().build();
   }
 
   @ExceptionHandler(Exception.class)

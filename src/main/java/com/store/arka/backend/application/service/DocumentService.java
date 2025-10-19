@@ -10,8 +10,10 @@ import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.model.Document;
 import com.store.arka.backend.shared.util.PathUtils;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,14 +35,14 @@ public class DocumentService implements IDocumentUseCase {
 
   @Override
   public Document getDocumentById(UUID id) {
-    if (id == null) throw new InvalidArgumentException("Id is required");
+    ValidateAttributesUtils.throwIfIdNull(id);
     return documentAdapterPort.findDocumentById(id)
         .orElseThrow(() -> new ModelNotFoundException("Document with id " + id + " not found"));
   }
 
   @Override
   public Document getDocumentByIdAndStatus(UUID id, DocumentStatus status) {
-    if (id == null) throw new InvalidArgumentException("Id is required");
+    ValidateAttributesUtils.throwIfIdNull(id);
     return documentAdapterPort.findDocumentByIdAndStatus(id, status)
         .orElseThrow(() -> new ModelNotFoundException("Document with id " + id + " and status " + status + " not found"));
   }

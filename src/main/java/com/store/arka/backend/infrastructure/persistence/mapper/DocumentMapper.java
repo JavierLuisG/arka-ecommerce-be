@@ -30,4 +30,11 @@ public class DocumentMapper {
         domain.getUpdatedAt()
     );
   }
+
+  public DocumentEntity toReference(Document domain) {
+    if (domain == null) return null;
+    DocumentEntity entity = new DocumentEntity();
+    entity.setId(domain.getId());
+    return entity;
+  }
 }

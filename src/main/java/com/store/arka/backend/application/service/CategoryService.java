@@ -8,6 +8,8 @@ import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.model.Category;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class CategoryService implements ICategoryUseCase {
   private final ICategoryAdapterPort categoryAdapterPort;
 
   @Override
+  @Transactional
   public Category createCategory(Category category) {
     if (category == null) throw new ModelNullException("Category cannot be null");
     String normalizedName = category.getName().trim().toLowerCase();
@@ -39,14 +42,14 @@ public class CategoryService implements ICategoryUseCase {
 
   @Override
   public Category getCategoryById(UUID id) {
-    if (id == null) throw new InvalidArgumentException("Id is required");
+    ValidateAttributesUtils.throwIfIdNull(id);
     return categoryAdapterPort.findCategoryById(id)
         .orElseThrow(() -> new ModelNotFoundException("Category with id " + id + " not found"));
   }
 
   @Override
   public Category getCategoryByIdAndStatus(UUID id, CategoryStatus status) {
-    if (id == null) throw new InvalidArgumentException("Id is required");
+    ValidateAttributesUtils.throwIfIdNull(id);
     return categoryAdapterPort.findCategoryByIdAndStatus(id, status)
         .orElseThrow(() -> new ModelNotFoundException("Category with id " + id + " and status " + status + " not found"));
   }
@@ -76,6 +79,7 @@ public class CategoryService implements ICategoryUseCase {
   }
 
   @Override
+  @Transactional
   public Category updateFieldsCategory(UUID id, Category category) {
     if (category == null) throw new ModelNullException("Category cannot be null");
     String normalizedDescription = category.getDescription().trim();
@@ -85,6 +89,7 @@ public class CategoryService implements ICategoryUseCase {
   }
 
   @Override
+  @Transactional
   public void deleteCategoryById(UUID id) {
     Category found = getCategoryByIdAndStatus(id, CategoryStatus.ACTIVE);
     found.delete();
@@ -92,6 +97,7 @@ public class CategoryService implements ICategoryUseCase {
   }
 
   @Override
+  @Transactional
   public Category restoreCategoryByName(String name) {
     Category found = getCategoryByNameAndStatus(name, CategoryStatus.ELIMINATED);
     found.restore();

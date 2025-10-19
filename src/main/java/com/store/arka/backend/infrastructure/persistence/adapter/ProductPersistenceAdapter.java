@@ -6,6 +6,7 @@ import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.Product;
 import com.store.arka.backend.infrastructure.persistence.mapper.ProductMapper;
 import com.store.arka.backend.infrastructure.persistence.repository.IJpaProductRepository;
+import com.store.arka.backend.infrastructure.persistence.updater.ProductUpdater;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -19,16 +20,17 @@ import java.util.stream.Collectors;
 public class ProductPersistenceAdapter implements IProductAdapterPort {
   private final IJpaProductRepository jpaProductRepository;
   private final ProductMapper mapper;
+  private final ProductUpdater updater;
 
   @Override
   public Product saveCreateProduct(Product product) {
-    return mapper.toDomain(jpaProductRepository.save(mapper.toCreateEntity(product)));
+    return mapper.toDomain(jpaProductRepository.save(mapper.toEntity(product)));
   }
 
   @Override
   public Product saveUpdateProduct(Product product) {
     return jpaProductRepository.findById(product.getId())
-        .map(exists -> mapper.toUpdateEntity(exists, product))
+        .map(exists -> jpaProductRepository.save(updater.merge(exists, product)))
         .map(mapper::toDomain)
         .orElseThrow(() -> new ModelNotFoundException("Product with id " + product.getId() + " not found"));
   }

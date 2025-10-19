@@ -14,6 +14,14 @@ logging:
             sql:
               BasicBinder: TRACE
   pattern:
+    level:
+      org:
+        hibernate:
+          SQL: debug
+          type:
+            descriptor:
+              sql:
+                BasicBinder: trace
     console: "%d{yyyy-MM-dd HH:mm:ss} [%highlight(%-5level)] [%cyan(%thread)] %magenta(%logger{15}) - %msg%n"
 
 spring:
@@ -29,7 +37,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
+        format_sql: false
         jdbc:
           time_zone: America/Bogota
   jackson:

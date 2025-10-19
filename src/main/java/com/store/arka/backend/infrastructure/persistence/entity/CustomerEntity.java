@@ -14,44 +14,45 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "customers")
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "customers")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(onlyExplicitlyIncluded = true)
 public class CustomerEntity {
   @Id
   @EqualsAndHashCode.Include
   @Column(updatable = false, nullable = false)
-  UUID id;
+  private UUID id;
   @OneToOne
   @JoinColumn(name = "document_id", nullable = false, foreignKey = @ForeignKey(name = "fk_document"))
-  DocumentEntity document;
+  @ToString.Exclude
+  private DocumentEntity document;
   @Column(name = "first_name", nullable = false)
-  String firstName;
+  private String firstName;
   @Column(name = "last_name", nullable = false)
-  String lastName;
+  private String lastName;
   @Email
   @Column(nullable = false, unique = true)
-  String email;
+  private String email;
   @Column(nullable = false)
-  String phone;
+  private String phone;
   @Column(nullable = false)
-  String address;
+  private String address;
   @Column(nullable = false)
-  String city;
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  Country country;
+  private String city;
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  CustomerStatus status;
+  private Country country;
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private CustomerStatus status;
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
-  LocalDateTime createdAt;
+  private LocalDateTime createdAt;
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
-  LocalDateTime updatedAt;
+  private LocalDateTime updatedAt;
 
   @PrePersist
   private void prePersist() {

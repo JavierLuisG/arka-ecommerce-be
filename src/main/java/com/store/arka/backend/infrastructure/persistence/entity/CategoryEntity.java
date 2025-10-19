@@ -14,6 +14,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "categories")
@@ -27,7 +28,9 @@ public class CategoryEntity {
   private String name;
   private String description;
   @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
+  @ToString.Exclude
   private Set<ProductEntity> products = new HashSet<>();
+  @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private CategoryStatus status;
   @CreationTimestamp

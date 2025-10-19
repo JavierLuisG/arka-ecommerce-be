@@ -1,7 +1,9 @@
 package com.store.arka.backend.infrastructure.persistence.mapper;
 
 import com.store.arka.backend.domain.model.Category;
+import com.store.arka.backend.domain.model.Customer;
 import com.store.arka.backend.infrastructure.persistence.entity.CategoryEntity;
+import com.store.arka.backend.infrastructure.persistence.entity.CustomerEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -33,6 +35,17 @@ public class CategoryMapper {
         domain.getCreatedAt(),
         domain.getUpdatedAt()
     );
+  }
+
+  public Set<CategoryEntity> toReference(Set<Category> domain) {
+    if (domain == null) return null;
+    Set<CategoryEntity> entities = new HashSet<>();
+    domain.forEach(category -> {
+      CategoryEntity entity = new CategoryEntity();
+      entity.setId(category.getId());
+      entities.add(entity);
+    });
+    return entities;
   }
 
   public Set<Category> toDomain(Set<CategoryEntity> listEntity) {
