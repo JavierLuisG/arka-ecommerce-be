@@ -6,7 +6,6 @@ import com.store.arka.backend.infrastructure.web.dto.customer.response.CustomerR
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 public record CartResponseDto(

@@ -1,9 +1,7 @@
 package com.store.arka.backend.infrastructure.persistence.mapper;
 
 import com.store.arka.backend.domain.model.Category;
-import com.store.arka.backend.domain.model.Customer;
 import com.store.arka.backend.infrastructure.persistence.entity.CategoryEntity;
-import com.store.arka.backend.infrastructure.persistence.entity.CustomerEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
