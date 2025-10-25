@@ -41,6 +41,7 @@ public class CategoryService implements ICategoryUseCase {
   }
 
   @Override
+  @Transactional
   public Category getCategoryById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return categoryAdapterPort.findCategoryById(id)
@@ -48,6 +49,7 @@ public class CategoryService implements ICategoryUseCase {
   }
 
   @Override
+  @Transactional
   public Category getCategoryByIdAndStatus(UUID id, CategoryStatus status) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return categoryAdapterPort.findCategoryByIdAndStatus(id, status)
@@ -55,6 +57,7 @@ public class CategoryService implements ICategoryUseCase {
   }
 
   @Override
+  @Transactional
   public Category getCategoryByName(String name) {
     if (name == null || name.isBlank()) throw new InvalidArgumentException("Name is required");
     return categoryAdapterPort.findCategoryByName(name)
@@ -62,6 +65,7 @@ public class CategoryService implements ICategoryUseCase {
   }
 
   @Override
+  @Transactional
   public Category getCategoryByNameAndStatus(String name, CategoryStatus status) {
     if (name == null || name.isBlank()) throw new InvalidArgumentException("Name is required");
     return categoryAdapterPort.findCategoryByNameAndStatus(name, status)
@@ -69,11 +73,13 @@ public class CategoryService implements ICategoryUseCase {
   }
 
   @Override
+  @Transactional
   public List<Category> getAllCategories() {
     return categoryAdapterPort.findAllCategories();
   }
 
   @Override
+  @Transactional
   public List<Category> getAllCategoriesByStatus(CategoryStatus status) {
     return categoryAdapterPort.findAllCategoriesByStatus(status);
   }

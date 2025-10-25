@@ -2,7 +2,6 @@ package com.store.arka.backend.application.port.out;
 
 import com.store.arka.backend.domain.enums.CartStatus;
 import com.store.arka.backend.domain.model.Cart;
-import com.store.arka.backend.infrastructure.persistence.entity.CartEntity;
 
 import java.util.List;
 import java.util.Optional;

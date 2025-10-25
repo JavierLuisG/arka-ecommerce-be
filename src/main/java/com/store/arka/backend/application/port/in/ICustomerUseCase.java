@@ -2,7 +2,6 @@ package com.store.arka.backend.application.port.in;
 
 import com.store.arka.backend.domain.enums.CustomerStatus;
 import com.store.arka.backend.domain.model.Customer;
-import com.store.arka.backend.domain.model.Document;
 
 import java.util.List;
 import java.util.UUID;

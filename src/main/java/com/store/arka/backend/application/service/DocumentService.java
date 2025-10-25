@@ -11,9 +11,9 @@ import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.model.Document;
 import com.store.arka.backend.shared.util.PathUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +34,7 @@ public class DocumentService implements IDocumentUseCase {
   }
 
   @Override
+  @Transactional
   public Document getDocumentById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return documentAdapterPort.findDocumentById(id)
@@ -41,6 +42,7 @@ public class DocumentService implements IDocumentUseCase {
   }
 
   @Override
+  @Transactional
   public Document getDocumentByIdAndStatus(UUID id, DocumentStatus status) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return documentAdapterPort.findDocumentByIdAndStatus(id, status)
@@ -48,6 +50,7 @@ public class DocumentService implements IDocumentUseCase {
   }
 
   @Override
+  @Transactional
   public Document getDocumentByNumber(String number) {
     if (number == null || number.isBlank()) throw new InvalidArgumentException("Number is required");
     return documentAdapterPort.findDocumentByNumber(number)
@@ -55,6 +58,7 @@ public class DocumentService implements IDocumentUseCase {
   }
 
   @Override
+  @Transactional
   public Document getDocumentByNumberAndStatus(String number, DocumentStatus status) {
     if (number == null || number.isBlank()) throw new InvalidArgumentException("Number is required");
     return documentAdapterPort.findDocumentByNumberAndStatus(number, status)
@@ -62,16 +66,19 @@ public class DocumentService implements IDocumentUseCase {
   }
 
   @Override
+  @Transactional
   public List<Document> getAllDocuments() {
     return documentAdapterPort.findAllDocuments();
   }
 
   @Override
+  @Transactional
   public List<Document> getAllDocumentsByStatus(DocumentStatus status) {
     return documentAdapterPort.findAllDocumentsByStatus(status);
   }
 
   @Override
+  @Transactional
   public Document updateDocument(UUID id, Document document) {
     if (document == null) throw new ModelNullException("Document cannot be null");
     DocumentType normalizedType = PathUtils.validateEnumOrThrow(

@@ -5,7 +5,6 @@ import com.store.arka.backend.domain.enums.OrderStatus;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.Order;
 import com.store.arka.backend.infrastructure.persistence.entity.OrderEntity;
-import com.store.arka.backend.infrastructure.persistence.mapper.OrderItemMapper;
 import com.store.arka.backend.infrastructure.persistence.mapper.OrderMapper;
 import com.store.arka.backend.infrastructure.persistence.repository.IJpaOrderRepository;
 import com.store.arka.backend.infrastructure.persistence.updater.OrderUpdater;

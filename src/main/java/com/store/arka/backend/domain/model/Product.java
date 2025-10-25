@@ -4,14 +4,12 @@ import com.store.arka.backend.domain.enums.ProductStatus;
 import com.store.arka.backend.domain.exception.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
-@Slf4j
 @Getter
 @AllArgsConstructor
 public class Product {
