@@ -5,7 +5,7 @@ import com.store.arka.backend.infrastructure.web.dto.document.response.DocumentR
 
 import java.util.UUID;
 
-public record CustomerResponseToCartDto(
+public record CustomerResponseToOrderDto(
     UUID id,
     DocumentResponseToCustomerDto document,
     String firstName,

@@ -60,30 +60,17 @@ public class GlobalExceptionHandler {
     return "unknown field";
   }
 
-  @ExceptionHandler(CartAlreadyConfirmedException.class)
-  public ResponseEntity<ErrorResponseDto> handleCartAlreadyConfirmedException(
-      CartAlreadyConfirmedException ex, WebRequest request) {
-    log.warn("[GlobalExceptionHandler][CartAlreadyConfirmed] Cart confirmed previously: {}", ex.getMessage());
+  @ExceptionHandler(BusinessException.class)
+  public ResponseEntity<ErrorResponseDto> handlerBusinessException(BusinessException ex, WebRequest webRequest) {
+    log.warn("[GlobalExceptionHandler][Business] {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
         HttpStatus.BAD_REQUEST.value(),
         ex.getMessage(),
-        request.getDescription(false)
-    ));
-  }
-
-  @ExceptionHandler(CartItemsEmptyException.class)
-  public ResponseEntity<ErrorResponseDto> handleCartEmptyException(
-      CartItemsEmptyException ex, WebRequest request) {
-    log.warn("[GlobalExceptionHandler][CartEmpty] Cart empty in items: {}", ex.getMessage());
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
-        HttpStatus.BAD_REQUEST.value(),
-        ex.getMessage(),
-        request.getDescription(false)
-    ));
+        webRequest.getDescription(false)));
   }
 
   @ExceptionHandler(FieldAlreadyExistsException.class)
-  public ResponseEntity<ErrorResponseDto> handlerSkuAlreadyExists(FieldAlreadyExistsException ex, WebRequest webRequest) {
+  public ResponseEntity<ErrorResponseDto> handlerFieldAlreadyExistsException(FieldAlreadyExistsException ex, WebRequest webRequest) {
     log.warn("[GlobalExceptionHandler][FieldAlreadyExists] Value duplicated: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponseDto(
         HttpStatus.CONFLICT.value(),
@@ -92,7 +79,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(InvalidArgumentException.class)
-  public ResponseEntity<ErrorResponseDto> handlerValidatedFieldRequiredException(
+  public ResponseEntity<ErrorResponseDto> handlerInvalidArgumentException(
       InvalidArgumentException ex, WebRequest webRequest) {
     log.warn("[GlobalExceptionHandler][InvalidArgument] Invalid argument: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
@@ -119,6 +106,26 @@ public class GlobalExceptionHandler {
         HttpStatus.BAD_REQUEST.value(),
         ex.getMessage(),
         webRequest.getDescription(false)));
+  }
+
+  @ExceptionHandler(InvalidStateException.class)
+  public ResponseEntity<ErrorResponseDto> handleInvalidStateException(InvalidStateException ex, WebRequest request) {
+    log.warn("[GlobalExceptionHandler][InvalidState] {}", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
+        HttpStatus.BAD_REQUEST.value(),
+        ex.getMessage(),
+        request.getDescription(false)
+    ));
+  }
+
+  @ExceptionHandler(ItemsEmptyException.class)
+  public ResponseEntity<ErrorResponseDto> handleItemsEmptyException(ItemsEmptyException ex, WebRequest request) {
+    log.warn("[GlobalExceptionHandler][ItemsEmpty] Item list empty: {}", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
+        HttpStatus.BAD_REQUEST.value(),
+        ex.getMessage(),
+        request.getDescription(false)
+    ));
   }
 
   @ExceptionHandler(ModelActivationException.class)
@@ -168,10 +175,10 @@ public class GlobalExceptionHandler {
         webRequest.getDescription(false)));
   }
 
-  @ExceptionHandler(ProductNotFoundInCartException.class)
-  public ResponseEntity<ErrorResponseDto> handlerProductNotFoundInCartException(
-      ProductNotFoundInCartException ex, WebRequest webRequest) {
-    log.error("[GlobalExceptionHandler][ProductNotFoundInCart] {}", ex.getMessage(), ex);
+  @ExceptionHandler(ProductNotFoundInOrderException.class)
+  public ResponseEntity<ErrorResponseDto> handlerProductNotFoundInOrderException(
+      ProductNotFoundInOrderException ex, WebRequest webRequest) {
+    log.error("[GlobalExceptionHandler][ProductNotFoundInOrder] {}", ex.getMessage(), ex);
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
         HttpStatus.BAD_REQUEST.value(),
         ex.getMessage(),

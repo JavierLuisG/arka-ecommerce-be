@@ -38,9 +38,9 @@ public class CartMapper {
         domain.getUpdatedAt(),
         domain.getAbandonedAt()
     );
-    List<CartItemEntity> itemEntities = cartItemMapper.toEntity(domain.getItems());
-    itemEntities.forEach(item -> item.setCart(entity));
-    entity.setItems(itemEntities);
+    List<CartItemEntity> entityList = cartItemMapper.toEntity(domain.getItems());
+    entityList.forEach(item -> item.setCart(entity));
+    entity.setItems(entityList);
     return entity;
   }
 }

@@ -44,9 +44,7 @@ public class Document {
   }
 
   private static void validateNotNullOrEmpty(String value, String field) {
-    if (value == null || value.trim().isEmpty()) {
-      throw new InvalidArgumentException(field + " cannot be null or empty");
-    }
+    if (value == null || value.trim().isEmpty()) throw new InvalidArgumentException(field + " cannot be null or empty");
   }
 
   public boolean isActive() {

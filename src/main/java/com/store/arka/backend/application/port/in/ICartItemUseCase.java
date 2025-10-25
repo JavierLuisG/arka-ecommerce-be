@@ -17,6 +17,4 @@ public interface ICartItemUseCase {
   CartItem addQuantityById(UUID id, Integer quantity);
 
   CartItem updateQuantity(UUID id, Integer quantity);
-
-  void deleteCartItemById(UUID id);
 }

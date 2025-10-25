@@ -27,7 +27,7 @@ public class CartDtoMapper {
   public CartResponseDto toDto(Cart domain) {
     return new CartResponseDto(
         domain.getId(),
-        customerDtoMapper.toCartDto(domain.getCustomer()),
+        customerDtoMapper.toOrderDto(domain.getCustomer()),
         cartItemDtoMapper.toDto(domain.getItems()),
         domain.getStatus(),
         domain.getCreatedAt(),

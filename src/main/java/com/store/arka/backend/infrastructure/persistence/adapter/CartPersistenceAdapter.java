@@ -25,26 +25,25 @@ public class CartPersistenceAdapter implements ICartAdapterPort {
   private final IJpaCartRepository jpaCartRepository;
   private final CartMapper mapper;
   private final CartUpdater updater;
-
   @PersistenceContext
   private EntityManager entityManager;
 
   @Override
   @Transactional
   public Cart saveCreateCart(Cart cart) {
-    CartEntity entity = mapper.toEntity(cart);
-    if (entity.getCustomer() != null && entity.getCustomer().getId() != null) {
-      entity.setCustomer(entityManager.getReference(entity.getCustomer().getClass(), entity.getCustomer().getId()));
+    CartEntity cartEntity = mapper.toEntity(cart);
+    if (cartEntity.getCustomer() != null && cartEntity.getCustomer().getId() != null) {
+      cartEntity.setCustomer(entityManager.getReference(cartEntity.getCustomer().getClass(), cartEntity.getCustomer().getId()));
     }
-    if (entity.getItems() != null) {
-      entity.getItems().forEach(item -> {
+    if (cartEntity.getItems() != null) {
+      cartEntity.getItems().forEach(item -> {
         if (item.getProduct() != null && item.getProduct().getId() != null) {
           item.setProduct(entityManager.getReference(item.getProduct().getClass(), item.getProduct().getId()));
         }
-        item.setCart(entity);
+        item.setCart(cartEntity);
       });
     }
-    CartEntity saved = jpaCartRepository.save(entity);
+    CartEntity saved = jpaCartRepository.save(cartEntity);
     entityManager.flush();
     entityManager.refresh(saved);
     return mapper.toDomain(saved);

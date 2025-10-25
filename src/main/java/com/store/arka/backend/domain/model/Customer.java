@@ -37,9 +37,7 @@ public class Customer {
     validateNotNullOrEmpty(phone, "Phone");
     validateNotNullOrEmpty(address, "Address");
     validateNotNullOrEmpty(city, "City");
-    if (country == null) {
-      throw new InvalidArgumentException("Country cannot be null or empty");
-    }
+    if (country == null) throw new InvalidArgumentException("Country cannot be null or empty");
     return new Customer(
         null,
         document,
@@ -64,9 +62,7 @@ public class Customer {
     validateNotNullOrEmpty(address, "Address");
     validateNotNullOrEmpty(city, "City");
     validateNotNullOrEmpty(phone, "Phone");
-    if (country == null) {
-      throw new InvalidArgumentException("Country cannot be null or empty");
-    }
+    if (country == null) throw new InvalidArgumentException("Country cannot be null or empty");
     this.firstName = firstName;
     this.lastName = lastName;
     this.email = email;
@@ -77,9 +73,7 @@ public class Customer {
   }
 
   private static void validateNotNullOrEmpty(String value, String field) {
-    if (value == null || value.trim().isEmpty()) {
-      throw new InvalidArgumentException(field + " cannot be null or empty");
-    }
+    if (value == null || value.trim().isEmpty()) throw new InvalidArgumentException(field + " cannot be null or empty");
   }
 
   public boolean isActive() {

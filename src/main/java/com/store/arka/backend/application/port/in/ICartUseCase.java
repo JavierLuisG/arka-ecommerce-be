@@ -39,7 +39,7 @@ public interface ICartUseCase {
 
   Cart emptyCartItemsById(UUID id);
 
-  void confirmedCartById(UUID id);
+  String checkedOutCartById(UUID id);
 
   void deleteCartById(UUID id);
 }

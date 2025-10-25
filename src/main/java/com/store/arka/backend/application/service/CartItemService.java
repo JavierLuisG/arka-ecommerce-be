@@ -6,6 +6,7 @@ import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.model.CartItem;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ public class CartItemService implements ICartItemUseCase {
   }
 
   @Override
+  @Transactional
   public CartItem getCartItemById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return cartItemAdapterPort.findCartItemById(id)
@@ -31,11 +33,13 @@ public class CartItemService implements ICartItemUseCase {
   }
 
   @Override
+  @Transactional
   public List<CartItem> getAllCartItems() {
     return cartItemAdapterPort.findAllCartItems();
   }
 
   @Override
+  @Transactional
   public List<CartItem> getAllCartItemsByProductId(UUID productId) {
     return cartItemAdapterPort.findAllCartItemsByProductId(productId);
   }
@@ -54,11 +58,5 @@ public class CartItemService implements ICartItemUseCase {
     CartItem found = getCartItemById(id);
     found.updateQuantity(quantity);
     return cartItemAdapterPort.saveUpdateCartItem(found);
-  }
-
-  @Override
-  public void deleteCartItemById(UUID id) {
-    CartItem found = getCartItemById(id);
-    cartItemAdapterPort.deleteCartItemById(found.getId());
   }
 }

@@ -3,7 +3,7 @@ package com.store.arka.backend.infrastructure.web.dto.product.response;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public record ProductResponseToCartDto(
+public record ProductResponseToOrderDto(
     UUID id,
     String sku,
     String name,

@@ -40,9 +40,7 @@ public class Category {
   }
 
   private static void validateNotNullOrEmpty(String value, String field) {
-    if (value == null || value.trim().isEmpty()) {
-      throw new InvalidArgumentException(field + " cannot be null or empty");
-    }
+    if (value == null || value.trim().isEmpty()) throw new InvalidArgumentException(field + " cannot be null or empty");
   }
 
   public boolean isNotDeleted() {
@@ -50,16 +48,12 @@ public class Category {
   }
 
   public void delete() {
-    if (!isNotDeleted()) {
-      throw new ModelDeletionException("Category already deleted previously");
-    }
+    if (!isNotDeleted()) throw new ModelDeletionException("Category already deleted previously");
     this.status = CategoryStatus.ELIMINATED;
   }
 
   public void restore() {
-    if (isNotDeleted()) {
-      throw new ModelActivationException("Category already active previously");
-    }
+    if (isNotDeleted()) throw new ModelActivationException("Category already active previously");
     this.status = CategoryStatus.ACTIVE;
   }
 }

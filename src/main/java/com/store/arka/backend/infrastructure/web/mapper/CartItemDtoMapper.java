@@ -17,7 +17,7 @@ public class CartItemDtoMapper {
   public CartItemResponseDto toDto(CartItem domain) {
     return new CartItemResponseDto(
         domain.getId(),
-        productDtoMapper.toCartDto(domain.getProduct()),
+        productDtoMapper.toOrderDto(domain.getProduct()),
         domain.getQuantity(),
         domain.getAddedAt()
     );
@@ -42,7 +42,7 @@ public class CartItemDtoMapper {
     listDomain.forEach(domain -> {
       response.add(new CartItemResponseDto(
           domain.getId(),
-          productDtoMapper.toCartDto(domain.getProduct()),
+          productDtoMapper.toOrderDto(domain.getProduct()),
           domain.getQuantity(),
           domain.getAddedAt()
       ));

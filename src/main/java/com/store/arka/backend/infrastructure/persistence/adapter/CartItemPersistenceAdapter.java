@@ -45,9 +45,13 @@ public class CartItemPersistenceAdapter implements ICartItemAdapterPort {
 
   @Override
   public CartItem saveUpdateCartItem(CartItem cartItem) {
-    CartItemEntity entity = jpaCartItemRepository.findById(cartItem.getId())
+    CartItemEntity cartItemEntity = jpaCartItemRepository.findById(cartItem.getId())
         .orElseThrow(() -> new ModelNotFoundException("CartItem with id " + cartItem.getId() + " not found"));
-    return mapper.toDomain(jpaCartItemRepository.save(updater.merge(entity, cartItem)));
+    CartItemEntity updated = updater.merge(cartItemEntity, cartItem);
+    CartItemEntity saved = jpaCartItemRepository.save(updated);
+    entityManager.flush();
+    entityManager.refresh(saved);
+    return mapper.toDomain(saved);
   }
 
   @Override

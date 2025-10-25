@@ -56,7 +56,7 @@ public class CartController {
   }
 
   @GetMapping("/id/{id}/customer/{customerId}/status/{status}")
-  public ResponseEntity<CartResponseDto> getCartByCustomerIdAndStatus(
+  public ResponseEntity<CartResponseDto> getCartByIdAndCustomerIdAndStatus(
       @PathVariable("id") String id,
       @PathVariable("customerId") String customerId,
       @PathVariable("status") String status) {
@@ -162,11 +162,12 @@ public class CartController {
     return ResponseEntity.ok(mapper.toDto(cartUseCase.emptyCartItemsById(uuid)));
   }
 
-  @PutMapping("/id/{id}/confirm")
-  public ResponseEntity<MessageResponseDto> confirmCartById(@PathVariable("id") String id) {
+  @PutMapping("/id/{id}/checkedOut")
+  public ResponseEntity<MessageResponseDto> checkedOutCartById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    cartUseCase.confirmedCartById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Cart has been successfully confirmed with id: " + id));
+    String response = cartUseCase.checkedOutCartById(uuid);
+    return ResponseEntity.ok(new MessageResponseDto("Cart has been successfully confirmed with id: " + id + ". " +
+        "Order created whit id: " + response));
   }
 
   @DeleteMapping("/id/{id}")

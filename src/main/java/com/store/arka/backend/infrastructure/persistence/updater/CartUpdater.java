@@ -20,9 +20,9 @@ public class CartUpdater {
       entity.setStatus(domain.getStatus());
     }
     // remove excess items to return -> the allItems
-    List<CartItemEntity> domainItems = cartItemMapper.toEntity(domain.getItems());
+    List<CartItemEntity> entityList = cartItemMapper.toEntity(domain.getItems());
     entity.getItems().removeIf(existingItem ->
-        domainItems.stream().noneMatch(newItem ->
+        entityList.stream().noneMatch(newItem ->
             newItem.getId() != null && newItem.getId().equals(existingItem.getId()))
     );
     return entity;

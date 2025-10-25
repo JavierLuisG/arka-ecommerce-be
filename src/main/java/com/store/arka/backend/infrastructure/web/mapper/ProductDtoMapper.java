@@ -4,7 +4,7 @@ import com.store.arka.backend.domain.model.Product;
 import com.store.arka.backend.infrastructure.web.dto.product.request.CreateProductDto;
 import com.store.arka.backend.infrastructure.web.dto.product.request.UpdateFieldsProductDto;
 import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseDto;
-import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseToCartDto;
+import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseToOrderDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -60,8 +60,8 @@ public class ProductDtoMapper {
     );
   }
 
-  public ProductResponseToCartDto toCartDto(Product domain) {
-    return new ProductResponseToCartDto(
+  public ProductResponseToOrderDto toOrderDto(Product domain) {
+    return new ProductResponseToOrderDto(
         domain.getId(),
         domain.getSku(),
         domain.getName(),

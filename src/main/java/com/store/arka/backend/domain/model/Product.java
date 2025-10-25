@@ -32,9 +32,7 @@ public class Product {
     validateNotNullOrEmpty(sku, "SKU");
     validatePrice(price);
     ProductStatus assignStatus = ProductStatus.ACTIVE;
-    if (!validateStock(stock)) {
-      assignStatus = ProductStatus.EXHAUSTED;
-    }
+    if (!validateStock(stock)) assignStatus = ProductStatus.EXHAUSTED;
     return new Product(
         null,
         sku,
@@ -63,28 +61,18 @@ public class Product {
   }
 
   private static boolean validateStock(Integer stock) {
-    if (stock == null) {
-      throw new InvalidArgumentException("Stock cannot be null");
-    }
-    if (stock < 0) {
-      throw new InvalidArgumentException("Stock cannot be less than 0");
-    }
+    if (stock == null) throw new InvalidArgumentException("Stock cannot be null");
+    if (stock < 0) throw new InvalidArgumentException("Stock cannot be less than 0");
     return stock > 0;
   }
 
   private static void validatePrice(BigDecimal price) {
-    if (price == null) {
-      throw new InvalidArgumentException("Price cannot be null");
-    }
-    if (price.signum() <= 0) {
-      throw new InvalidArgumentException("Price cannot be less than 0");
-    }
+    if (price == null) throw new InvalidArgumentException("Price cannot be null");
+    if (price.signum() <= 0) throw new InvalidArgumentException("Price cannot be less than 0");
   }
 
   private static void validateNotNullOrEmpty(String value, String field) {
-    if (value == null || value.trim().isEmpty()) {
-      throw new InvalidArgumentException(field + " cannot be null or empty");
-    }
+    if (value == null || value.trim().isEmpty()) throw new InvalidArgumentException(field + " cannot be null or empty");
   }
 
   public boolean isNotDeleted() {
@@ -96,36 +84,22 @@ public class Product {
   }
 
   public void validateAvailability(int quantity) {
-    if (quantity <= 0) {
-      throw new QuantityBadRequestException("Quantity must be greater than 0");
-    }
-    if (this.stock < quantity) {
-      throw new QuantityBadRequestException("Stock must be greater than or equal to quantity");
-    }
-    if (!isNotDeleted()) {
-      throw new ModelNotAvailableException("Product is not active");
-    }
+    if (quantity <= 0) throw new QuantityBadRequestException("Quantity must be greater than 0");
+    if (this.stock < quantity) throw new QuantityBadRequestException("Stock must be greater than or equal to quantity");
+    if (!isNotDeleted()) throw new ModelNotAvailableException("Product is not active");
   }
 
   public void decreaseStock(int quantity) {
     validateAvailability(quantity);
     this.stock -= quantity;
-    if (this.stock == 0) {
-      this.status = ProductStatus.EXHAUSTED;
-    }
+    if (this.stock == 0) this.status = ProductStatus.EXHAUSTED;
   }
 
   public void increaseStock(int quantity) {
-    if (this.status == ProductStatus.ELIMINATED) {
-      throw new ModelDeletionException("Product deleted previously");
-    }
-    if (quantity <= 0) {
-      throw new QuantityBadRequestException("Quantity must be greater than 0");
-    }
+    if (this.status == ProductStatus.ELIMINATED) throw new ModelDeletionException("Product deleted previously");
+    if (quantity <= 0) throw new QuantityBadRequestException("Quantity must be greater than 0");
     this.stock += quantity;
-    if (this.status == ProductStatus.EXHAUSTED) {
-      this.status = ProductStatus.ACTIVE;
-    }
+    if (this.status == ProductStatus.EXHAUSTED) this.status = ProductStatus.ACTIVE;
   }
 
   public boolean lowStock() {
@@ -133,16 +107,12 @@ public class Product {
   }
 
   public void delete() {
-    if (!isNotDeleted()) {
-      throw new ModelDeletionException("Product already deleted previously");
-    }
+    if (!isNotDeleted()) throw new ModelDeletionException("Product already deleted previously");
     this.status = ProductStatus.ELIMINATED;
   }
 
   public void restore() {
-    if (isNotDeleted()) {
-      throw new ModelActivationException("Product already active previously");
-    }
+    if (isNotDeleted()) throw new ModelActivationException("Product already active previously");
     if (this.stock == 0) {
       this.status = ProductStatus.EXHAUSTED;
     } else {

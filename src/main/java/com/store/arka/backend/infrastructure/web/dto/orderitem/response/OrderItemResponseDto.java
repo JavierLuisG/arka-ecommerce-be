@@ -1,14 +1,17 @@
-package com.store.arka.backend.infrastructure.web.dto.cartitem.response;
+package com.store.arka.backend.infrastructure.web.dto.orderitem.response;
 
 import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseToOrderDto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record CartItemResponseDto(
+public record OrderItemResponseDto(
     UUID id,
     ProductResponseToOrderDto product,
     Integer quantity,
-    LocalDateTime addedAt
+    BigDecimal productPrice,
+    BigDecimal subtotal,
+    LocalDateTime createdAt
 ) {
 }
