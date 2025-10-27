@@ -22,7 +22,7 @@ public final class ValidateAttributesUtils {
 
   public static void validateQuantity(Integer quantity) {
     if (quantity == null) {
-      throw new InvalidArgumentException("Quantity in Cart is required");
+      throw new InvalidArgumentException("Quantity is required, cannot be null");
     }
     if (quantity <= 0) {
       throw new QuantityBadRequestException("Quantity must be greater than 0");

@@ -32,9 +32,7 @@ public class CartService implements ICartUseCase {
     List<CartItem> cartItems = new ArrayList<>();
     cart.getItems().forEach(item -> {
       Product productFound = findProductOrThrow(item.getProductId());
-      if (!productFound.isAvailable(item.getQuantity())) {
-        throw new ModelNotAvailableException("Product with id " + item.getProductId() + " does not have sufficient stock");
-      }
+      productFound.validateAvailability(item.getQuantity());
       cartItems.add(CartItem.create(productFound, item.getQuantity()));
     });
     Cart created = Cart.create(customerFound, cartItems);

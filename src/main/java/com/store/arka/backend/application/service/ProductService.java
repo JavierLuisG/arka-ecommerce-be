@@ -154,4 +154,10 @@ public class ProductService implements IProductUseCase {
     found.restore();
     return productAdapterPort.saveUpdateProduct(found);
   }
+
+  @Override
+  public void validateAvailabilityOrThrow(UUID id, Integer quantity) {
+    Product found = getProductById(id);
+    found.validateAvailability(quantity);
+  }
 }

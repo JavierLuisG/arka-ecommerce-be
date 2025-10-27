@@ -30,12 +30,13 @@ public class OrderService implements IOrderUseCase {
   @Override
   @Transactional
   public Order createOrder(UUID cartId) {
+    if (orderAdapterPort.existsByCartId(cartId)) throw new BusinessException("An order already exists for this Cart");
     Cart cartFound = findCartOrThrow(cartId);
     if (cartFound.getItems().isEmpty()) throw new ItemsEmptyException("Cart items in Order cannot be empty");
-    if (orderAdapterPort.existsByCartId(cartId)) throw new BusinessException("An order already exists for this Cart");
     Customer customerFound = findCustomerOrThrow(cartFound.getCustomer().getId());
     List<OrderItem> orderItems = new ArrayList<>();
     cartFound.getItems().forEach(cartItem -> {
+      productUseCase.validateAvailabilityOrThrow(cartItem.getProductId(), cartItem.getQuantity());
       orderItems.add(OrderItem.create(cartItem.getProduct(), cartItem.getQuantity()));
     });
     Order created = Order.create(cartId, customerFound, orderItems);
@@ -135,8 +136,9 @@ public class OrderService implements IOrderUseCase {
     Product productFound = findProductOrThrow(productId);
     orderFound.ensureOrderIsModifiable();
     if (orderFound.containsProduct(productId)) {
-      OrderItem orderItem = findOrderItemInOrderOrThrow(productId, orderFound);
+      OrderItem orderItem = findOrderItemOrThrow(productId, orderFound);
       orderItemUseCase.addQuantityById(orderItem.getId(), quantity);
+      orderFound = getOrderById(id);
     } else {
       OrderItem newItem = OrderItem.create(productFound, quantity);
       orderFound.getItems().add(newItem);
@@ -149,14 +151,14 @@ public class OrderService implements IOrderUseCase {
   @Override
   @Transactional
   public Order updateOrderItemQuantityById(UUID id, UUID productId, Integer quantity) {
-    ValidateAttributesUtils.validateQuantity(quantity);
+    productUseCase.validateAvailabilityOrThrow(productId, quantity);
     Order orderFound = getOrderById(id);
     Product productFound = findProductOrThrow(productId);
     orderFound.ensureOrderIsModifiable();
     if (!orderFound.containsProduct(productFound.getId())) {
       throw new ProductNotFoundInOrderException("Product not found in Order id " + orderFound.getId());
     }
-    OrderItem orderItem = findOrderItemInOrderOrThrow(productFound.getId(), orderFound);
+    OrderItem orderItem = findOrderItemOrThrow(productFound.getId(), orderFound);
     orderItemUseCase.updateQuantity(orderItem.getId(), quantity);
     Order orderUpdated = getOrderById(id);
     orderUpdated.recalculateTotal();
@@ -180,6 +182,8 @@ public class OrderService implements IOrderUseCase {
   @Transactional
   public void confirmOrderById(UUID id) {
     Order orderFound = getOrderById(id);
+    orderFound.getItems()
+        .forEach(orderItem -> productUseCase.decreaseStock(orderItem.getProductId(), orderItem.getQuantity()));
     orderFound.confirm();
     orderAdapterPort.saveUpdateOrder(orderFound);
   }
@@ -212,6 +216,8 @@ public class OrderService implements IOrderUseCase {
   @Transactional
   public void cancelOrderById(UUID id) {
     Order orderFound = getOrderById(id);
+    orderFound.getItems()
+        .forEach(orderItem -> productUseCase.increaseStock(orderItem.getProductId(), orderItem.getQuantity()));
     orderFound.cancel();
     orderAdapterPort.saveUpdateOrder(orderFound);
   }
@@ -232,7 +238,7 @@ public class OrderService implements IOrderUseCase {
     return productUseCase.getProductByIdAndStatus(productId, ProductStatus.ACTIVE);
   }
 
-  private static OrderItem findOrderItemInOrderOrThrow(UUID productId, Order orderFound) {
+  private static OrderItem findOrderItemOrThrow(UUID productId, Order orderFound) {
     return orderFound.getItems()
         .stream()
         .filter(item -> item.getProductId().equals(productId))

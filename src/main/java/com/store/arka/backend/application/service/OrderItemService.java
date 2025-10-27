@@ -1,6 +1,7 @@
 package com.store.arka.backend.application.service;
 
 import com.store.arka.backend.application.port.in.IOrderItemUseCase;
+import com.store.arka.backend.application.port.in.IProductUseCase;
 import com.store.arka.backend.application.port.out.IOrderItemAdapterPort;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.exception.ModelNullException;
@@ -17,10 +18,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderItemService implements IOrderItemUseCase {
   private final IOrderItemAdapterPort orderItemAdapterPort;
+  private final IProductUseCase productUseCase;
 
   @Override
   public OrderItem addOrderItem(UUID orderId, OrderItem orderItem) {
     if (orderItem == null) throw new ModelNullException("CartItem cannot be null");
+    productUseCase.validateAvailabilityOrThrow(orderItem.getProductId(), orderItem.getQuantity());
     return orderItemAdapterPort.saveAddOrderItem(orderId, orderItem);
   }
 
@@ -49,6 +52,7 @@ public class OrderItemService implements IOrderItemUseCase {
     ValidateAttributesUtils.validateQuantity(quantity);
     OrderItem found = getOrderItemById(id);
     found.addQuantity(quantity);
+    productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
     return orderItemAdapterPort.saveUpdateOrderItem(found);
   }
 

@@ -2,6 +2,7 @@ package com.store.arka.backend.domain.model;
 
 import com.store.arka.backend.domain.enums.ProductStatus;
 import com.store.arka.backend.domain.exception.*;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -82,8 +83,10 @@ public class Product {
   }
 
   public void validateAvailability(int quantity) {
-    if (quantity <= 0) throw new QuantityBadRequestException("Quantity must be greater than 0");
-    if (this.stock < quantity) throw new QuantityBadRequestException("Stock must be greater than or equal to quantity");
+    ValidateAttributesUtils.validateQuantity(quantity);
+    if (this.stock < quantity) {
+      throw new QuantityBadRequestException("Product with id " + this.id + " does not have sufficient stock");
+    }
     if (!isNotDeleted()) throw new ModelNotAvailableException("Product is not active");
   }
 
@@ -95,7 +98,7 @@ public class Product {
 
   public void increaseStock(int quantity) {
     if (this.status == ProductStatus.ELIMINATED) throw new ModelDeletionException("Product deleted previously");
-    if (quantity <= 0) throw new QuantityBadRequestException("Quantity must be greater than 0");
+    ValidateAttributesUtils.validateQuantity(quantity);
     this.stock += quantity;
     if (this.status == ProductStatus.EXHAUSTED) this.status = ProductStatus.ACTIVE;
   }

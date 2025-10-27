@@ -33,4 +33,6 @@ public interface IProductUseCase {
   void deleteProductById(UUID id);
 
   Product restoreProductBySku(String sku);
+
+  void validateAvailabilityOrThrow(UUID id, Integer quantity);
 }
