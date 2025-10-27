@@ -13,12 +13,17 @@ public record CreateCustomerDto(
     @Size(min = 1, max = 50, message = "First name must be between 1 and 50 characters")
     @Pattern(
         regexp = "^(?!.* {2,})[A-Za-zÑñ0-9 _-]+$",
-        message = "Name can only contain letters (A-Z,a-z) including Ñ/ñ, numbers, single spaces, underscores or hyphens;" +
+        message = "First name can only contain letters (A-Z,a-z) including Ñ/ñ, numbers, single spaces, underscores or hyphens;" +
             " multiple consecutive spaces and accented letters are NOT allowed."
     )
     String firstName,
     @NotBlank(message = "Last name is required")
     @Size(min = 1, max = 50, message = "Last name must be between 1 and 50 characters")
+    @Pattern(
+        regexp = "^(?!.* {2,})[A-Za-zÑñ0-9 _-]+$",
+        message = "Last name can only contain letters (A-Z,a-z) including Ñ/ñ, numbers, single spaces, underscores or hyphens;" +
+            " multiple consecutive spaces and accented letters are NOT allowed."
+    )
     String lastName,
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
@@ -31,10 +36,10 @@ public record CreateCustomerDto(
     )
     String phone,
     @NotBlank(message = "Address is required")
-    @Size(min = 10, max = 100, message = "Address must be between 10 and 100 characters")
+    @Size(min = 10, max = 150, message = "Address must be between 10 and 150 characters")
     String address,
     @NotBlank(message = "City is required")
-    @Size(min = 5, max = 50, message = "City must be between 5 and 50 characters")
+    @Size(min = 5, max = 100, message = "City must be between 5 and 100 characters")
     String city,
     @NotNull(message = "Country is required")
     Country country

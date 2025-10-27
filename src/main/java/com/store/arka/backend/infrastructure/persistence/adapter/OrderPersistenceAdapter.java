@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -80,17 +81,18 @@ public class OrderPersistenceAdapter implements IOrderAdapterPort {
 
   @Override
   public List<Order> findAllOrders() {
-    return jpaOrderRepository.findAll().stream().map(mapper::toDomain).toList();
+    return jpaOrderRepository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 
   @Override
   public List<Order> findAllOrdersByStatus(OrderStatus status) {
-    return jpaOrderRepository.findAllByStatus(status).stream().map(mapper::toDomain).toList();
+    return jpaOrderRepository.findAllByStatus(status).stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 
   @Override
   public List<Order> findAllOrdersByCustomerId(UUID customerId) {
-    return jpaOrderRepository.findAllByCustomerId(customerId).stream().map(mapper::toDomain).toList();
+    return jpaOrderRepository.findAllByCustomerId(customerId)
+        .stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 
   @Override
@@ -100,19 +102,21 @@ public class OrderPersistenceAdapter implements IOrderAdapterPort {
 
   @Override
   public List<Order> findAllOrdersByItemsProductId(UUID productId) {
-    return jpaOrderRepository.findAllByItemsProductId(productId).stream().map(mapper::toDomain).toList();
+    return jpaOrderRepository.findAllByItemsProductId(productId)
+        .stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 
   @Override
   public List<Order> findAllOrdersByItemsProductIdAndStatus(UUID productId, OrderStatus status) {
     return jpaOrderRepository.findAllByItemsProductIdAndStatus(productId, status)
-        .stream().map(mapper::toDomain).toList();
+        .stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 
   @Override
-  public List<Order> findAllOrdersByCustomerIdAndItemsProductIdAndStatus(UUID customerId, UUID productId, OrderStatus status) {
+  public List<Order> findAllOrdersByCustomerIdAndItemsProductIdAndStatus(
+      UUID customerId, UUID productId, OrderStatus status) {
     return jpaOrderRepository.findAllByCustomerIdAndItemsProductIdAndStatus(customerId, productId, status)
-        .stream().map(mapper::toDomain).toList();
+        .stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 
   @Override

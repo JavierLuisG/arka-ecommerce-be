@@ -110,8 +110,8 @@ public class CustomerService implements ICustomerUseCase {
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, customer.getCountry().toString(), "Country");
     if (customerAdapterPort.existsCustomerByEmail(normalizedEmail)
-        && !found.getEmail().equals(customer.getEmail())) {
-      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exist");
+        && !found.getEmail().equals(normalizedEmail)) {
+      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exist in Customer");
     }
     found.updateFields(
         normalizedFirstName,

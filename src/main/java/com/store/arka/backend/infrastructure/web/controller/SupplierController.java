@@ -1,0 +1,106 @@
+package com.store.arka.backend.infrastructure.web.controller;
+
+import com.store.arka.backend.application.port.in.ISupplierUseCase;
+import com.store.arka.backend.domain.enums.SupplierStatus;
+import com.store.arka.backend.infrastructure.web.dto.MessageResponseDto;
+import com.store.arka.backend.infrastructure.web.dto.supplier.request.SupplierDto;
+import com.store.arka.backend.infrastructure.web.dto.supplier.response.SupplierResponseDto;
+import com.store.arka.backend.infrastructure.web.mapper.SupplierDtoMapper;
+import com.store.arka.backend.shared.util.PathUtils;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/suppliers")
+public class SupplierController {
+  private final ISupplierUseCase supplierUseCase;
+  private final SupplierDtoMapper mapper;
+
+  @PostMapping
+  public ResponseEntity<SupplierResponseDto> postSupplier(@RequestBody @Valid SupplierDto dto) {
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(mapper.toDto(supplierUseCase.createSupplier(mapper.toDomain(dto))));
+  }
+
+  @GetMapping("/id/{id}")
+  public ResponseEntity<SupplierResponseDto> getSupplierById(@PathVariable("id") String id) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierById(uuid)));
+  }
+
+  @GetMapping("/id/{id}/status/{status}")
+  public ResponseEntity<SupplierResponseDto> getSupplierByIdAndStatus(
+      @PathVariable("id") String id,
+      @PathVariable("status") String status) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    SupplierStatus statusEnum = PathUtils.validateEnumOrThrow(SupplierStatus.class, status, "SupplierStatus");
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByIdAndStatus(uuid, statusEnum)));
+  }
+
+  @GetMapping("/email/{email}")
+  public ResponseEntity<SupplierResponseDto> getSupplierByEmail(@PathVariable("email") String email) {
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByEmail(email)));
+  }
+
+  @GetMapping("/email/{email}/status/{status}")
+  public ResponseEntity<SupplierResponseDto> getSupplierByEmailAndStatus(
+      @PathVariable("email") String email,
+      @PathVariable("status") String status) {
+    SupplierStatus statusEnum = PathUtils.validateEnumOrThrow(SupplierStatus.class, status, "SupplierStatus");
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByEmailAndStatus(email, statusEnum)));
+  }
+
+  @GetMapping("/tax/{tax}")
+  public ResponseEntity<SupplierResponseDto> getSupplierByTaxId(@PathVariable("tax") String tax) {
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByTaxId(tax)));
+  }
+
+  @GetMapping("/tax/{tax}/status/{status}")
+  public ResponseEntity<SupplierResponseDto> getSupplierByTaxIdAndStatus(
+      @PathVariable("tax") String tax,
+      @PathVariable("status") String status) {
+    SupplierStatus statusEnum = PathUtils.validateEnumOrThrow(SupplierStatus.class, status, "SupplierStatus");
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByTaxIdAndStatus(tax, statusEnum)));
+  }
+
+  @GetMapping
+  public ResponseEntity<List<SupplierResponseDto>> getAllSuppliers() {
+    return ResponseEntity.ok(
+        supplierUseCase.getAllSuppliers().stream().map(mapper::toDto).collect(Collectors.toList()));
+  }
+
+  @GetMapping("/status/{status}")
+  public ResponseEntity<List<SupplierResponseDto>> getAllSuppliersByStatus(@PathVariable("status") String status) {
+    SupplierStatus statusEnum = PathUtils.validateEnumOrThrow(SupplierStatus.class, status, "SupplierStatus");
+    return ResponseEntity.ok(
+        supplierUseCase.getAllSuppliersByStatus(statusEnum).stream().map(mapper::toDto).collect(Collectors.toList()));
+  }
+
+  @PutMapping("/id/{id}")
+  public ResponseEntity<SupplierResponseDto> putSupplierById(
+      @PathVariable("id") String id,
+      @RequestBody @Valid SupplierDto dto) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.updateFieldsSupplier(uuid, mapper.toDomain(dto))));
+  }
+
+  @DeleteMapping("/id/{id}")
+  public ResponseEntity<MessageResponseDto> deleteSupplierById(@PathVariable("id") String id) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    supplierUseCase.deleteSupplierById(uuid);
+    return ResponseEntity.ok(new MessageResponseDto("Supplier with id " + id + " eliminated successfully"));
+  }
+
+  @PutMapping("/email/{email}/restore")
+  public ResponseEntity<SupplierResponseDto> restoreSupplierByEmail(@PathVariable("email") String email) {
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.restoreSupplierByEmail(email)));
+  }
+}

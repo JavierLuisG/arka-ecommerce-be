@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -59,11 +60,11 @@ public class OrderItemPersistenceAdapter implements IOrderItemAdapterPort {
 
   @Override
   public List<OrderItem> findAllOrderItems() {
-    return jpaOrderItemRepository.findAll().stream().map(mapper::toDomain).toList();
+    return jpaOrderItemRepository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 
   @Override
   public List<OrderItem> findAllOrderItemsByProductId(UUID productId) {
-    return jpaOrderItemRepository.findAllByProductId(productId).stream().map(mapper::toDomain).toList();
+    return jpaOrderItemRepository.findAllByProductId(productId).stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 }
