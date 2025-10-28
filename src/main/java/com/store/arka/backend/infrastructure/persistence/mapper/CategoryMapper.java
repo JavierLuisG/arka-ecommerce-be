@@ -2,6 +2,8 @@ package com.store.arka.backend.infrastructure.persistence.mapper;
 
 import com.store.arka.backend.domain.model.Category;
 import com.store.arka.backend.infrastructure.persistence.entity.CategoryEntity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -10,6 +12,9 @@ import java.util.Set;
 
 @Component
 public class CategoryMapper {
+  @PersistenceContext
+  private EntityManager entityManager;
+
   public Category toDomain(CategoryEntity entity) {
     if (entity == null) return null;
     return new Category(
@@ -39,9 +44,9 @@ public class CategoryMapper {
     if (domain == null) return null;
     Set<CategoryEntity> entities = new HashSet<>();
     domain.forEach(category -> {
-      CategoryEntity entity = new CategoryEntity();
-      entity.setId(category.getId());
-      entities.add(entity);
+      if (category.getId() != null) {
+        entities.add(entityManager.getReference(CategoryEntity.class, category.getId()));
+      }
     });
     return entities;
   }

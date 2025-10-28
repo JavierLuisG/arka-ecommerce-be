@@ -2,6 +2,8 @@ package com.store.arka.backend.infrastructure.persistence.mapper;
 
 import com.store.arka.backend.domain.model.Customer;
 import com.store.arka.backend.infrastructure.persistence.entity.CustomerEntity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CustomerMapper {
   private final DocumentMapper documentMapper;
+  @PersistenceContext
+  private EntityManager entityManager;
 
   public Customer toDomain(CustomerEntity entity) {
     if (entity == null) return null;
@@ -48,8 +52,6 @@ public class CustomerMapper {
 
   public CustomerEntity toReference(Customer domain) {
     if (domain == null) return null;
-    CustomerEntity entity = new CustomerEntity();
-    entity.setId(domain.getId());
-    return entity;
+    return entityManager.getReference(CustomerEntity.class, domain.getId());
   }
 }

@@ -2,6 +2,8 @@ package com.store.arka.backend.infrastructure.persistence.mapper;
 
 import com.store.arka.backend.domain.model.Supplier;
 import com.store.arka.backend.infrastructure.persistence.entity.SupplierEntity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +13,8 @@ import java.util.ArrayList;
 @RequiredArgsConstructor
 public class SupplierMapper {
   private final ProductMapper productMapper;
+  @PersistenceContext
+  private EntityManager entityManager;
 
   public Supplier toDomain(SupplierEntity entity) {
     if (entity == null) return null;
@@ -56,8 +60,6 @@ public class SupplierMapper {
 
   public SupplierEntity toReference(Supplier domain) {
     if (domain == null) return null;
-    SupplierEntity entity = new SupplierEntity();
-    entity.setId(domain.getId());
-    return entity;
+    return entityManager.getReference(SupplierEntity.class, domain.getId());
   }
 }
