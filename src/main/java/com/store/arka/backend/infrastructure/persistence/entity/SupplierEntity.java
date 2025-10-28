@@ -9,6 +9,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -42,6 +44,13 @@ public class SupplierEntity {
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private Country country;
+  @ManyToMany
+  @JoinTable(
+      name = "supplier_products",
+      joinColumns = @JoinColumn(name = "supplier_id"),
+      inverseJoinColumns = @JoinColumn(name = "product_id")
+  )
+  private List<ProductEntity> products = new ArrayList<>();
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private SupplierStatus status;

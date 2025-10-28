@@ -5,10 +5,13 @@ import com.store.arka.backend.infrastructure.web.dto.product.request.CreateProdu
 import com.store.arka.backend.infrastructure.web.dto.product.request.UpdateFieldsProductDto;
 import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseToOrderDto;
+import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseToSupplierDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -16,6 +19,7 @@ public class ProductDtoMapper {
   private final CategoryDtoMapper categoryMapper;
 
   public Product toDomain(CreateProductDto dto) {
+    if (dto == null) return null;
     return new Product(
         null,
         dto.sku(),
@@ -31,8 +35,9 @@ public class ProductDtoMapper {
   }
 
   public Product toDomain(UpdateFieldsProductDto dto) {
+    if (dto == null) return null;
     return new Product(
-      null,
+        null,
         null,
         dto.name(),
         dto.description(),
@@ -46,6 +51,7 @@ public class ProductDtoMapper {
   }
 
   public ProductResponseDto toDto(Product domain) {
+    if (domain == null) return null;
     return new ProductResponseDto(
         domain.getId(),
         domain.getSku(),
@@ -61,6 +67,7 @@ public class ProductDtoMapper {
   }
 
   public ProductResponseToOrderDto toOrderDto(Product domain) {
+    if (domain == null) return null;
     return new ProductResponseToOrderDto(
         domain.getId(),
         domain.getSku(),
@@ -68,5 +75,18 @@ public class ProductDtoMapper {
         domain.getDescription(),
         domain.getPrice()
     );
+  }
+
+  public List<ProductResponseToSupplierDto> toSupplierDto(List<Product> listDomain) {
+    if (listDomain == null) return Collections.emptyList();
+    List<ProductResponseToSupplierDto> dtoList = new ArrayList<>();
+    listDomain.forEach(domain -> {
+      dtoList.add(new ProductResponseToSupplierDto(
+          domain.getId(),
+          domain.getSku(),
+          domain.getName()
+      ));
+    });
+    return dtoList;
   }
 }

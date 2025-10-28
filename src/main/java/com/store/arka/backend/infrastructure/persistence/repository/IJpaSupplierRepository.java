@@ -19,7 +19,11 @@ public interface IJpaSupplierRepository extends JpaRepository<SupplierEntity, UU
 
   Optional<SupplierEntity> findByTaxIdAndStatus(String taxId, SupplierStatus status);
 
+  Optional<SupplierEntity> findByIdAndProductsIdAndStatus(UUID id, UUID productId, SupplierStatus status);
+
   List<SupplierEntity> findAllByStatus(SupplierStatus status);
+
+  List<SupplierEntity> findAllByProductsIdAndStatus(UUID productId, SupplierStatus status);
 
   boolean existsByEmail(String email);
 

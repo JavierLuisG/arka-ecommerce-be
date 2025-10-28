@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -23,6 +25,7 @@ public class Supplier {
   private String address;
   private String city;
   private Country country;
+  private List<Product> products;
   private SupplierStatus status;
   private final LocalDateTime createdAt;
   private LocalDateTime updatedAt;
@@ -47,15 +50,18 @@ public class Supplier {
         address,
         city,
         country,
+        new ArrayList<>(),
         SupplierStatus.ACTIVE,
         null,
         null
     );
   }
 
-  public void updateFields(String commercialName, String contactName, String email, String phone, String taxId,String address, String city,
+  public void updateFields(String commercialName, String contactName, String email, String phone, String taxId, String address, String city,
                            Country country) {
+    if (!isActive()) throw new ModelDeletionException("Supplier already deleted previously");
     validateNotNullOrEmpty(commercialName, "Commercial name");
+    validateNotNullOrEmpty(contactName, "Contact name");
     validateNotNullOrEmpty(email, "Email");
     validateNotNullOrEmpty(phone, "Phone");
     validateNotNullOrEmpty(taxId, "Tax id");
@@ -80,12 +86,26 @@ public class Supplier {
     return this.status == SupplierStatus.ACTIVE;
   }
 
+  public boolean containsProduct(UUID productId) {
+    return products.stream().anyMatch(product -> product.getId().equals(productId));
+  }
+
+  public void addProduct(Product product) {
+    if (!isActive()) throw new ModelDeletionException("Supplier already deleted previously");
+    if (product == null) throw new InvalidArgumentException("Product cannot be null");
+    if (containsProduct(product.getId())) throw new InvalidArgumentException("Product already added to supplier");
+    products.add(product);
+  }
+
+  public void removeProduct(Product product) {
+    if (!isActive()) throw new ModelDeletionException("Supplier already deleted previously");
+    if (!containsProduct(product.getId())) throw new InvalidArgumentException("Product not found in supplier");
+    products.remove(product);
+  }
+
   public void delete() {
-    if (isActive()) {
-      this.status = SupplierStatus.ELIMINATED;
-    } else {
-      throw new ModelDeletionException("Supplier already deleted previously");
-    }
+    if (!isActive()) throw new ModelDeletionException("Supplier already deleted previously");
+    this.status = SupplierStatus.ELIMINATED;
   }
 
   public void restore() {

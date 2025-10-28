@@ -19,7 +19,7 @@ public class OrderUpdater {
       entity.setTotal(domain.getTotal());
     if (domain.getStatus() != null && !entity.getStatus().equals(domain.getStatus()))
       entity.setStatus(domain.getStatus());
-    // remove excess items to return -> the allItems
+    // remove excess items to return
     List<OrderItemEntity> entityList = orderItemMapper.toEntity(domain.getItems());
     entity.getItems().removeIf(existingItem ->
         entityList.stream().noneMatch(newItem ->

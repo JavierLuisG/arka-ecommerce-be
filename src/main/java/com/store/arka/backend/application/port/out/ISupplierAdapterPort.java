@@ -8,10 +8,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ISupplierAdapterPort {
-  Supplier saveSupplier(Supplier supplier);
-//  Supplier saveCreateSupplier(Supplier supplier);
+  Supplier saveCreateSupplier(Supplier supplier);
 
-//  Supplier saveUpdateSupplier(Supplier supplier);
+  Supplier saveUpdateSupplier(Supplier supplier);
 
   Optional<Supplier> findSupplierById(UUID id);
 
@@ -25,9 +24,13 @@ public interface ISupplierAdapterPort {
 
   Optional<Supplier> findSupplierByTaxIdAndStatus(String taxId, SupplierStatus status);
 
+  Optional<Supplier> findSupplierByIdAndProductIdAndStatus(UUID id, UUID productId, SupplierStatus status);
+
   List<Supplier> findAllSuppliers();
 
   List<Supplier> findAllSuppliersByStatus(SupplierStatus status);
+
+  List<Supplier> findAllSuppliersByProductIdAndStatus(UUID productId, SupplierStatus status);
 
   boolean existsSupplierByEmail(String email);
 

@@ -1,16 +1,17 @@
 package com.store.arka.backend.application.service;
 
+import com.store.arka.backend.application.port.in.IProductUseCase;
 import com.store.arka.backend.application.port.in.ISupplierUseCase;
 import com.store.arka.backend.application.port.out.ISupplierAdapterPort;
 import com.store.arka.backend.domain.enums.Country;
+import com.store.arka.backend.domain.enums.ProductStatus;
 import com.store.arka.backend.domain.enums.SupplierStatus;
-import com.store.arka.backend.domain.exception.FieldAlreadyExistsException;
-import com.store.arka.backend.domain.exception.InvalidArgumentException;
-import com.store.arka.backend.domain.exception.ModelNotFoundException;
-import com.store.arka.backend.domain.exception.ModelNullException;
+import com.store.arka.backend.domain.exception.*;
+import com.store.arka.backend.domain.model.Product;
 import com.store.arka.backend.domain.model.Supplier;
 import com.store.arka.backend.shared.util.PathUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +22,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SupplierService implements ISupplierUseCase {
   private final ISupplierAdapterPort supplierAdapterPort;
+  private final IProductUseCase productUseCase;
 
   @Override
+  @Transactional
   public Supplier createSupplier(Supplier supplier) {
     if (supplier == null) throw new ModelNullException("Supplier cannot be null");
     String normalizedCommercialName = supplier.getCommercialName().trim().toLowerCase();
@@ -48,10 +51,11 @@ public class SupplierService implements ISupplierUseCase {
         normalizedCity,
         normalizedCountry
     );
-    return supplierAdapterPort.saveSupplier(created);
+    return supplierAdapterPort.saveCreateSupplier(created);
   }
 
   @Override
+  @Transactional
   public Supplier getSupplierById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return supplierAdapterPort.findSupplierById(id)
@@ -59,6 +63,7 @@ public class SupplierService implements ISupplierUseCase {
   }
 
   @Override
+  @Transactional
   public Supplier getSupplierByIdAndStatus(UUID id, SupplierStatus status) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return supplierAdapterPort.findSupplierByIdAndStatus(id, status)
@@ -66,6 +71,7 @@ public class SupplierService implements ISupplierUseCase {
   }
 
   @Override
+  @Transactional
   public Supplier getSupplierByEmail(String email) {
     if (email == null || email.isBlank()) throw new InvalidArgumentException("Email in supplier is required");
     return supplierAdapterPort.findSupplierByEmail(email)
@@ -73,6 +79,7 @@ public class SupplierService implements ISupplierUseCase {
   }
 
   @Override
+  @Transactional
   public Supplier getSupplierByEmailAndStatus(String email, SupplierStatus status) {
     if (email == null || email.isBlank()) throw new InvalidArgumentException("Email in supplier is required");
     return supplierAdapterPort.findSupplierByEmailAndStatus(email, status)
@@ -80,6 +87,7 @@ public class SupplierService implements ISupplierUseCase {
   }
 
   @Override
+  @Transactional
   public Supplier getSupplierByTaxId(String taxId) {
     if (taxId == null || taxId.isBlank()) throw new InvalidArgumentException("Tax in supplier is required");
     return supplierAdapterPort.findSupplierByTaxId(taxId)
@@ -87,6 +95,7 @@ public class SupplierService implements ISupplierUseCase {
   }
 
   @Override
+  @Transactional
   public Supplier getSupplierByTaxIdAndStatus(String taxId, SupplierStatus status) {
     if (taxId == null || taxId.isBlank()) throw new InvalidArgumentException("Tax in supplier is required");
     return supplierAdapterPort.findSupplierByTaxIdAndStatus(taxId, status)
@@ -94,16 +103,36 @@ public class SupplierService implements ISupplierUseCase {
   }
 
   @Override
+  @Transactional
+  public Supplier getSupplierByIdAndProductIdAndStatus(UUID id, UUID productId, SupplierStatus status) {
+    ValidateAttributesUtils.throwIfIdNull(id);
+    Product productFound = findProductOrThrow(productId);
+    return supplierAdapterPort.findSupplierByIdAndProductIdAndStatus(id, productFound.getId(), status)
+        .orElseThrow(() -> new ModelNotFoundException(
+            "Supplier with id " + id + ", productId " + productId + " and status " + status + " not found"));
+  }
+
+  @Override
+  @Transactional
   public List<Supplier> getAllSuppliers() {
     return supplierAdapterPort.findAllSuppliers();
   }
 
   @Override
+  @Transactional
   public List<Supplier> getAllSuppliersByStatus(SupplierStatus status) {
     return supplierAdapterPort.findAllSuppliersByStatus(status);
   }
 
   @Override
+  @Transactional
+  public List<Supplier> getAllSuppliersByProductIdAndStatus(UUID productId, SupplierStatus status) {
+    Product productFound = findProductOrThrow(productId);
+    return supplierAdapterPort.findAllSuppliersByProductIdAndStatus(productFound.getId(), status);
+  }
+
+  @Override
+  @Transactional
   public Supplier updateFieldsSupplier(UUID id, Supplier supplier) {
     if (supplier == null) throw new ModelNullException("Supplier cannot be null");
     Supplier found = getSupplierByIdAndStatus(id, SupplierStatus.ACTIVE);
@@ -130,20 +159,47 @@ public class SupplierService implements ISupplierUseCase {
         normalizedCity,
         normalizedCountry
     );
-    return supplierAdapterPort.saveSupplier(found);
+    return supplierAdapterPort.saveUpdateSupplier(found);
   }
 
   @Override
+  @Transactional
+  public Supplier addProduct(UUID id, UUID productId) {
+    ValidateAttributesUtils.throwIfIdNull(id);
+    Product productFound = findProductOrThrow(productId);
+    Supplier supplierFound = getSupplierById(id);
+    supplierFound.addProduct(productFound);
+    return supplierAdapterPort.saveUpdateSupplier(supplierFound);
+  }
+
+  @Override
+  @Transactional
+  public Supplier removeProduct(UUID id, UUID productId) {
+    ValidateAttributesUtils.throwIfIdNull(id);
+    Supplier supplierFound = getSupplierById(id);
+    Product productFound = findProductOrThrow(productId);
+    supplierFound.removeProduct(productFound);
+    return supplierAdapterPort.saveUpdateSupplier(supplierFound);
+  }
+
+  @Override
+  @Transactional
   public void deleteSupplierById(UUID id) {
     Supplier found = getSupplierById(id);
     found.delete();
-    supplierAdapterPort.saveSupplier(found);
+    supplierAdapterPort.saveUpdateSupplier(found);
   }
 
   @Override
+  @Transactional
   public Supplier restoreSupplierByEmail(String email) {
     Supplier found = getSupplierByEmail(email);
     found.restore();
-    return supplierAdapterPort.saveSupplier(found);
+    return supplierAdapterPort.saveUpdateSupplier(found);
+  }
+
+  private Product findProductOrThrow(UUID productId) {
+    if (productId == null) throw new InvalidArgumentException("ProductId in Supplier cannot be null");
+    return productUseCase.getProductByIdAndStatus(productId, ProductStatus.ACTIVE);
   }
 }
