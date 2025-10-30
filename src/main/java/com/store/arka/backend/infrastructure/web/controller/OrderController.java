@@ -4,7 +4,7 @@ import com.store.arka.backend.application.port.in.IOrderUseCase;
 import com.store.arka.backend.domain.enums.OrderStatus;
 import com.store.arka.backend.infrastructure.web.dto.MessageResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.order.response.OrderResponseDto;
-import com.store.arka.backend.infrastructure.web.dto.orderitem.request.UpdateQuantityToOrderItemDto;
+import com.store.arka.backend.infrastructure.web.dto.order.request.UpdateQuantityToOrderItemDto;
 import com.store.arka.backend.infrastructure.web.mapper.OrderDtoMapper;
 import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
@@ -23,13 +23,13 @@ public class OrderController {
   private final IOrderUseCase orderUseCase;
   private final OrderDtoMapper mapper;
 
-  @GetMapping("/id/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(orderUseCase.getOrderById(uuid)));
   }
 
-  @GetMapping("/id/{id}/status/{status}")
+  @GetMapping("/{id}/status/{status}")
   public ResponseEntity<OrderResponseDto> getOrderByIdAndStatus(
       @PathVariable("id") String id,
       @PathVariable("status") String status) {
@@ -38,7 +38,7 @@ public class OrderController {
     return ResponseEntity.ok(mapper.toDto(orderUseCase.getOrderByIdAndStatus(uuid, statusEnum)));
   }
 
-  @GetMapping("/id/{id}/customer/{customerId}")
+  @GetMapping("/{id}/customer/{customerId}")
   public ResponseEntity<OrderResponseDto> getOrderByIdAndCustomerId(
       @PathVariable("id") String id,
       @PathVariable("customerId") String customerId) {
@@ -47,7 +47,7 @@ public class OrderController {
     return ResponseEntity.ok(mapper.toDto(orderUseCase.getOrderByIdAndCustomerId(uuid, customerUuid)));
   }
 
-  @GetMapping("/id/{id}/customer/{customerId}/status/{status}")
+  @GetMapping("/{id}/customer/{customerId}/status/{status}")
   public ResponseEntity<OrderResponseDto> getOrderByIdAndCustomerIdAndStatus(
       @PathVariable("id") String id,
       @PathVariable("customerId") String customerId,
@@ -71,14 +71,14 @@ public class OrderController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/customerId/{customerId}")
+  @GetMapping("/customer/{customerId}")
   public ResponseEntity<List<OrderResponseDto>> getAllOrdersByCustomerId(@PathVariable("customerId") String customerId) {
     UUID customerUuid = PathUtils.validateAndParseUUID(customerId);
     return ResponseEntity.ok(orderUseCase.getAllOrdersByCustomerId(customerUuid)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/customerId/{customerId}/status/{status}")
+  @GetMapping("/customer/{customerId}/status/{status}")
   public ResponseEntity<List<OrderResponseDto>> getAllOrdersByCustomerIdAndStatus(
       @PathVariable("customerId") String customerId,
       @PathVariable("status") String status) {
@@ -88,14 +88,14 @@ public class OrderController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/items/productId/{productId}")
+  @GetMapping("/items/product/{productId}")
   public ResponseEntity<List<OrderResponseDto>> getAllOrdersByItemsProductId(@PathVariable("productId") String productId) {
     UUID productUuid = PathUtils.validateAndParseUUID(productId);
     return ResponseEntity.ok(orderUseCase.getAllOrdersByItemsProductId(productUuid)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/items/productId/{productId}/status/{status}")
+  @GetMapping("/items/product/{productId}/status/{status}")
   public ResponseEntity<List<OrderResponseDto>> getAllOrdersByItemsProductIdAndStatus(
       @PathVariable("productId") String productId,
       @PathVariable("status") String status) {
@@ -105,7 +105,7 @@ public class OrderController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/customerId/{customerId}/items/productId/{productId}/status/{status}")
+  @GetMapping("/customer/{customerId}/items/product/{productId}/status/{status}")
   public ResponseEntity<List<OrderResponseDto>> getAllOrdersByCustomerIdAndItemsProductIdAndStatus(
       @PathVariable("customerId") String customerId,
       @PathVariable("productId") String productId,
@@ -118,7 +118,7 @@ public class OrderController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PutMapping("/id/{id}/productId/{productId}/add")
+  @PutMapping("/{id}/product/{productId}/add-item")
   public ResponseEntity<OrderResponseDto> addOrderItemById(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId,
@@ -128,7 +128,7 @@ public class OrderController {
     return ResponseEntity.ok(mapper.toDto(orderUseCase.addOrderItemById(uuid, productUuid, dto.quantity())));
   }
 
-  @PutMapping("/id/{id}/productId/{productId}/update")
+  @PutMapping("/{id}/product/{productId}/update-item-quantity")
   public ResponseEntity<OrderResponseDto> updateOrderItemQuantityById(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId,
@@ -138,7 +138,7 @@ public class OrderController {
     return ResponseEntity.ok(mapper.toDto(orderUseCase.updateOrderItemQuantityById(uuid, productUuid, dto.quantity())));
   }
 
-  @PutMapping("/id/{id}/productId/{productId}/remove")
+  @PutMapping("/{id}/product/{productId}/remove-item")
   public ResponseEntity<OrderResponseDto> removeOrderItemById(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId) {
@@ -147,35 +147,35 @@ public class OrderController {
     return ResponseEntity.ok(mapper.toDto(orderUseCase.removeOrderItemById(uuid, productUuid)));
   }
 
-  @PutMapping("/id/{id}/confirm")
+  @PutMapping("/{id}/confirm")
   public ResponseEntity<MessageResponseDto> confirmOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.confirmOrderById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Order has been successfully confirmed with id: " + id));
   }
 
-  @PutMapping("/id/{id}/pay")
+  @PutMapping("/{id}/pay")
   public ResponseEntity<MessageResponseDto> payOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.payOrderById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Order has been successfully paid with id: " + id));
   }
 
-  @PutMapping("/id/{id}/shipped")
+  @PutMapping("/{id}/shipped")
   public ResponseEntity<MessageResponseDto> shippedOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.shippedOrderById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Order has been successfully shipped with id: " + id));
   }
 
-  @PutMapping("/id/{id}/deliver")
+  @PutMapping("/{id}/deliver")
   public ResponseEntity<MessageResponseDto> deliverOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.deliverOrderById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Order has been successfully delivered with id: " + id));
   }
 
-  @PutMapping("/id/{id}/cancel")
+  @PutMapping("/{id}/cancel")
   public ResponseEntity<MessageResponseDto> cancelOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.cancelOrderById(uuid);

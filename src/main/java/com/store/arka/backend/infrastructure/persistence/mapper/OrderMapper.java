@@ -16,6 +16,7 @@ public class OrderMapper {
   private final OrderItemMapper orderItemMapper;
 
   public Order toDomain(OrderEntity entity) {
+    if (entity == null) return null;
     return new Order(
         entity.getId(),
         entity.getCartId(),
@@ -29,6 +30,7 @@ public class OrderMapper {
   }
 
   public OrderEntity toEntity(Order domain) {
+    if (domain == null) return null;
     OrderEntity entity = new OrderEntity(
         domain.getId(),
         domain.getCartId(),

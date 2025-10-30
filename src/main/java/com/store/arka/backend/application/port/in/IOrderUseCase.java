@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IOrderUseCase {
-  //  Order createOrder(Order cart, UUID customerId);
   Order createOrder(UUID cartId);
 
   Order getOrderById(UUID id);

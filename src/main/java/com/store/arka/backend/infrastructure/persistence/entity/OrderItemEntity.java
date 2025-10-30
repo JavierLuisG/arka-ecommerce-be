@@ -33,7 +33,7 @@ public class OrderItemEntity {
   private BigDecimal productPrice;
   @Column(nullable = false)
   private BigDecimal subtotal;
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "order_id", nullable = false, foreignKey = @ForeignKey(name = "fk_orderitem_order"))
   @ToString.Exclude
   private OrderEntity order;

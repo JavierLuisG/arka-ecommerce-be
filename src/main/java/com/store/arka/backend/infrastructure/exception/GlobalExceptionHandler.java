@@ -175,9 +175,9 @@ public class GlobalExceptionHandler {
         webRequest.getDescription(false)));
   }
 
-  @ExceptionHandler(ProductNotFoundInOrderException.class)
+  @ExceptionHandler(ProductNotFoundInOperationException.class)
   public ResponseEntity<ErrorResponseDto> handlerProductNotFoundInOrderException(
-      ProductNotFoundInOrderException ex, WebRequest webRequest) {
+      ProductNotFoundInOperationException ex, WebRequest webRequest) {
     log.error("[GlobalExceptionHandler][ProductNotFoundInOrder] {}", ex.getMessage(), ex);
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
         HttpStatus.BAD_REQUEST.value(),

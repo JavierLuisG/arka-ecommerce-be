@@ -5,6 +5,7 @@ import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.CartItem;
 import com.store.arka.backend.infrastructure.persistence.entity.CartEntity;
 import com.store.arka.backend.infrastructure.persistence.entity.CartItemEntity;
+import com.store.arka.backend.infrastructure.persistence.entity.ProductEntity;
 import com.store.arka.backend.infrastructure.persistence.mapper.CartItemMapper;
 import com.store.arka.backend.infrastructure.persistence.repository.IJpaCartItemRepository;
 import com.store.arka.backend.infrastructure.persistence.repository.IJpaCartRepository;
@@ -26,7 +27,6 @@ public class CartItemPersistenceAdapter implements ICartItemAdapterPort {
   private final IJpaCartRepository cartRepository;
   private final CartItemMapper mapper;
   private final CartItemUpdater updater;
-
   @PersistenceContext
   private EntityManager entityManager;
 
@@ -36,7 +36,7 @@ public class CartItemPersistenceAdapter implements ICartItemAdapterPort {
         .orElseThrow(() -> new ModelNotFoundException("Cart with id " + cartId + " not found"));
     CartItemEntity cartItemEntity = mapper.toEntityWithCart(cartEntity, cartItem);
     cartItemEntity.setProduct(
-        entityManager.getReference(cartItemEntity.getProduct().getClass(), cartItemEntity.getProduct().getId()));
+        entityManager.getReference(ProductEntity.class, cartItemEntity.getProduct().getId()));
     CartItemEntity saved = jpaCartItemRepository.save(cartItemEntity);
     entityManager.flush();
     entityManager.refresh(saved);

@@ -30,13 +30,13 @@ public class SupplierController {
         .body(mapper.toDto(supplierUseCase.createSupplier(mapper.toDomain(dto))));
   }
 
-  @GetMapping("/id/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<SupplierResponseDto> getSupplierById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierById(uuid)));
   }
 
-  @GetMapping("/id/{id}/status/{status}")
+  @GetMapping("/{id}/status/{status}")
   public ResponseEntity<SupplierResponseDto> getSupplierByIdAndStatus(
       @PathVariable("id") String id,
       @PathVariable("status") String status) {
@@ -58,20 +58,20 @@ public class SupplierController {
     return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByEmailAndStatus(email, statusEnum)));
   }
 
-  @GetMapping("/tax/{tax}")
-  public ResponseEntity<SupplierResponseDto> getSupplierByTaxId(@PathVariable("tax") String tax) {
-    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByTaxId(tax)));
+  @GetMapping("/tax-id/{taxId}")
+  public ResponseEntity<SupplierResponseDto> getSupplierByTaxId(@PathVariable("taxId") String taxId) {
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByTaxId(taxId)));
   }
 
-  @GetMapping("/tax/{tax}/status/{status}")
+  @GetMapping("/tax-id/{taxId}/status/{status}")
   public ResponseEntity<SupplierResponseDto> getSupplierByTaxIdAndStatus(
-      @PathVariable("tax") String tax,
+      @PathVariable("taxId") String taxId,
       @PathVariable("status") String status) {
     SupplierStatus statusEnum = PathUtils.validateEnumOrThrow(SupplierStatus.class, status, "SupplierStatus");
-    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByTaxIdAndStatus(tax, statusEnum)));
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByTaxIdAndStatus(taxId, statusEnum)));
   }
 
-  @GetMapping("/id/{id}/product/{productId}/status/{status}")
+  @GetMapping("/{id}/product/{productId}/status/{status}")
   public ResponseEntity<SupplierResponseDto> getSupplierByIdAndProductIdAndStatus(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId,
@@ -106,7 +106,7 @@ public class SupplierController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PutMapping("/id/{id}")
+  @PutMapping("/{id}")
   public ResponseEntity<SupplierResponseDto> putSupplierById(
       @PathVariable("id") String id,
       @RequestBody @Valid SupplierDto dto) {
@@ -114,7 +114,7 @@ public class SupplierController {
     return ResponseEntity.ok(mapper.toDto(supplierUseCase.updateFieldsSupplier(uuid, mapper.toDomain(dto))));
   }
 
-  @PutMapping("/id/{id}/product/{productId}/add")
+  @PutMapping("/{id}/product/{productId}/add")
   public ResponseEntity<SupplierResponseDto> addProductById(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId) {
@@ -123,7 +123,7 @@ public class SupplierController {
     return ResponseEntity.ok(mapper.toDto(supplierUseCase.addProduct(uuid, productUuid)));
   }
 
-  @PutMapping("/id/{id}/product/{productId}/remove")
+  @PutMapping("/{id}/product/{productId}/remove")
   public ResponseEntity<SupplierResponseDto> removeProductById(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId) {
@@ -132,8 +132,8 @@ public class SupplierController {
     return ResponseEntity.ok(mapper.toDto(supplierUseCase.removeProduct(uuid, productUuid)));
   }
 
-  @DeleteMapping("/id/{id}")
-  public ResponseEntity<MessageResponseDto> deleteSupplierById(@PathVariable("id") String id) {
+  @DeleteMapping("/{id}")
+  public ResponseEntity<MessageResponseDto> softDeleteSupplierById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     supplierUseCase.deleteSupplierById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Supplier with id " + id + " eliminated successfully"));

@@ -31,13 +31,13 @@ public class CustomerController {
         .body(mapper.toDto(customerUseCase.createCustomer(mapper.toDomain(dto))));
   }
 
-  @GetMapping("/id/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<CustomerResponseDto> getCustomerById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerById(uuid)));
   }
 
-  @GetMapping("/id/{id}/status/{status}")
+  @GetMapping("/{id}/status/{status}")
   public ResponseEntity<CustomerResponseDto> getCustomerByIdAndStatus(
       @PathVariable("id") String id,
       @PathVariable("status") String status) {
@@ -72,7 +72,7 @@ public class CustomerController {
         customerUseCase.getAllCustomersByStatus(statusEnum).stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PutMapping("/id/{id}")
+  @PutMapping("/{id}")
   public ResponseEntity<CustomerResponseDto> putCustomerById(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdateFieldsCustomerDto dto) {
@@ -80,8 +80,8 @@ public class CustomerController {
     return ResponseEntity.ok(mapper.toDto(customerUseCase.updateFieldsCustomer(uuid, mapper.toDomain(dto))));
   }
 
-  @DeleteMapping("/id/{id}")
-  public ResponseEntity<MessageResponseDto> deleteCustomerById(@PathVariable("id") String id) {
+  @DeleteMapping("/{id}")
+  public ResponseEntity<MessageResponseDto> softDeleteCustomerById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     customerUseCase.deleteCustomerById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Customer with id " + id + " eliminated successfully"));

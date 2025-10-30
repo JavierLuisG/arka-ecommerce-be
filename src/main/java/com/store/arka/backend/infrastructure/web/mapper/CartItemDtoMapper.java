@@ -1,8 +1,8 @@
 package com.store.arka.backend.infrastructure.web.mapper;
 
 import com.store.arka.backend.domain.model.CartItem;
-import com.store.arka.backend.infrastructure.web.dto.cartitem.request.CreateCartItemDto;
-import com.store.arka.backend.infrastructure.web.dto.cartitem.response.CartItemResponseDto;
+import com.store.arka.backend.infrastructure.web.dto.cart.request.CreateCartItemDto;
+import com.store.arka.backend.infrastructure.web.dto.cart.response.CartItemResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

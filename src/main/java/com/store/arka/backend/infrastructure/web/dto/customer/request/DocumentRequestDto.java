@@ -1,4 +1,4 @@
-package com.store.arka.backend.infrastructure.web.dto.document.request;
+package com.store.arka.backend.infrastructure.web.dto.customer.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

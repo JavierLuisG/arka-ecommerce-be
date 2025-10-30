@@ -2,8 +2,8 @@ package com.store.arka.backend.infrastructure.web.controller;
 
 import com.store.arka.backend.application.port.in.IDocumentUseCase;
 import com.store.arka.backend.domain.enums.DocumentStatus;
-import com.store.arka.backend.infrastructure.web.dto.document.request.DocumentRequestDto;
-import com.store.arka.backend.infrastructure.web.dto.document.response.DocumentResponseDto;
+import com.store.arka.backend.infrastructure.web.dto.customer.request.DocumentRequestDto;
+import com.store.arka.backend.infrastructure.web.dto.customer.response.DocumentResponseDto;
 import com.store.arka.backend.infrastructure.web.mapper.DocumentDtoMapper;
 import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
@@ -22,13 +22,13 @@ public class DocumentController {
   private final IDocumentUseCase documentUseCase;
   private final DocumentDtoMapper mapper;
 
-  @GetMapping("/id/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<DocumentResponseDto> getDocumentById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(documentUseCase.getDocumentById(uuid)));
   }
 
-  @GetMapping("/id/{id}/status/{status}")
+  @GetMapping("/{id}/status/{status}")
   public ResponseEntity<DocumentResponseDto> getDocumentByIdAndStatus(
       @PathVariable("id") String id,
       @PathVariable("status") String status) {
@@ -63,7 +63,7 @@ public class DocumentController {
         documentUseCase.getAllDocumentsByStatus(statusEnum).stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PutMapping("/id/{id}")
+  @PutMapping("/{id}")
   public ResponseEntity<DocumentResponseDto> putDocumentById(
       @PathVariable("id") String id,
       @RequestBody @Valid DocumentRequestDto dto) {

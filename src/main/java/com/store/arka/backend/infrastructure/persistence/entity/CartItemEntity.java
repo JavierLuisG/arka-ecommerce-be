@@ -28,7 +28,7 @@ public class CartItemEntity {
   @Min(1)
   @Column(nullable = false)
   private Integer quantity;
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "cart_id", nullable = false, foreignKey = @ForeignKey(name = "fk_cartitem_cart"))
   @ToString.Exclude
   private CartEntity cart;

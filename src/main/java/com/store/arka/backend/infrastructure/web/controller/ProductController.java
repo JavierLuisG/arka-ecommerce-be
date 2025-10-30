@@ -36,13 +36,13 @@ public class ProductController {
         .body(mapper.toDto(productUseCase.createProduct(mapper.toDomain(dto))));
   }
 
-  @GetMapping("/id/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<ProductResponseDto> getProductById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(productUseCase.getProductById(uuid)));
   }
 
-  @GetMapping("/id/{id}/status/{status}")
+  @GetMapping("/{id}/status/{status}")
   public ResponseEntity<ProductResponseDto> getProductByIdAndStatus(
       @PathVariable("id") String id,
       @PathVariable("status") String status) {
@@ -76,7 +76,7 @@ public class ProductController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PutMapping("/id/{id}")
+  @PutMapping("/{id}")
   public ResponseEntity<ProductResponseDto> putFieldsProductById(
       @PathVariable("id") String id,
       @RequestBody UpdateFieldsProductDto dto) {
@@ -84,7 +84,7 @@ public class ProductController {
     return ResponseEntity.ok(mapper.toDto(productUseCase.updateFieldsProduct(uuid, mapper.toDomain(dto))));
   }
 
-  @PutMapping("/id/{id}/categories")
+  @PutMapping("/{id}/categories")
   public ResponseEntity<ProductResponseDto> putCategoriesToProductById(
       @PathVariable("id") String id,
       @RequestBody UpdateProductCategoriesDto dto) {
@@ -92,7 +92,7 @@ public class ProductController {
     return ResponseEntity.ok(mapper.toDto(productUseCase.updateCategories(uuid, dto.categories())));
   }
 
-  @PutMapping("/id/{id}/decrease")
+  @PutMapping("/{id}/decrease-stock")
   public ResponseEntity<MessageResponseDto> decreaseStockProductById(
       @PathVariable("id") String id,
       @RequestBody @Valid ModifyStockRequestDto decrease) {
@@ -101,7 +101,7 @@ public class ProductController {
     return ResponseEntity.ok(new MessageResponseDto("Successful decrease for product with id: " + id));
   }
 
-  @PutMapping("/id/{id}/increase")
+  @PutMapping("/{id}/increase-stock")
   public ResponseEntity<MessageResponseDto> increaseStockProductById(
       @PathVariable("id") String id,
       @RequestBody @Valid ModifyStockRequestDto increase) {
@@ -110,7 +110,7 @@ public class ProductController {
     return ResponseEntity.ok(new MessageResponseDto("Successful increase for product with id: " + id));
   }
 
-  @GetMapping("/id/{id}/availability")
+  @GetMapping("/{id}/availability")
   public ResponseEntity<CheckProductResponseDto> checkAvailabilityById(
       @PathVariable("id") String id,
       @RequestParam("quantity") @Min(1) int quantity) {
@@ -123,7 +123,7 @@ public class ProductController {
     ));
   }
 
-  @DeleteMapping("/id/{id}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<MessageResponseDto> deleteProductById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     productUseCase.deleteProductById(uuid);

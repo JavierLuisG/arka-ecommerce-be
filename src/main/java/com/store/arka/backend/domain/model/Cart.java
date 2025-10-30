@@ -7,6 +7,7 @@ import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.shared.util.ValidateStatusUtils;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -15,7 +16,9 @@ import java.util.*;
 
 @Getter
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Cart {
+  @EqualsAndHashCode.Include
   private UUID id;
   private final Customer customer;
   private List<CartItem> items;

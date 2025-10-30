@@ -1,4 +1,4 @@
-package com.store.arka.backend.infrastructure.web.dto.orderitem.response;
+package com.store.arka.backend.infrastructure.web.dto.order.response;
 
 import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseToOrderDto;
 

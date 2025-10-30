@@ -5,6 +5,7 @@ import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.OrderItem;
 import com.store.arka.backend.infrastructure.persistence.entity.OrderEntity;
 import com.store.arka.backend.infrastructure.persistence.entity.OrderItemEntity;
+import com.store.arka.backend.infrastructure.persistence.entity.ProductEntity;
 import com.store.arka.backend.infrastructure.persistence.mapper.OrderItemMapper;
 import com.store.arka.backend.infrastructure.persistence.repository.IJpaOrderItemRepository;
 import com.store.arka.backend.infrastructure.persistence.repository.IJpaOrderRepository;
@@ -35,7 +36,7 @@ public class OrderItemPersistenceAdapter implements IOrderItemAdapterPort {
         .orElseThrow(() -> new ModelNotFoundException("Order with id " + orderId + " not found"));
     OrderItemEntity orderItemEntity = mapper.toEntityWithOrder(orderEntity, orderItem);
     orderItemEntity.setProduct(
-        entityManager.getReference(orderItemEntity.getProduct().getClass(), orderItemEntity.getProduct().getId()));
+        entityManager.getReference(ProductEntity.class, orderItemEntity.getProduct().getId()));
     OrderItemEntity saved = jpaOrderItemRepository.save(orderItemEntity);
     entityManager.flush();
     entityManager.refresh(saved);

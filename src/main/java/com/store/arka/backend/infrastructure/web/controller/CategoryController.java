@@ -31,13 +31,13 @@ public class CategoryController {
         .body(mapper.toDto(categoryUseCase.createCategory(mapper.toDomain(dto))));
   }
 
-  @GetMapping("/id/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<CategoryResponseDto> getCategoryById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryById(uuid)));
   }
 
-  @GetMapping("/id/{id}/status/{status}")
+  @GetMapping("/{id}/status/{status}")
   public ResponseEntity<CategoryResponseDto> getCategoryByIdAndStatus(
       @PathVariable("id") String id,
       @PathVariable("status") String status) {
@@ -72,7 +72,7 @@ public class CategoryController {
         categoryUseCase.getAllCategoriesByStatus(statusEnum).stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PutMapping("/id/{id}")
+  @PutMapping("/{id}")
   public ResponseEntity<CategoryResponseDto> putCategoryById(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdateCategoryDto dto) {
@@ -80,8 +80,8 @@ public class CategoryController {
     return ResponseEntity.ok(mapper.toDto(categoryUseCase.updateFieldsCategory(uuid, mapper.toDomain(dto))));
   }
 
-  @DeleteMapping("/id/{id}")
-  public ResponseEntity<MessageResponseDto> deleteCategoryById(@PathVariable("id") String id) {
+  @DeleteMapping("/{id}")
+  public ResponseEntity<MessageResponseDto> softDeleteCategoryById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     categoryUseCase.deleteCategoryById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Category with id " + id + " eliminated successfully"));

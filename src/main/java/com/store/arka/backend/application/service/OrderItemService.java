@@ -61,6 +61,7 @@ public class OrderItemService implements IOrderItemUseCase {
     ValidateAttributesUtils.validateQuantity(quantity);
     OrderItem found = getOrderItemById(id);
     found.updateQuantity(quantity);
+    productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
     return orderItemAdapterPort.saveUpdateOrderItem(found);
   }
 }

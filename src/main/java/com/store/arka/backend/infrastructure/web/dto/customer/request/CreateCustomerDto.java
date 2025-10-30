@@ -1,7 +1,6 @@
 package com.store.arka.backend.infrastructure.web.dto.customer.request;
 
 import com.store.arka.backend.domain.enums.Country;
-import com.store.arka.backend.infrastructure.web.dto.document.request.DocumentRequestDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 

@@ -4,7 +4,9 @@ import com.store.arka.backend.application.port.out.IOrderAdapterPort;
 import com.store.arka.backend.domain.enums.OrderStatus;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.Order;
+import com.store.arka.backend.infrastructure.persistence.entity.CustomerEntity;
 import com.store.arka.backend.infrastructure.persistence.entity.OrderEntity;
+import com.store.arka.backend.infrastructure.persistence.entity.ProductEntity;
 import com.store.arka.backend.infrastructure.persistence.mapper.OrderMapper;
 import com.store.arka.backend.infrastructure.persistence.repository.IJpaOrderRepository;
 import com.store.arka.backend.infrastructure.persistence.updater.OrderUpdater;
@@ -32,12 +34,12 @@ public class OrderPersistenceAdapter implements IOrderAdapterPort {
     OrderEntity orderEntity = mapper.toEntity(order);
     if (orderEntity.getCustomer() != null && orderEntity.getCustomer().getId() != null) {
       orderEntity.setCustomer(
-          entityManager.getReference(orderEntity.getCustomer().getClass(), orderEntity.getCustomer().getId()));
+          entityManager.getReference(CustomerEntity.class, orderEntity.getCustomer().getId()));
     }
     if (orderEntity.getItems() != null) {
       orderEntity.getItems().forEach(item -> {
         if (item.getProduct() != null && item.getProduct().getId() != null) {
-          item.setProduct(entityManager.getReference(item.getProduct().getClass(), item.getProduct().getId()));
+          item.setProduct(entityManager.getReference(ProductEntity.class, item.getProduct().getId()));
         }
         item.setOrder(orderEntity);
       });

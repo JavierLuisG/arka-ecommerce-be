@@ -25,7 +25,6 @@ public class CustomerPersistenceAdapter implements ICustomerAdapterPort {
   private final IJpaCustomerRepository jpaCustomerRepository;
   private final CustomerMapper mapper;
   private final CustomerUpdater updater;
-
   @PersistenceContext
   private EntityManager entityManager;
 

@@ -1,4 +1,4 @@
-package com.store.arka.backend.infrastructure.web.dto.document.response;
+package com.store.arka.backend.infrastructure.web.dto.customer.response;
 
 import com.store.arka.backend.domain.enums.DocumentType;
 

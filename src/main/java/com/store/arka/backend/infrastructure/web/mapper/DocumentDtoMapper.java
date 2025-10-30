@@ -2,9 +2,9 @@ package com.store.arka.backend.infrastructure.web.mapper;
 
 import com.store.arka.backend.domain.enums.DocumentType;
 import com.store.arka.backend.domain.model.Document;
-import com.store.arka.backend.infrastructure.web.dto.document.request.DocumentRequestDto;
-import com.store.arka.backend.infrastructure.web.dto.document.response.DocumentResponseDto;
-import com.store.arka.backend.infrastructure.web.dto.document.response.DocumentResponseToCustomerDto;
+import com.store.arka.backend.infrastructure.web.dto.customer.request.DocumentRequestDto;
+import com.store.arka.backend.infrastructure.web.dto.customer.response.DocumentResponseDto;
+import com.store.arka.backend.infrastructure.web.dto.customer.response.DocumentResponseToCustomerDto;
 import org.springframework.stereotype.Component;
 
 @Component

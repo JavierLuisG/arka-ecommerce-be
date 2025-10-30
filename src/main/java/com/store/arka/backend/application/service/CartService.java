@@ -143,12 +143,12 @@ public class CartService implements ICartUseCase {
   @Override
   @Transactional
   public Cart updateCartItemQuantityById(UUID id, UUID productId, Integer quantity) {
-    ValidateAttributesUtils.validateQuantity(quantity);
+    productUseCase.validateAvailabilityOrThrow(productId, quantity);
     Cart cartFound = getCartById(id);
     Product productFound = findProductOrThrow(productId);
     cartFound.ensureCartIsModifiable();
     if (!cartFound.containsProduct(productFound.getId())) {
-      throw new ProductNotFoundInOrderException("Product not found in Cart id " + cartFound.getId());
+      throw new ProductNotFoundInOperationException("Product not found in Cart id " + cartFound.getId());
     }
     CartItem cartItem = findCartItemInCartOrThrow(productId, cartFound);
     cartItemUseCase.updateQuantity(cartItem.getId(), quantity);
@@ -162,7 +162,7 @@ public class CartService implements ICartUseCase {
     Product productFound = findProductOrThrow(productId);
     cartFound.ensureCartIsModifiable();
     if (!cartFound.containsProduct(productFound.getId())) {
-      throw new ProductNotFoundInOrderException("Product not found in Cart id " + cartFound.getId());
+      throw new ProductNotFoundInOperationException("Product not found in Cart id " + cartFound.getId());
     }
     cartFound.removeCartItem(productFound);
     return cartAdapterPort.saveUpdateCart(cartFound);
@@ -191,7 +191,7 @@ public class CartService implements ICartUseCase {
   public void deleteCartById(UUID id) {
     Cart cartFound = getCartById(id);
     ValidateStatusUtils.throwIfCheckedOut(cartFound.getStatus());
-    cartAdapterPort.deleteById(cartFound.getId());
+    cartAdapterPort.deleteCartById(cartFound.getId());
   }
 
   private Customer findCustomerOrThrow(UUID customerId) {
@@ -209,7 +209,7 @@ public class CartService implements ICartUseCase {
         .stream()
         .filter(item -> item.getProductId().equals(productId))
         .findFirst()
-        .orElseThrow(() -> new ProductNotFoundInOrderException(
+        .orElseThrow(() -> new ProductNotFoundInOperationException(
             "Product " + productId + " not found in Order " + cartFound.getId()));
   }
 }

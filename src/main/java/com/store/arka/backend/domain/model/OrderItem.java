@@ -49,10 +49,10 @@ public class OrderItem {
   }
 
   public BigDecimal calculateSubtotal() {
-    return product.getPrice().multiply(BigDecimal.valueOf(quantity));
+    return productPrice.multiply(BigDecimal.valueOf(quantity));
   }
 
   public void recalculateSubtotal() {
-    this.subtotal = product.getPrice().multiply(BigDecimal.valueOf(quantity));
+    this.subtotal = productPrice.multiply(BigDecimal.valueOf(quantity));
   }
 }

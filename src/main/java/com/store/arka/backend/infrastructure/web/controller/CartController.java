@@ -5,7 +5,7 @@ import com.store.arka.backend.domain.enums.CartStatus;
 import com.store.arka.backend.infrastructure.web.dto.MessageResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.cart.request.CreateCartDto;
 import com.store.arka.backend.infrastructure.web.dto.cart.response.CartResponseDto;
-import com.store.arka.backend.infrastructure.web.dto.cartitem.request.UpdateQuantityToCartItemDto;
+import com.store.arka.backend.infrastructure.web.dto.cart.request.UpdateQuantityToCartItemDto;
 import com.store.arka.backend.infrastructure.web.mapper.CartDtoMapper;
 import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
@@ -31,13 +31,13 @@ public class CartController {
         .body(mapper.toDto(cartUseCase.createCart(mapper.toDomain(dto), dto.customerId())));
   }
 
-  @GetMapping("/id/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<CartResponseDto> getCartById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(cartUseCase.getCartById(uuid)));
   }
 
-  @GetMapping("/id/{id}/status/{status}")
+  @GetMapping("/{id}/status/{status}")
   public ResponseEntity<CartResponseDto> getCartByIdAndStatus(
       @PathVariable("id") String id,
       @PathVariable("status") String status) {
@@ -46,7 +46,7 @@ public class CartController {
     return ResponseEntity.ok(mapper.toDto(cartUseCase.getCartByIdAndStatus(uuid, statusEnum)));
   }
 
-  @GetMapping("/id/{id}/customer/{customerId}")
+  @GetMapping("/{id}/customer/{customerId}")
   public ResponseEntity<CartResponseDto> getCartByIdAndCustomerId(
       @PathVariable("id") String id,
       @PathVariable("customerId") String customerId) {
@@ -55,7 +55,7 @@ public class CartController {
     return ResponseEntity.ok(mapper.toDto(cartUseCase.getCartByIdAndCustomerId(uuid, customerUuid)));
   }
 
-  @GetMapping("/id/{id}/customer/{customerId}/status/{status}")
+  @GetMapping("/{id}/customer/{customerId}/status/{status}")
   public ResponseEntity<CartResponseDto> getCartByIdAndCustomerIdAndStatus(
       @PathVariable("id") String id,
       @PathVariable("customerId") String customerId,
@@ -79,14 +79,14 @@ public class CartController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/customerId/{customerId}")
+  @GetMapping("/customer/{customerId}")
   public ResponseEntity<List<CartResponseDto>> getAllCartsByCustomerId(@PathVariable("customerId") String customerId) {
     UUID customerUuid = PathUtils.validateAndParseUUID(customerId);
     return ResponseEntity.ok(cartUseCase.getAllCartsByCustomerId(customerUuid)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/customerId/{customerId}/status/{status}")
+  @GetMapping("/customer/{customerId}/status/{status}")
   public ResponseEntity<List<CartResponseDto>> getAllCartsByCustomerIdAndStatus(
       @PathVariable("customerId") String customerId,
       @PathVariable("status") String status) {
@@ -96,14 +96,14 @@ public class CartController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/items/productId/{productId}")
+  @GetMapping("/items/product/{productId}")
   public ResponseEntity<List<CartResponseDto>> getAllCartsByItemsProductId(@PathVariable("productId") String productId) {
     UUID productUuid = PathUtils.validateAndParseUUID(productId);
     return ResponseEntity.ok(cartUseCase.getAllCartsByItemsProductId(productUuid)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/items/productId/{productId}/status/{status}")
+  @GetMapping("/items/product/{productId}/status/{status}")
   public ResponseEntity<List<CartResponseDto>> getAllCartsByItemsProductIdAndStatus(
       @PathVariable("productId") String productId,
       @PathVariable("status") String status) {
@@ -113,7 +113,7 @@ public class CartController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/customerId/{customerId}/items/productId/{productId}/status/{status}")
+  @GetMapping("/customer/{customerId}/items/product/{productId}/status/{status}")
   public ResponseEntity<List<CartResponseDto>> getAllCartsByCustomerIdAndItemsProductIdAndStatus(
       @PathVariable("customerId") String customerId,
       @PathVariable("productId") String productId,
@@ -127,7 +127,7 @@ public class CartController {
             .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PutMapping("/id/{id}/productId/{productId}/addCartItem")
+  @PutMapping("/{id}/product/{productId}/add-Item")
   public ResponseEntity<CartResponseDto> addCartItemById(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId,
@@ -137,7 +137,7 @@ public class CartController {
     return ResponseEntity.ok(mapper.toDto(cartUseCase.addCartItemById(uuid, productUuid, dto.quantity())));
   }
 
-  @PutMapping("/id/{id}/productId/{productId}/updateCartItem")
+  @PutMapping("/{id}/product/{productId}/update-item-quantity")
   public ResponseEntity<CartResponseDto> updateCartItemQuantityById(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId,
@@ -147,7 +147,7 @@ public class CartController {
     return ResponseEntity.ok(mapper.toDto(cartUseCase.updateCartItemQuantityById(uuid, productUuid, dto.quantity())));
   }
 
-  @PutMapping("/id/{id}/productId/{productId}/removeCartItem")
+  @PutMapping("/{id}/productId/{productId}/remove-item")
   public ResponseEntity<CartResponseDto> removeCartItemById(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId) {
@@ -156,21 +156,21 @@ public class CartController {
     return ResponseEntity.ok(mapper.toDto(cartUseCase.removeCartItemById(uuid, productUuid)));
   }
 
-  @PutMapping("/id/{id}/emptyCartItems")
+  @PutMapping("/{id}/empty-items")
   public ResponseEntity<CartResponseDto> emptyCartItemsById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(cartUseCase.emptyCartItemsById(uuid)));
   }
 
-  @PutMapping("/id/{id}/checkedOut")
-  public ResponseEntity<MessageResponseDto> checkedOutCartById(@PathVariable("id") String id) {
+  @PutMapping("/{id}/checkout")
+  public ResponseEntity<MessageResponseDto> checkoutCartById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     String response = cartUseCase.checkedOutCartById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Cart has been successfully confirmed with id: " + id + ". " +
         "Order created whit id: " + response));
   }
 
-  @DeleteMapping("/id/{id}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<MessageResponseDto> deleteCartById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     cartUseCase.deleteCartById(uuid);

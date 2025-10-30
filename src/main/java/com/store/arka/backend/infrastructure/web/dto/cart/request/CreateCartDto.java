@@ -1,6 +1,5 @@
 package com.store.arka.backend.infrastructure.web.dto.cart.request;
 
-import com.store.arka.backend.infrastructure.web.dto.cartitem.request.CreateCartItemDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 

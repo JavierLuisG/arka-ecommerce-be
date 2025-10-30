@@ -6,6 +6,7 @@ import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelActivationException;
 import com.store.arka.backend.domain.exception.ModelDeletionException;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -13,7 +14,9 @@ import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Customer {
+  @EqualsAndHashCode.Include
   private final UUID id;
   private Document document;
   private String firstName;

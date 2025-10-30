@@ -2,7 +2,6 @@ package com.store.arka.backend.infrastructure.web.dto.order.response;
 
 import com.store.arka.backend.domain.enums.OrderStatus;
 import com.store.arka.backend.infrastructure.web.dto.customer.response.CustomerResponseToOrderDto;
-import com.store.arka.backend.infrastructure.web.dto.orderitem.response.OrderItemResponseDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

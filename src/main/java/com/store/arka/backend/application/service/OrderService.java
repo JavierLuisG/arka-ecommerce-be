@@ -156,7 +156,7 @@ public class OrderService implements IOrderUseCase {
     Product productFound = findProductOrThrow(productId);
     orderFound.ensureOrderIsModifiable();
     if (!orderFound.containsProduct(productFound.getId())) {
-      throw new ProductNotFoundInOrderException("Product not found in Order id " + orderFound.getId());
+      throw new ProductNotFoundInOperationException("Product not found in Order id " + orderFound.getId());
     }
     OrderItem orderItem = findOrderItemOrThrow(productFound.getId(), orderFound);
     orderItemUseCase.updateQuantity(orderItem.getId(), quantity);
@@ -172,7 +172,7 @@ public class OrderService implements IOrderUseCase {
     Product productFound = findProductOrThrow(productId);
     orderFound.ensureOrderIsModifiable();
     if (!orderFound.containsProduct(productFound.getId())) {
-      throw new ProductNotFoundInOrderException("Product not found in Order id " + orderFound.getId());
+      throw new ProductNotFoundInOperationException("Product not found in Order id " + orderFound.getId());
     }
     orderFound.removeOrderItem(productFound);
     return orderAdapterPort.saveUpdateOrder(orderFound);
@@ -243,7 +243,7 @@ public class OrderService implements IOrderUseCase {
         .stream()
         .filter(item -> item.getProductId().equals(productId))
         .findFirst()
-        .orElseThrow(() -> new ProductNotFoundInOrderException(
+        .orElseThrow(() -> new ProductNotFoundInOperationException(
             "Product " + productId + " not found in Order " + orderFound.getId()));
   }
 }

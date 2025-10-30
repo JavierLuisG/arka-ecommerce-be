@@ -5,6 +5,8 @@ import com.store.arka.backend.domain.enums.CartStatus;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.Cart;
 import com.store.arka.backend.infrastructure.persistence.entity.CartEntity;
+import com.store.arka.backend.infrastructure.persistence.entity.CustomerEntity;
+import com.store.arka.backend.infrastructure.persistence.entity.ProductEntity;
 import com.store.arka.backend.infrastructure.persistence.mapper.CartMapper;
 import com.store.arka.backend.infrastructure.persistence.repository.IJpaCartRepository;
 import com.store.arka.backend.infrastructure.persistence.updater.CartUpdater;
@@ -33,12 +35,12 @@ public class CartPersistenceAdapter implements ICartAdapterPort {
   public Cart saveCreateCart(Cart cart) {
     CartEntity cartEntity = mapper.toEntity(cart);
     if (cartEntity.getCustomer() != null && cartEntity.getCustomer().getId() != null) {
-      cartEntity.setCustomer(entityManager.getReference(cartEntity.getCustomer().getClass(), cartEntity.getCustomer().getId()));
+      cartEntity.setCustomer(entityManager.getReference(CustomerEntity.class, cartEntity.getCustomer().getId()));
     }
     if (cartEntity.getItems() != null) {
       cartEntity.getItems().forEach(item -> {
         if (item.getProduct() != null && item.getProduct().getId() != null) {
-          item.setProduct(entityManager.getReference(item.getProduct().getClass(), item.getProduct().getId()));
+          item.setProduct(entityManager.getReference(ProductEntity.class, item.getProduct().getId()));
         }
         item.setCart(cartEntity);
       });
@@ -122,7 +124,7 @@ public class CartPersistenceAdapter implements ICartAdapterPort {
   }
 
   @Override
-  public void deleteById(UUID id) {
+  public void deleteCartById(UUID id) {
     jpaCartRepository.deleteById(id);
   }
 }

@@ -4,6 +4,7 @@ import com.store.arka.backend.domain.enums.OrderStatus;
 import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.shared.util.ValidateStatusUtils;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -14,7 +15,9 @@ import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Order {
+  @EqualsAndHashCode.Include
   private final UUID id;
   private final UUID cartId;
   private final Customer customer;
@@ -26,7 +29,7 @@ public class Order {
 
   public static Order create(UUID cartId, Customer customer, List<OrderItem> items) {
     if (cartId == null) throw new InvalidArgumentException("CartId in Order cannot be null");
-    if (!customer.isActive()) throw new ModelNullException("Customer cannot be null or deleted");
+    if (!customer.isActive()) throw new ModelNullException("Customer already deleted previously");
     if (items == null) items = new ArrayList<>();
     return new Order(
         null,

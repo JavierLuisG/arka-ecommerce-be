@@ -1,7 +1,7 @@
 package com.store.arka.backend.infrastructure.web.mapper;
 
 import com.store.arka.backend.domain.model.OrderItem;
-import com.store.arka.backend.infrastructure.web.dto.orderitem.response.OrderItemResponseDto;
+import com.store.arka.backend.infrastructure.web.dto.order.response.OrderItemResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -34,5 +34,5 @@ public interface ICartAdapterPort {
 
   List<Cart> findAllCartsByCustomerIdAndItemsProductIdAndStatus(UUID customerId, UUID productId, CartStatus status);
 
-  void deleteById(UUID id);
+  void deleteCartById(UUID id);
 }

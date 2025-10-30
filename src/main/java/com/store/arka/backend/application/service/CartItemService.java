@@ -1,6 +1,7 @@
 package com.store.arka.backend.application.service;
 
 import com.store.arka.backend.application.port.in.ICartItemUseCase;
+import com.store.arka.backend.application.port.in.IProductUseCase;
 import com.store.arka.backend.application.port.out.ICartItemAdapterPort;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.exception.ModelNullException;
@@ -17,10 +18,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CartItemService implements ICartItemUseCase {
   private final ICartItemAdapterPort cartItemAdapterPort;
+  private final IProductUseCase productUseCase;
 
   @Override
   public CartItem addCartItem(UUID cartId, CartItem cartItem) {
     if (cartItem == null) throw new ModelNullException("CartItem cannot be null");
+    productUseCase.validateAvailabilityOrThrow(cartItem.getProductId(), cartItem.getQuantity());
     return cartItemAdapterPort.saveAddCartItem(cartId, cartItem);
   }
 
@@ -49,6 +52,7 @@ public class CartItemService implements ICartItemUseCase {
     ValidateAttributesUtils.validateQuantity(quantity);
     CartItem found = getCartItemById(id);
     found.addQuantity(quantity);
+    productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
     return cartItemAdapterPort.saveUpdateCartItem(found);
   }
 
@@ -57,6 +61,7 @@ public class CartItemService implements ICartItemUseCase {
     ValidateAttributesUtils.validateQuantity(quantity);
     CartItem found = getCartItemById(id);
     found.updateQuantity(quantity);
+    productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
     return cartItemAdapterPort.saveUpdateCartItem(found);
   }
 }

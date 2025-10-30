@@ -50,6 +50,7 @@ public class SupplierEntity {
       joinColumns = @JoinColumn(name = "supplier_id"),
       inverseJoinColumns = @JoinColumn(name = "product_id")
   )
+  @ToString.Exclude
   private List<ProductEntity> products = new ArrayList<>();
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)

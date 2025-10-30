@@ -3,6 +3,7 @@ package com.store.arka.backend.infrastructure.web.mapper;
 import com.store.arka.backend.domain.model.Supplier;
 import com.store.arka.backend.infrastructure.web.dto.supplier.request.SupplierDto;
 import com.store.arka.backend.infrastructure.web.dto.supplier.response.SupplierResponseDto;
+import com.store.arka.backend.infrastructure.web.dto.supplier.response.SupplierResponseToPurchaseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -44,6 +45,20 @@ public class SupplierDtoMapper {
         domain.getStatus(),
         domain.getCreatedAt(),
         domain.getUpdatedAt()
+    );
+  }
+
+  public SupplierResponseToPurchaseDto toPurchaseDto(Supplier domain) {
+    return new SupplierResponseToPurchaseDto(
+        domain.getId(),
+        domain.getCommercialName(),
+        domain.getContactName(),
+        domain.getEmail(),
+        domain.getPhone(),
+        domain.getTaxId(),
+        domain.getAddress(),
+        domain.getCity(),
+        domain.getCountry()
     );
   }
 }
