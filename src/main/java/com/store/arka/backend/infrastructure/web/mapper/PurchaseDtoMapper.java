@@ -2,9 +2,13 @@ package com.store.arka.backend.infrastructure.web.mapper;
 
 import com.store.arka.backend.domain.model.Purchase;
 import com.store.arka.backend.infrastructure.web.dto.purchase.request.CreatePurchaseDto;
+import com.store.arka.backend.infrastructure.web.dto.purchase.request.ReceivePurchaseDto;
 import com.store.arka.backend.infrastructure.web.dto.purchase.response.PurchaseResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -13,6 +17,18 @@ public class PurchaseDtoMapper {
   private final PurchaseItemDtoMapper purchaseItemDtoMapper;
 
   public Purchase toDomain(CreatePurchaseDto dto) {
+    return new Purchase(
+        null,
+        null,
+        purchaseItemDtoMapper.toDomain(dto.purchaseItems()),
+        null,
+        null,
+        null,
+        null
+    );
+  }
+
+  public Purchase toDomain(ReceivePurchaseDto dto) {
     return new Purchase(
         null,
         null,

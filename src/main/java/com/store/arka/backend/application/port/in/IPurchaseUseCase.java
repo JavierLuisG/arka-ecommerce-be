@@ -39,7 +39,7 @@ public interface IPurchaseUseCase {
 
   void confirmPurchaseById(UUID id);
 
-  void receivePurchaseById(UUID id);
+  void receivePurchaseById(UUID id, Purchase purchase);
 
   void closePurchaseById(UUID id);
 

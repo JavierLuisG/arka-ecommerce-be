@@ -53,4 +53,9 @@ public class PurchaseItem {
   public void recalculateSubtotal() {
     this.subtotal = unitCost.multiply(BigDecimal.valueOf(quantity));
   }
+
+  public boolean hasCorrectQuantity(Integer quantity) {
+    ValidateAttributesUtils.validateQuantity(quantity);
+    return this.quantity.equals(quantity);
+  }
 }

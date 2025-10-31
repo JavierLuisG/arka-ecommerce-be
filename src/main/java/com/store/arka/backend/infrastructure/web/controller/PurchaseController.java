@@ -4,6 +4,7 @@ import com.store.arka.backend.application.port.in.IPurchaseUseCase;
 import com.store.arka.backend.domain.enums.PurchaseStatus;
 import com.store.arka.backend.infrastructure.web.dto.MessageResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.purchase.request.CreatePurchaseDto;
+import com.store.arka.backend.infrastructure.web.dto.purchase.request.ReceivePurchaseDto;
 import com.store.arka.backend.infrastructure.web.dto.purchase.request.UpdateQuantityToPurchaseItemDto;
 import com.store.arka.backend.infrastructure.web.dto.purchase.response.PurchaseResponseDto;
 import com.store.arka.backend.infrastructure.web.mapper.PurchaseDtoMapper;
@@ -163,9 +164,11 @@ public class PurchaseController {
   }
 
   @PutMapping("/{id}/receive")
-  public ResponseEntity<MessageResponseDto> receivePurchaseById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> receivePurchaseById(
+      @PathVariable("id") String id,
+      @RequestBody @Valid ReceivePurchaseDto request) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    purchaseUseCase.receivePurchaseById(uuid);
+    purchaseUseCase.receivePurchaseById(uuid, mapper.toDomain(request));
     return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully received with id: " + id));
   }
 

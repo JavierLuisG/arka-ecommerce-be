@@ -1,7 +1,7 @@
 package com.store.arka.backend.infrastructure.web.mapper;
 
 import com.store.arka.backend.domain.model.PurchaseItem;
-import com.store.arka.backend.infrastructure.web.dto.purchase.request.CreatePurchaseItemDto;
+import com.store.arka.backend.infrastructure.web.dto.purchase.request.ReceivePurchaseItemDto;
 import com.store.arka.backend.infrastructure.web.dto.purchase.response.PurchaseItemResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ public class PurchaseItemDtoMapper {
     );
   }
 
-  public List<PurchaseItem> toDomain(List<CreatePurchaseItemDto> listDto) {
+  public List<PurchaseItem> toDomain(List<ReceivePurchaseItemDto> listDto) {
     List<PurchaseItem> response = new ArrayList<>();
     listDto.forEach(dto -> {
       response.add(new PurchaseItem(
@@ -33,7 +33,7 @@ public class PurchaseItemDtoMapper {
           dto.productId(),
           null,
           dto.quantity(),
-          null,
+          dto.unitCost(),
           null,
           null
       ));

@@ -51,7 +51,7 @@ public class Purchase {
     return items.stream().anyMatch(item -> item.getProductId().equals(productId));
   }
 
-  public void addOrderItem(Product product, Integer quantity, BigDecimal unitCost) {
+  public void addPurchaseItem(Product product, Integer quantity, BigDecimal unitCost) {
     ensurePurchaseIsModifiable();
     items.stream()
         .filter(purchaseItem -> purchaseItem.getProductId().equals(product.getId()))
@@ -66,7 +66,7 @@ public class Purchase {
     recalculateTotal();
   }
 
-  public void updateOrderItem(Product product, Integer quantity) {
+  public void updatePurchaseItem(Product product, Integer quantity) {
     ensurePurchaseIsModifiable();
     items.stream()
         .filter(purchaseItem -> purchaseItem.getProductId().equals(product.getId()))
@@ -81,7 +81,7 @@ public class Purchase {
         );
   }
 
-  public void removeOrderItem(Product product) {
+  public void removePurchaseItem(Product product) {
     ensurePurchaseIsModifiable();
     PurchaseItem found = this.items.stream()
         .filter(purchaseItem -> purchaseItem.getProductId().equals(product.getId()))
@@ -97,9 +97,16 @@ public class Purchase {
     this.status = PurchaseStatus.CONFIRMED;
   }
 
+  public void reschedule() {
+    if (status != PurchaseStatus.CONFIRMED && status != PurchaseStatus.RESCHEDULED) {
+      throw new InvalidStateException("Purchase must be CONFIRMED or RESCHEDULED to be marked RECEIVED");
+    }
+    this.status = PurchaseStatus.RESCHEDULED;
+  }
+
   public void receive() {
-    if (status != PurchaseStatus.CONFIRMED) {
-      throw new InvalidStateException("Purchase must be CONFIRMED to be marked RECEIVED");
+    if (status != PurchaseStatus.CONFIRMED && status != PurchaseStatus.RESCHEDULED) {
+      throw new InvalidStateException("Purchase must be CONFIRMED or RESCHEDULED to be marked RECEIVED");
     }
     this.status = PurchaseStatus.RECEIVED;
   }

@@ -9,9 +9,9 @@ import com.store.arka.backend.domain.enums.*;
 import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.domain.model.*;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PurchaseService implements IPurchaseUseCase {
   private final IPurchaseAdapterPort purchaseAdapterPort;
+  private final PurchaseReschedulerService reschedulerService;
   private final ISupplierUseCase supplierUseCase;
   private final IProductUseCase productUseCase;
   private final IPurchaseItemUseCase purchaseItemUseCase;
@@ -34,7 +35,7 @@ public class PurchaseService implements IPurchaseUseCase {
     List<PurchaseItem> purchaseItems = new ArrayList<>();
     purchase.getItems().forEach(item -> {
       Product productFound = findProductOrThrow(item.getProductId());
-      purchaseItems.add(PurchaseItem.create(productFound, item.getQuantity(), productFound.getPrice()));
+      purchaseItems.add(PurchaseItem.create(productFound, item.getQuantity(), item.getUnitCost()));
     });
     Purchase created = Purchase.create(supplierFound, purchaseItems);
     return purchaseAdapterPort.saveCreatePurchase(created);
@@ -171,7 +172,7 @@ public class PurchaseService implements IPurchaseUseCase {
     if (!purchaseFound.containsProduct(productFound.getId())) {
       throw new ProductNotFoundInOperationException("Product not found in Purchase id " + purchaseFound.getId());
     }
-    purchaseFound.removeOrderItem(productFound);
+    purchaseFound.removePurchaseItem(productFound);
     return purchaseAdapterPort.saveUpdatePurchase(purchaseFound);
   }
 
@@ -185,10 +186,18 @@ public class PurchaseService implements IPurchaseUseCase {
 
   @Override
   @Transactional
-  public void receivePurchaseById(UUID id) {
+  public void receivePurchaseById(UUID id, Purchase receivedPurchase) {
     Purchase purchaseFound = getPurchaseById(id);
-    purchaseFound.receive();
-    purchaseAdapterPort.saveUpdatePurchase(purchaseFound);
+    try {
+      validateReceivedPurchase(receivedPurchase, purchaseFound);
+      receivedPurchase.getItems().forEach(item ->
+          productUseCase.increaseStock(item.getProductId(), item.getQuantity()));
+      purchaseFound.receive();
+      purchaseAdapterPort.saveUpdatePurchase(purchaseFound);
+    } catch (BusinessException ex) {
+      reschedulerService.markPurchaseAsRescheduled(purchaseFound);
+      throw ex;
+    }
   }
 
   @Override
@@ -224,5 +233,26 @@ public class PurchaseService implements IPurchaseUseCase {
         .findFirst()
         .orElseThrow(() -> new ProductNotFoundInOperationException(
             "Product " + productId + " not found in Purchase " + purchaseFound.getId()));
+  }
+
+  private static void validateReceivedPurchase(Purchase receivedPurchase, Purchase purchaseFound) {
+    if (purchaseFound.getItems().size() != receivedPurchase.getItems().size()) {
+      throw new InvalidArgumentException("Number of products does not match original purchase");
+    }
+    receivedPurchase.getItems().forEach(item -> {
+      PurchaseItem itemFound = purchaseFound.getItems().stream()
+          .filter(purchaseItem -> purchaseItem.getProductId().equals(item.getProductId()))
+          .findFirst()
+          .orElseThrow(() -> new InvalidArgumentException(
+              "Product " + item.getProduct().getName() + " not found in original purchase"));
+      if (!itemFound.hasCorrectQuantity(item.getQuantity())) {
+        throw new InvalidArgumentException(String.format(
+            "Quantity mismatch for product %s (expected %d, received %d)",
+            itemFound.getProduct().getName(),
+            itemFound.getQuantity(),
+            item.getQuantity()
+        ));
+      }
+    });
   }
 }

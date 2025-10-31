@@ -11,6 +11,6 @@ public record CreatePurchaseDto(
     UUID supplierId,
     @Valid
     @NotNull(message = "Purchase_items is required")
-    List<CreatePurchaseItemDto> purchaseItems
+    List<ReceivePurchaseItemDto> purchaseItems
 ) {
 }
