@@ -203,14 +203,8 @@ public class PurchaseService implements IPurchaseUseCase {
   @Transactional
   public void deletePurchaseById(UUID id) {
     Purchase purchaseFound = getPurchaseById(id);
-    throwIfNotConfirmed(purchaseFound);
+    purchaseFound.ensurePurchaseIsModifiable();
     purchaseAdapterPort.deletePurchaseById(purchaseFound.getId());
-  }
-
-  private static void throwIfNotConfirmed(Purchase purchaseFound) {
-    if (purchaseFound.getStatus() != PurchaseStatus.CONFIRMED) {
-      throw new InvalidStateException("Purchase CONFIRMED, cannot be modified");
-    }
   }
 
   private Supplier findSupplierOrThrow(UUID supplierId) {
