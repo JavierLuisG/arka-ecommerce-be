@@ -1,6 +1,5 @@
 package com.store.arka.backend.infrastructure.persistence.entity;
 
-import com.store.arka.backend.domain.model.Product;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.*;
@@ -16,8 +15,8 @@ import java.util.UUID;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "purchase_items")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Table(name = "purchase_items", uniqueConstraints = @UniqueConstraint(columnNames = {"product_id", "purchase_id"}))
 public class PurchaseItemEntity {
   @Id
   @EqualsAndHashCode.Include

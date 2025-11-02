@@ -3,6 +3,8 @@ package com.store.arka.backend.infrastructure.persistence.mapper;
 import com.store.arka.backend.domain.model.Order;
 import com.store.arka.backend.infrastructure.persistence.entity.OrderEntity;
 import com.store.arka.backend.infrastructure.persistence.entity.OrderItemEntity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +16,8 @@ import java.util.List;
 public class OrderMapper {
   private final CustomerMapper customerMapper;
   private final OrderItemMapper orderItemMapper;
+  @PersistenceContext
+  private EntityManager entityManager;
 
   public Order toDomain(OrderEntity entity) {
     if (entity == null) return null;
@@ -45,5 +49,10 @@ public class OrderMapper {
     entityList.forEach(item -> item.setOrder(entity));
     entity.setItems(entityList);
     return entity;
+  }
+
+  public OrderEntity toReference(Order domain) {
+    if (domain == null) return null;
+    return entityManager.getReference(OrderEntity.class, domain.getId());
   }
 }

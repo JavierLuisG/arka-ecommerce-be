@@ -3,10 +3,7 @@ package com.store.arka.backend.application.service;
 import com.store.arka.backend.application.port.in.*;
 import com.store.arka.backend.application.port.out.ICartAdapterPort;
 import com.store.arka.backend.application.port.out.IOrderAdapterPort;
-import com.store.arka.backend.domain.enums.CartStatus;
-import com.store.arka.backend.domain.enums.CustomerStatus;
-import com.store.arka.backend.domain.enums.OrderStatus;
-import com.store.arka.backend.domain.enums.ProductStatus;
+import com.store.arka.backend.domain.enums.*;
 import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.domain.model.*;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
@@ -26,6 +23,7 @@ public class OrderService implements IOrderUseCase {
   private final ICartAdapterPort cartAdapterPort;
   private final IProductUseCase productUseCase;
   private final ICustomerUseCase customerUseCase;
+  private final INotificationUseCase notificationUseCase;
 
   @Override
   @Transactional
@@ -185,7 +183,8 @@ public class OrderService implements IOrderUseCase {
     orderFound.getItems()
         .forEach(orderItem -> productUseCase.decreaseStock(orderItem.getProductId(), orderItem.getQuantity()));
     orderFound.confirm();
-    orderAdapterPort.saveUpdateOrder(orderFound);
+    Order saved = orderAdapterPort.saveUpdateOrder(orderFound);
+    notificationUseCase.createNotification(Notification.create(saved.getCustomer(), saved, NotificationType.ORDER_CONFIRMED));
   }
 
   @Override
@@ -193,7 +192,8 @@ public class OrderService implements IOrderUseCase {
   public void payOrderById(UUID id) {
     Order orderFound = getOrderById(id);
     orderFound.pay();
-    orderAdapterPort.saveUpdateOrder(orderFound);
+    Order saved = orderAdapterPort.saveUpdateOrder(orderFound);
+    notificationUseCase.createNotification(Notification.create(saved.getCustomer(), saved, NotificationType.ORDER_PAID));
   }
 
   @Override
@@ -201,7 +201,8 @@ public class OrderService implements IOrderUseCase {
   public void shippedOrderById(UUID id) {
     Order orderFound = getOrderById(id);
     orderFound.shipped();
-    orderAdapterPort.saveUpdateOrder(orderFound);
+    Order saved = orderAdapterPort.saveUpdateOrder(orderFound);
+    notificationUseCase.createNotification(Notification.create(saved.getCustomer(), saved, NotificationType.ORDER_SHIPPED));
   }
 
   @Override
@@ -209,7 +210,8 @@ public class OrderService implements IOrderUseCase {
   public void deliverOrderById(UUID id) {
     Order orderFound = getOrderById(id);
     orderFound.deliver();
-    orderAdapterPort.saveUpdateOrder(orderFound);
+    Order saved = orderAdapterPort.saveUpdateOrder(orderFound);
+    notificationUseCase.createNotification(Notification.create(saved.getCustomer(), saved, NotificationType.ORDER_DELIVERED));
   }
 
   @Override
@@ -219,7 +221,8 @@ public class OrderService implements IOrderUseCase {
     orderFound.getItems()
         .forEach(orderItem -> productUseCase.increaseStock(orderItem.getProductId(), orderItem.getQuantity()));
     orderFound.cancel();
-    orderAdapterPort.saveUpdateOrder(orderFound);
+    Order saved = orderAdapterPort.saveUpdateOrder(orderFound);
+    notificationUseCase.createNotification(Notification.create(saved.getCustomer(), saved, NotificationType.ORDER_CANCELED));
   }
 
   private Cart findCartOrThrow(UUID cartId) {
