@@ -8,14 +8,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class NotificationDtoMapper {
-  private final CustomerDtoMapper customerDtoMapper;
-  private final OrderDtoMapper orderDtoMapper;
 
   public NotificationResponseDto toDto(Notification domain) {
     return new NotificationResponseDto(
         domain.getId(),
-        customerDtoMapper.toOrderDto(domain.getCustomer()),
-        orderDtoMapper.toDto(domain.getOrder()),
+        domain.getOrder().getId(),
+        domain.getCustomer().getId(),
         domain.getType(),
         domain.getMessage(),
         domain.getStatus(),
