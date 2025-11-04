@@ -24,7 +24,6 @@ import java.util.UUID;
 public class PaymentService implements IPaymentUseCase {
   private final IPaymentAdapterPort paymentAdapterPort;
   private final IOrderAdapterPort orderAdapterPort;
-  private final PaymentFailerService paymentFailerService;
 
   @Override
   @Transactional
@@ -96,25 +95,6 @@ public class PaymentService implements IPaymentUseCase {
     found.markCompleted();
     return paymentAdapterPort.saveUpdatePayment(found);
   }
-
-//  @Override
-//  @Transactional
-//  public Payment confirmPaymentById(UUID id) {
-//    Payment found = getPaymentById(id);
-//    if (found.isExpiredByTime()) {
-//      found.markExpired();
-//      log.info("Payment {} expired automatically due to time limit", found.getId());
-//      return paymentAdapterPort.saveUpdatePayment(found);
-//    }
-//    try {
-//      found.validateAmountOrThrow();
-//      found.markCompleted();
-//      return paymentAdapterPort.saveUpdatePayment(found);
-//    } catch (PaymentValidationException | InvalidStateException ex) {
-//      paymentFailerService.markFailPaymentById(found);
-//      throw ex;
-//    }
-//  }
 
   @Override
   @Transactional

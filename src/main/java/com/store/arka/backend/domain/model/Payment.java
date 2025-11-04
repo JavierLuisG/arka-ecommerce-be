@@ -92,14 +92,6 @@ public class Payment {
     return this.amount.compareTo(this.order.getTotal()) != 0;
   }
 
-//  public void amountMismatch() {
-//    if (!isPending()) throw new InvalidStateException("Only PENDING payments can be completed");
-//    if (this.amount.compareTo(this.order.getTotal()) != 0) {
-//      throw new PaymentValidationException("Payment amount " + this.amount + " does not match Order total "
-//          + this.order.getTotal());
-//    }
-//  }
-
   public boolean isCompleted() {
     return this.status == PaymentStatus.COMPLETED;
   }
