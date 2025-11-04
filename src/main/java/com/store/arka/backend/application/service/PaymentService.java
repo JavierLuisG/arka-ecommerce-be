@@ -12,11 +12,13 @@ import com.store.arka.backend.domain.model.Payment;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService implements IPaymentUseCase {
@@ -79,15 +81,40 @@ public class PaymentService implements IPaymentUseCase {
   @Transactional
   public Payment confirmPaymentById(UUID id) {
     Payment found = getPaymentById(id);
-    try {
-      found.validateAmountOrThrow();
-      found.markCompleted();
+    if (found.isExpiredByTime()) {
+      found.markExpired();
+      log.info("Payment {} expired automatically due to time limit", found.getId());
       return paymentAdapterPort.saveUpdatePayment(found);
-    } catch (PaymentValidationException | InvalidStateException ex) {
-      paymentFailerService.markFailPaymentById(found);
-      throw ex;
     }
+    if (found.amountMismatch()) {
+      found.markFailed();
+      if (!found.canRetry()) {
+        found.markExpired();
+      }
+      return paymentAdapterPort.saveUpdatePayment(found);
+    }
+    found.markCompleted();
+    return paymentAdapterPort.saveUpdatePayment(found);
   }
+
+//  @Override
+//  @Transactional
+//  public Payment confirmPaymentById(UUID id) {
+//    Payment found = getPaymentById(id);
+//    if (found.isExpiredByTime()) {
+//      found.markExpired();
+//      log.info("Payment {} expired automatically due to time limit", found.getId());
+//      return paymentAdapterPort.saveUpdatePayment(found);
+//    }
+//    try {
+//      found.validateAmountOrThrow();
+//      found.markCompleted();
+//      return paymentAdapterPort.saveUpdatePayment(found);
+//    } catch (PaymentValidationException | InvalidStateException ex) {
+//      paymentFailerService.markFailPaymentById(found);
+//      throw ex;
+//    }
+//  }
 
   @Override
   @Transactional
@@ -115,7 +142,8 @@ public class PaymentService implements IPaymentUseCase {
   private Order requireOrderConfirmed(UUID orderId) {
     if (orderId == null) throw new InvalidArgumentException("OrderId in Payment cannot be null");
     return orderAdapterPort.findOrderByIdAndStatus(orderId, OrderStatus.CONFIRMED)
-        .orElseThrow(() -> new InvalidStateException("Order must be in CONFIRMED state to create a payment " + orderId));
+        .orElseThrow(() -> new InvalidStateException("Cannot create payment: Order "
+            + orderId + " must be in CONFIRMED state"));
   }
 
   private Order ensureOrderExists(UUID orderId) {

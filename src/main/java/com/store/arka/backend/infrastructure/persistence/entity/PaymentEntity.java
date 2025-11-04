@@ -3,6 +3,7 @@ package com.store.arka.backend.infrastructure.persistence.entity;
 import com.store.arka.backend.domain.enums.PaymentMethod;
 import com.store.arka.backend.domain.enums.PaymentStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -38,6 +39,9 @@ public class PaymentEntity {
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private PaymentStatus status;
+  @Max(3)
+  @Column(name = "failed_attempts", nullable = false)
+  private Integer failedAttempts = 0;
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;

@@ -12,6 +12,8 @@ public class PaymentUpdater {
       entity.setMethod(domain.getMethod());
     if (!entity.getStatus().equals(domain.getStatus()))
       entity.setStatus(domain.getStatus());
+    if (!entity.getFailedAttempts().equals(domain.getFailedAttempts()))
+      entity.setFailedAttempts(domain.getFailedAttempts());
     entity.setProcessedAt(domain.getProcessedAt());
     return entity;
   }

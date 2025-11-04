@@ -18,6 +18,7 @@ public class PaymentMapper {
         entity.getAmount(),
         entity.getMethod(),
         entity.getStatus(),
+        entity.getFailedAttempts(),
         entity.getCreatedAt(),
         entity.getUpdatedAt(),
         entity.getProcessedAt()
@@ -33,6 +34,7 @@ public class PaymentMapper {
         domain.getAmount(),
         domain.getMethod(),
         domain.getStatus(),
+        domain.getFailedAttempts(),
         domain.getCreatedAt(),
         domain.getUpdatedAt(),
         domain.getProcessedAt()
