@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(BusinessException.class)
-  public ResponseEntity<ErrorResponseDto> handlerBusinessException(BusinessException ex, WebRequest webRequest) {
+  public ResponseEntity<ErrorResponseDto> handlerBusiness(BusinessException ex, WebRequest webRequest) {
     log.warn("[GlobalExceptionHandler][Business] {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
         HttpStatus.BAD_REQUEST.value(),
@@ -70,7 +70,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(FieldAlreadyExistsException.class)
-  public ResponseEntity<ErrorResponseDto> handlerFieldAlreadyExistsException(FieldAlreadyExistsException ex, WebRequest webRequest) {
+  public ResponseEntity<ErrorResponseDto> handlerFieldAlreadyExists(FieldAlreadyExistsException ex, WebRequest webRequest) {
     log.warn("[GlobalExceptionHandler][FieldAlreadyExists] Value duplicated: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponseDto(
         HttpStatus.CONFLICT.value(),
@@ -79,7 +79,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(InvalidArgumentException.class)
-  public ResponseEntity<ErrorResponseDto> handlerInvalidArgumentException(
+  public ResponseEntity<ErrorResponseDto> handlerInvalidArgument(
       InvalidArgumentException ex, WebRequest webRequest) {
     log.warn("[GlobalExceptionHandler][InvalidArgument] Invalid argument: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
@@ -89,7 +89,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(InvalidEnumValueException.class)
-  public ResponseEntity<ErrorResponseDto> handleInvalidEnumValueException(
+  public ResponseEntity<ErrorResponseDto> handleInvalidEnumValue(
       InvalidEnumValueException ex, WebRequest request) {
     log.warn("[GlobalExceptionHandler][InvalidEnumValue] Value enum does not exist: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
@@ -100,7 +100,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(InvalidIdException.class)
-  public ResponseEntity<ErrorResponseDto> handleInvalidIdException(InvalidIdException ex, WebRequest webRequest) {
+  public ResponseEntity<ErrorResponseDto> handleInvalidId(InvalidIdException ex, WebRequest webRequest) {
     log.warn("[GlobalExceptionHandler][InvalidId] Invalid format ID: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
         HttpStatus.BAD_REQUEST.value(),
@@ -109,7 +109,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(InvalidStateException.class)
-  public ResponseEntity<ErrorResponseDto> handleInvalidStateException(InvalidStateException ex, WebRequest request) {
+  public ResponseEntity<ErrorResponseDto> handleInvalidState(InvalidStateException ex, WebRequest request) {
     log.warn("[GlobalExceptionHandler][InvalidState] {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
         HttpStatus.BAD_REQUEST.value(),
@@ -119,7 +119,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ItemsEmptyException.class)
-  public ResponseEntity<ErrorResponseDto> handleItemsEmptyException(ItemsEmptyException ex, WebRequest request) {
+  public ResponseEntity<ErrorResponseDto> handleItemsEmpty(ItemsEmptyException ex, WebRequest request) {
     log.warn("[GlobalExceptionHandler][ItemsEmpty] Item list empty: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
         HttpStatus.BAD_REQUEST.value(),
@@ -129,7 +129,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ModelActivationException.class)
-  public ResponseEntity<ErrorResponseDto> handlerModelActivationException(ModelActivationException ex, WebRequest webRequest) {
+  public ResponseEntity<ErrorResponseDto> handlerModelActivation(ModelActivationException ex, WebRequest webRequest) {
     log.error("[GlobalExceptionHandler][ModelActivation] {}", ex.getMessage(), ex);
     return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponseDto(
         HttpStatus.CONFLICT.value(),
@@ -138,7 +138,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ModelDeletionException.class)
-  public ResponseEntity<ErrorResponseDto> handlerProductActivationException(
+  public ResponseEntity<ErrorResponseDto> handlerModelDeletion(
       ModelDeletionException ex, WebRequest webRequest) {
     log.error("[GlobalExceptionHandler][ModelDeletion] {}", ex.getMessage(), ex);
     return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponseDto(
@@ -148,7 +148,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ModelNotAvailableException.class)
-  public ResponseEntity<ErrorResponseDto> handlerProductDeletionException(ModelNotAvailableException ex, WebRequest webRequest) {
+  public ResponseEntity<ErrorResponseDto> handlerModelNotAvailable(ModelNotAvailableException ex, WebRequest webRequest) {
     log.error("[GlobalExceptionHandler][ModelNotAvailable] {}", ex.getMessage(), ex);
     return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponseDto(
         HttpStatus.CONFLICT.value(),
@@ -157,7 +157,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ModelNotFoundException.class)
-  public ResponseEntity<ErrorResponseDto> handlerProductNotFoundException(
+  public ResponseEntity<ErrorResponseDto> handlerModelNotFound(
       ModelNotFoundException ex, WebRequest webRequest) {
     log.error("[GlobalExceptionHandler][ModelNotFound] {}", ex.getMessage(), ex);
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponseDto(
@@ -167,7 +167,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ModelNullException.class)
-  public ResponseEntity<ErrorResponseDto> handlerInvalidPriceException(ModelNullException ex, WebRequest webRequest) {
+  public ResponseEntity<ErrorResponseDto> handlerModelNull(ModelNullException ex, WebRequest webRequest) {
     log.error("[GlobalExceptionHandler][ModelNull] {}", ex.getMessage(), ex);
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
         HttpStatus.BAD_REQUEST.value(),
@@ -175,8 +175,17 @@ public class GlobalExceptionHandler {
         webRequest.getDescription(false)));
   }
 
+  @ExceptionHandler(PaymentValidationException.class)
+  public ResponseEntity<ErrorResponseDto> handlerPaymentValidation(PaymentValidationException ex, WebRequest webRequest) {
+    log.error("[GlobalExceptionHandler][PaymentValidation] {}", ex.getMessage(), ex);
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponseDto(
+        HttpStatus.CONFLICT.value(),
+        ex.getMessage(),
+        webRequest.getDescription(false)));
+  }
+
   @ExceptionHandler(ProductNotFoundInOperationException.class)
-  public ResponseEntity<ErrorResponseDto> handlerProductNotFoundInOrderException(
+  public ResponseEntity<ErrorResponseDto> handlerProductNotFoundInOrder(
       ProductNotFoundInOperationException ex, WebRequest webRequest) {
     log.error("[GlobalExceptionHandler][ProductNotFoundInOrder] {}", ex.getMessage(), ex);
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(

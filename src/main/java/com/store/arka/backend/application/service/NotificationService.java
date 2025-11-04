@@ -98,7 +98,6 @@ public class NotificationService implements INotificationUseCase {
   @Override
   @Transactional
   public void markNotificationAsReadById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
     Notification found = getNotificationById(id);
     found.markAsRead();
     notificationAdapterPort.saveNotification(found);
