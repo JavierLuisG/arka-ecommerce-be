@@ -2,6 +2,7 @@ package com.store.arka.backend.application.service;
 
 import com.store.arka.backend.application.port.in.IPaymentUseCase;
 import com.store.arka.backend.application.port.out.IOrderAdapterPort;
+import com.store.arka.backend.application.port.out.IOrderPaymentSyncPort;
 import com.store.arka.backend.application.port.out.IPaymentAdapterPort;
 import com.store.arka.backend.domain.enums.OrderStatus;
 import com.store.arka.backend.domain.enums.PaymentMethod;
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class PaymentService implements IPaymentUseCase {
   private final IPaymentAdapterPort paymentAdapterPort;
   private final IOrderAdapterPort orderAdapterPort;
+  private final IOrderPaymentSyncPort orderPaymentSyncPort;
 
   @Override
   @Transactional
@@ -89,10 +91,12 @@ public class PaymentService implements IPaymentUseCase {
       found.markFailed();
       if (!found.canRetry()) {
         found.markExpired();
+        orderPaymentSyncPort.markOrderCanceled(found.getOrder().getId());
       }
       return paymentAdapterPort.saveUpdatePayment(found);
     }
     found.markCompleted();
+    orderPaymentSyncPort.markOrderPaid(found.getOrder().getId());
     return paymentAdapterPort.saveUpdatePayment(found);
   }
 
