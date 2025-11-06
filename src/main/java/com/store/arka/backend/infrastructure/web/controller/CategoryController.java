@@ -12,11 +12,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +25,7 @@ public class CategoryController {
   public final ICategoryUseCase categoryUseCase;
   public final CategoryDtoMapper mapper;
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @PostMapping
   public ResponseEntity<CategoryResponseDto> postCategory(@RequestBody @Valid CreateCategoryDto dto) {
     return ResponseEntity.status(HttpStatus.CREATED)
@@ -37,58 +38,52 @@ public class CategoryController {
     return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryById(uuid)));
   }
 
-  @GetMapping("/{id}/status/{status}")
-  public ResponseEntity<CategoryResponseDto> getCategoryByIdAndStatus(
-      @PathVariable("id") String id,
-      @PathVariable("status") String status) {
-    UUID uuid = PathUtils.validateAndParseUUID(id);
-    CategoryStatus statusEnum = PathUtils.validateEnumOrThrow(CategoryStatus.class, status, "CategoryStatus");
-    return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryByIdAndStatus(uuid, statusEnum)));
-  }
-
   @GetMapping("/name/{name}")
   public ResponseEntity<CategoryResponseDto> getCategoryByName(@PathVariable("name") String name) {
     return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryByName(name)));
   }
 
-  @GetMapping("/name/{name}/status/{status}")
-  public ResponseEntity<CategoryResponseDto> getCategoryByNameAndStatus(
-      @PathVariable("name") String name,
-      @PathVariable("status") String status) {
-    CategoryStatus statusEnum = PathUtils.validateEnumOrThrow(CategoryStatus.class, status, "CategoryStatus");
-    return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryByNameAndStatus(name, statusEnum)));
-  }
-
   @GetMapping
-  public ResponseEntity<List<CategoryResponseDto>> getAllCategories() {
-    return ResponseEntity.ok(
-        categoryUseCase.getAllCategories().stream().map(mapper::toDto).collect(Collectors.toList()));
+  public ResponseEntity<List<CategoryResponseDto>> getAllCategories(
+      @RequestParam(required = false) String name,
+      @RequestParam(required = false) String status) {
+
+    if (name == null && status == null) {
+      return ResponseEntity.ok(categoryUseCase.getAllCategories().stream().map(mapper::toDto).toList());
+    }
+    if (status != null && name == null) {
+      CategoryStatus statusEnum = PathUtils.validateEnumOrThrow(CategoryStatus.class, status, "CategoryStatus");
+      return ResponseEntity.ok(categoryUseCase.getAllCategoriesByStatus(statusEnum).stream().map(mapper::toDto).toList());
+    }
+    if (name != null && status != null) {
+      CategoryStatus statusEnum = PathUtils.validateEnumOrThrow(CategoryStatus.class, status, "CategoryStatus");
+      return ResponseEntity.ok(
+          List.of(mapper.toDto(categoryUseCase.getCategoryByNameAndStatus(name, statusEnum))));
+    }
+    return ResponseEntity.ok(List.of(mapper.toDto(categoryUseCase.getCategoryByName(name))));
   }
 
-  @GetMapping("/status/{status}")
-  public ResponseEntity<List<CategoryResponseDto>> getAllCategoriesByStatus(@PathVariable("status") String status) {
-    CategoryStatus statusEnum = PathUtils.validateEnumOrThrow(CategoryStatus.class, status, "CategoryStatus");
-    return ResponseEntity.ok(
-        categoryUseCase.getAllCategoriesByStatus(statusEnum).stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @PutMapping("/{id}")
-  public ResponseEntity<CategoryResponseDto> putCategoryById(
+  public ResponseEntity<CategoryResponseDto> updateFieldsCategory(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdateCategoryDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(categoryUseCase.updateFieldsCategory(uuid, mapper.toDomain(dto))));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @DeleteMapping("/{id}")
-  public ResponseEntity<MessageResponseDto> softDeleteCategoryById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> softDeleteCategory(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    categoryUseCase.deleteCategoryById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Category with id " + id + " eliminated successfully"));
+    categoryUseCase.deleteCategory(uuid);
+    return ResponseEntity.ok(new MessageResponseDto("Category deleted successfully"));
   }
 
-  @PutMapping("/name/{name}/restore")
-  public ResponseEntity<CategoryResponseDto> restoreCategoryByName(@PathVariable("name") String name) {
-    return ResponseEntity.ok(mapper.toDto(categoryUseCase.restoreCategoryByName(name)));
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+  @PutMapping("/{id}/restore")
+  public ResponseEntity<CategoryResponseDto> restoreCategory(@PathVariable("id") String id) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    return ResponseEntity.ok(mapper.toDto(categoryUseCase.restoreCategory(uuid)));
   }
 }

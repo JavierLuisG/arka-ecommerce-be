@@ -4,12 +4,16 @@ import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.infrastructure.web.dto.ErrorListResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.ErrorResponseDto;
 import jakarta.persistence.OptimisticLockException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -248,6 +252,25 @@ public class GlobalExceptionHandler {
         HttpStatus.UNAUTHORIZED.value(),
         "Authentication failed: " + ex.getMessage(),
         webRequest.getDescription(false)
+    ));
+  }
+
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<ErrorResponseDto> handleAuthentication(AuthenticationException ex, WebRequest webRequest) {
+    log.warn("[Unauthorized] ", ex);
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponseDto(
+        HttpStatus.UNAUTHORIZED.value(),
+        "Authentication required or invalid token",
+        webRequest.getDescription(false)));
+  }
+
+  @ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
+  public ResponseEntity<ErrorResponseDto> handleAccessDenied(Exception ex, HttpServletRequest request) {
+    log.warn("[Forbidden] Access denied to '{}': {}", request.getRequestURI(), ex.getMessage());
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponseDto(
+        HttpStatus.FORBIDDEN.value(),
+        "Access denied. You do not have permission to perform this action.",
+        request.getRequestURI()
     ));
   }
 

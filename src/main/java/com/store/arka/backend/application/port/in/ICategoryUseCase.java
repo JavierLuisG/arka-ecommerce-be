@@ -11,8 +11,6 @@ public interface ICategoryUseCase {
 
   Category getCategoryById(UUID id);
 
-  Category getCategoryByIdAndStatus(UUID id, CategoryStatus status);
-
   Category getCategoryByName(String name);
 
   Category getCategoryByNameAndStatus(String name, CategoryStatus status);
@@ -23,7 +21,7 @@ public interface ICategoryUseCase {
 
   Category updateFieldsCategory(UUID id, Category category);
 
-  void deleteCategoryById(UUID id);
+  void deleteCategory(UUID id);
 
-  Category restoreCategoryByName(String name);
+  Category restoreCategory(UUID id);
 }

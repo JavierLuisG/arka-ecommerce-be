@@ -3,8 +3,11 @@ package com.store.arka.backend.infrastructure.persistence.adapter;
 import com.store.arka.backend.application.port.out.ICategoryAdapterPort;
 import com.store.arka.backend.domain.enums.CategoryStatus;
 import com.store.arka.backend.domain.model.Category;
+import com.store.arka.backend.infrastructure.persistence.entity.CategoryEntity;
 import com.store.arka.backend.infrastructure.persistence.mapper.CategoryMapper;
 import com.store.arka.backend.infrastructure.persistence.repository.IJpaCategoryRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,20 +21,21 @@ import java.util.stream.Collectors;
 public class CategoryPersistenceAdapter implements ICategoryAdapterPort {
   private final IJpaCategoryRepository jpaCategoryRepository;
   private final CategoryMapper mapper;
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Override
   public Category saveCategory(Category category) {
-    return mapper.toDomain(jpaCategoryRepository.save(mapper.toEntity(category)));
+    CategoryEntity entity = mapper.toEntity(category);
+    CategoryEntity saved = jpaCategoryRepository.save(entity);
+    entityManager.flush();
+    entityManager.refresh(saved);
+    return mapper.toDomain(saved);
   }
 
   @Override
   public Optional<Category> findCategoryById(UUID id) {
     return jpaCategoryRepository.findById(id).map(mapper::toDomain);
-  }
-
-  @Override
-  public Optional<Category> findCategoryByIdAndStatus(UUID id, CategoryStatus status) {
-    return jpaCategoryRepository.findByIdAndStatus(id, status).map(mapper::toDomain);
   }
 
   @Override

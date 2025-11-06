@@ -3,7 +3,6 @@ spring:
     name: arka-backend
   flyway:
     locations: classpath:db/migration
-    baseline-on-migrate: true
   mail:
     host: smtp.gmail.com
     port: 587
