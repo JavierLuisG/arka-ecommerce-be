@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -227,6 +228,27 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NoResourceFoundException.class)
   public ResponseEntity<Void> handleNoResourceFound(NoResourceFoundException ex) {
     return ResponseEntity.notFound().build();
+  }
+
+  @ExceptionHandler(InternalAuthenticationServiceException.class)
+  public ResponseEntity<ErrorResponseDto> handleInternalAuthError(
+      InternalAuthenticationServiceException ex, WebRequest webRequest) {
+
+    if (ex.getCause() instanceof UserNotFoundException userNotFound) {
+      log.warn("[GlobalExceptionHandler][Auth] {}", userNotFound.getMessage());
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponseDto(
+          HttpStatus.NOT_FOUND.value(),
+          userNotFound.getMessage(),
+          webRequest.getDescription(false)
+      ));
+    }
+
+    log.error("[GlobalExceptionHandler][Auth] Unexpected auth error", ex);
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponseDto(
+        HttpStatus.UNAUTHORIZED.value(),
+        "Authentication failed: " + ex.getMessage(),
+        webRequest.getDescription(false)
+    ));
   }
 
   @ExceptionHandler(Exception.class)

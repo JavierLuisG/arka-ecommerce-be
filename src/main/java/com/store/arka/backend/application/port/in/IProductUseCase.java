@@ -30,7 +30,7 @@ public interface IProductUseCase {
 
   void increaseStock(UUID id, Integer quantity);
 
-  void deleteProductById(UUID id);
+  void softDeleteProductById(UUID id);
 
   Product restoreProductBySku(String sku);
 

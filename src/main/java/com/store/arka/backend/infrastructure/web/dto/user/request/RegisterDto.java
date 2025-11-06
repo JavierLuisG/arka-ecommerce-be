@@ -1,0 +1,15 @@
+package com.store.arka.backend.infrastructure.web.dto.user.request;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+public record RegisterDto(
+    @NotBlank(message = "User_name is required")
+    String userName,
+    @Email(message = "Email format is invalid")
+    @NotBlank(message = "Email is required")
+    String email,
+    @NotBlank(message = "Password is required")
+    String password
+) {
+}

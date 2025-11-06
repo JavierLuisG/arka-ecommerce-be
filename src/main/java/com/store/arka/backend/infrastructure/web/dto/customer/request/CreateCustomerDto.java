@@ -25,7 +25,7 @@ public record CreateCustomerDto(
     )
     String lastName,
     @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
+    @Email(message = "Email format is invalid")
     @Size(min = 10, max = 100, message = "Email must be between 10 and 100 characters")
     String email,
     @NotBlank(message = "Phone is required")

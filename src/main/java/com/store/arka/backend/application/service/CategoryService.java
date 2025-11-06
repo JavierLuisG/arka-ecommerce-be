@@ -60,16 +60,19 @@ public class CategoryService implements ICategoryUseCase {
   @Transactional
   public Category getCategoryByName(String name) {
     if (name == null || name.isBlank()) throw new InvalidArgumentException("Name is required");
-    return categoryAdapterPort.findCategoryByName(name)
-        .orElseThrow(() -> new ModelNotFoundException("Category with name " + name + " not found"));
+    String normalizedName = name.trim().toLowerCase();
+    return categoryAdapterPort.findCategoryByName(normalizedName)
+        .orElseThrow(() -> new ModelNotFoundException("Category with name " + normalizedName + " not found"));
   }
 
   @Override
   @Transactional
   public Category getCategoryByNameAndStatus(String name, CategoryStatus status) {
     if (name == null || name.isBlank()) throw new InvalidArgumentException("Name is required");
-    return categoryAdapterPort.findCategoryByNameAndStatus(name, status)
-        .orElseThrow(() -> new ModelNotFoundException("Category with name " + name + " and status " + status + " not found"));
+    String normalizedName = name.trim().toLowerCase();
+    return categoryAdapterPort.findCategoryByNameAndStatus(normalizedName, status)
+        .orElseThrow(() -> new ModelNotFoundException(
+            "Category with name " + normalizedName + " and status " + status + " not found"));
   }
 
   @Override

@@ -124,9 +124,9 @@ public class ProductController {
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<MessageResponseDto> deleteProductById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> softDeleteProductById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    productUseCase.deleteProductById(uuid);
+    productUseCase.softDeleteProductById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Product has been successfully deleted with id: " + id));
   }
 

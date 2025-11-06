@@ -16,7 +16,7 @@ public record UpdateFieldsCustomerDto(
     @Size(min = 1, max = 50, message = "Last name must be between 1 and 50 characters")
     String lastName,
     @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
+    @Email(message = "Email format is invalid")
     @Size(min = 10, max = 100, message = "Email must be between 10 and 100 characters")
     String email,
     @NotBlank(message = "Phone is required")

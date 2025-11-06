@@ -141,7 +141,7 @@ public class ProductService implements IProductUseCase {
 
   @Override
   @Transactional
-  public void deleteProductById(UUID id) {
+  public void softDeleteProductById(UUID id) {
     Product found = getProductByIdAndStatus(id, ProductStatus.ACTIVE);
     found.delete();
     productAdapterPort.saveUpdateProduct(found);

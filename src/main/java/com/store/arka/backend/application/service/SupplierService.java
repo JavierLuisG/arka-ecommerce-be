@@ -74,16 +74,19 @@ public class SupplierService implements ISupplierUseCase {
   @Transactional
   public Supplier getSupplierByEmail(String email) {
     if (email == null || email.isBlank()) throw new InvalidArgumentException("Email in supplier is required");
-    return supplierAdapterPort.findSupplierByEmail(email)
-        .orElseThrow(() -> new ModelNotFoundException("Supplier with email " + email + " not found"));
+    String normalizedEmail = email.trim().toLowerCase();
+    return supplierAdapterPort.findSupplierByEmail(normalizedEmail)
+        .orElseThrow(() -> new ModelNotFoundException("Supplier with email " + normalizedEmail + " not found"));
   }
 
   @Override
   @Transactional
   public Supplier getSupplierByEmailAndStatus(String email, SupplierStatus status) {
     if (email == null || email.isBlank()) throw new InvalidArgumentException("Email in supplier is required");
-    return supplierAdapterPort.findSupplierByEmailAndStatus(email, status)
-        .orElseThrow(() -> new ModelNotFoundException("Supplier with email " + email + " and status " + status + " not found"));
+    String normalizedEmail = email.trim().toLowerCase();
+    return supplierAdapterPort.findSupplierByEmailAndStatus(normalizedEmail, status)
+        .orElseThrow(() -> new ModelNotFoundException("Supplier with email " + normalizedEmail +
+            " and status " + status + " not found"));
   }
 
   @Override

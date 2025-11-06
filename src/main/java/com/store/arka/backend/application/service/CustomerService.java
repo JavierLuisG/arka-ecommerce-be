@@ -3,7 +3,6 @@ package com.store.arka.backend.application.service;
 import com.store.arka.backend.application.port.in.ICustomerUseCase;
 import com.store.arka.backend.application.port.in.IDocumentUseCase;
 import com.store.arka.backend.application.port.out.ICustomerAdapterPort;
-import com.store.arka.backend.application.port.out.IDocumentAdapterPort;
 import com.store.arka.backend.domain.enums.Country;
 import com.store.arka.backend.domain.enums.CustomerStatus;
 import com.store.arka.backend.domain.exception.FieldAlreadyExistsException;
@@ -25,7 +24,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CustomerService implements ICustomerUseCase {
   private final ICustomerAdapterPort customerAdapterPort;
-  private final IDocumentAdapterPort documentAdapterPort;
   private final IDocumentUseCase documentUseCase;
 
   @Override
