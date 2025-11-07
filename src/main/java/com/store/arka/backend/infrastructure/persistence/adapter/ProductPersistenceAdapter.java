@@ -55,18 +55,8 @@ public class ProductPersistenceAdapter implements IProductAdapterPort {
   }
 
   @Override
-  public Optional<Product> findProductByIdAndStatus(UUID id, ProductStatus status) {
-    return jpaProductRepository.findByIdAndStatus(id, status).map(mapper::toDomain);
-  }
-
-  @Override
   public Optional<Product> findProductBySku(String sku) {
     return jpaProductRepository.findBySku(sku).map(mapper::toDomain);
-  }
-
-  @Override
-  public Optional<Product> findProductBySkuAndStatus(String sku, ProductStatus status) {
-    return jpaProductRepository.findBySkuAndStatus(sku, status).map(mapper::toDomain);
   }
 
   @Override

@@ -203,6 +203,8 @@ public class SupplierService implements ISupplierUseCase {
 
   private Product findProductOrThrow(UUID productId) {
     if (productId == null) throw new InvalidArgumentException("ProductId in Supplier cannot be null");
-    return productUseCase.getProductByIdAndStatus(productId, ProductStatus.ACTIVE);
+    Product product =  productUseCase.getProductById(productId);
+    product.isDeleted();
+    return product;
   }
 }

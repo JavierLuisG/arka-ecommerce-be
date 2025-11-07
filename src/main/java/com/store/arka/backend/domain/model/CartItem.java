@@ -21,7 +21,7 @@ public class CartItem {
   private LocalDateTime addedAt;
 
   public static CartItem create(Product product, Integer quantity) {
-    ValidateAttributesUtils.throwIfProductNull(product);
+    ValidateAttributesUtils.throwIfModelNull(product, "Product in CartItem");
     ValidateAttributesUtils.validateQuantity(quantity);
     return new CartItem(
         null,

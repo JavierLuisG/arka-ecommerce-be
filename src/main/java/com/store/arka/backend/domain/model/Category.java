@@ -1,10 +1,9 @@
 package com.store.arka.backend.domain.model;
 
 import com.store.arka.backend.domain.enums.CategoryStatus;
-import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelActivationException;
 import com.store.arka.backend.domain.exception.ModelDeletionException;
-import com.store.arka.backend.domain.exception.ModelNullException;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -25,14 +24,13 @@ public class Category {
   private LocalDateTime updatedAt;
 
   public static Category create(String name, String description) {
-    validateNotNullOrEmpty(name, "Name");
-    validateNotNullOrEmpty(description, "Description");
-    String normalizeName = normalizeName(name);
-    String normalizeDescription = normalizeText(description);
+    String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(name, "Category Name");
+    String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
+    ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
     return new Category(
         null,
-        normalizeName,
-        normalizeDescription,
+        normalizedName,
+        normalizedDescription,
         CategoryStatus.ACTIVE,
         null,
         null
@@ -40,16 +38,20 @@ public class Category {
   }
 
   public void update(Category category) {
-    if (category == null) throw new ModelNullException("Category cannot be null");
-    validateNotNullOrEmpty(category.getDescription(), "Description");
-    String description = normalizeText(category.getDescription());
-    if (isDeleted()) throw new ModelDeletionException("Category already deleted previously");
-    this.description = description;
+    ValidateAttributesUtils.throwIfModelNull(category, "Category");
+    String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
+    if (isDeleted()) throw new ModelDeletionException("Category deleted previously");
+    this.description = normalizedDescription;
   }
 
   public void delete() {
     if (isDeleted()) throw new ModelDeletionException("Category is already marked as deleted");
     this.status = CategoryStatus.ELIMINATED;
+  }
+
+  public void restore() {
+    if (isActive()) throw new ModelActivationException("Category is already active and cannot be restored again");
+    this.status = CategoryStatus.ACTIVE;
   }
 
   public boolean isDeleted() {
@@ -58,22 +60,5 @@ public class Category {
 
   public boolean isActive() {
     return this.status == CategoryStatus.ACTIVE;
-  }
-
-  public void restore() {
-    if (isActive()) throw new ModelActivationException("Category is already active and cannot be restored again");
-    this.status = CategoryStatus.ACTIVE;
-  }
-
-  private static String normalizeText(String value) {
-    return value.trim();
-  }
-
-  private static String normalizeName(String value) {
-    return value.toLowerCase().trim();
-  }
-
-  private static void validateNotNullOrEmpty(String value, String field) {
-    if (value == null || value.trim().isEmpty()) throw new InvalidArgumentException(field + " cannot be null or empty");
   }
 }

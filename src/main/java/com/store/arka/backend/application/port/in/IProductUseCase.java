@@ -12,11 +12,7 @@ public interface IProductUseCase {
 
   Product getProductById(UUID id);
 
-  Product getProductByIdAndStatus(UUID id, ProductStatus status);
-
   Product getProductBySku(String sku);
-
-  Product getProductBySkuAndStatus(String sku, ProductStatus status);
 
   List<Product> getAllProducts();
 
@@ -30,9 +26,9 @@ public interface IProductUseCase {
 
   void increaseStock(UUID id, Integer quantity);
 
-  void softDeleteProductById(UUID id);
+  void softDeleteProduct(UUID id);
 
-  Product restoreProductBySku(String sku);
+  Product restoreProduct(UUID id);
 
   void validateAvailabilityOrThrow(UUID id, Integer quantity);
 }

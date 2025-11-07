@@ -223,7 +223,9 @@ public class PurchaseService implements IPurchaseUseCase {
 
   private Product findProductOrThrow(UUID productId) {
     if (productId == null) throw new InvalidArgumentException("ProductId in Purchase cannot be null");
-    return productUseCase.getProductByIdAndStatus(productId, ProductStatus.ACTIVE);
+    Product product =  productUseCase.getProductById(productId);
+    product.isDeleted();
+    return product;
   }
 
   private static PurchaseItem findPurchaseItemOrThrow(UUID productId, Purchase purchaseFound) {

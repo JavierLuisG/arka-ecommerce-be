@@ -26,17 +26,9 @@ public class CategoryService implements ICategoryUseCase {
   @Override
   @Transactional
   public Category createCategory(Category category) {
-    if (category == null) {
-      log.warn("Attempted to create a null category");
-      throw new ModelNullException("Category request body cannot be null");
-    }
-    String normalizedName = category.getName().trim().toLowerCase();
-    String normalizedDescription = category.getDescription().trim();
-    List<String> forbiddenNames = List.of("null", "default", "admin");
-    if (forbiddenNames.contains(normalizedName)) {
-      log.warn("Invalid category name attempted: {}", normalizedName);
-      throw new InvalidArgumentException("Category name " + normalizedName + " is not allowed");
-    }
+    ValidateAttributesUtils.throwIfModelNull(category, "Category");
+    String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(category.getName(), "Category Name");
+    String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(category.getDescription(), "Description");
     if (categoryAdapterPort.existsCategoryByName(normalizedName)) {
       log.warn("Category name '{}' already exists", normalizedName);
       throw new FieldAlreadyExistsException("Category with name " + normalizedName +
@@ -44,7 +36,7 @@ public class CategoryService implements ICategoryUseCase {
     }
     Category created = Category.create(normalizedName, normalizedDescription);
     Category saved = categoryAdapterPort.saveCategory(created);
-    log.info("Created new category: {} (ID: {})", saved.getName(), saved.getId());
+    log.info("Created new category {}, ID: {})", saved.getName(), saved.getId());
     return saved;
   }
 
@@ -55,33 +47,19 @@ public class CategoryService implements ICategoryUseCase {
     return categoryAdapterPort.findCategoryById(id)
         .orElseThrow(() -> {
           log.warn("Category with ID {} not found", id);
-          return new ModelNotFoundException("Category with id " + id + " not found");
+          return new ModelNotFoundException("Category with ID " + id + " not found");
         });
   }
 
   @Override
   @Transactional
   public Category getCategoryByName(String name) {
-    if (name == null || name.isBlank()) {
-      log.warn("Category name is null or blank");
-      throw new InvalidArgumentException("Name is required");
-    }
-    String normalizedName = name.trim().toLowerCase();
+    String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(name, "Category Name");
     return categoryAdapterPort.findCategoryByName(normalizedName)
         .orElseThrow(() -> {
           log.warn("Category with name '{}' not found", normalizedName);
           return new ModelNotFoundException("Category with name " + normalizedName + " not found");
         });
-  }
-
-  @Override
-  @Transactional
-  public Category getCategoryByNameAndStatus(String name, CategoryStatus status) {
-    if (name == null || name.isBlank()) throw new InvalidArgumentException("Name is required");
-    String normalizedName = name.trim().toLowerCase();
-    return categoryAdapterPort.findCategoryByNameAndStatus(normalizedName, status)
-        .orElseThrow(() -> new ModelNotFoundException(
-            "Category with name " + normalizedName + " and status " + status + " not found"));
   }
 
   @Override
@@ -103,13 +81,14 @@ public class CategoryService implements ICategoryUseCase {
   public Category updateFieldsCategory(UUID id, Category category) {
     Category found = getCategoryById(id);
     found.update(category);
-    log.info("Updated category ID {} with new description", id);
-    return categoryAdapterPort.saveCategory(found);
+    Category saved = categoryAdapterPort.saveCategory(found);
+    log.info("Updated category ID {} with new description", saved.getId());
+    return saved;
   }
 
   @Override
   @Transactional
-  public void deleteCategory(UUID id) {
+  public void softDeleteCategory(UUID id) {
     Category found = getCategoryById(id);
     found.delete();
     categoryAdapterPort.saveCategory(found);

@@ -238,7 +238,9 @@ public class OrderService implements IOrderUseCase {
 
   private Product findProductOrThrow(UUID productId) {
     if (productId == null) throw new InvalidArgumentException("ProductId in Order cannot be null");
-    return productUseCase.getProductByIdAndStatus(productId, ProductStatus.ACTIVE);
+    Product product =  productUseCase.getProductById(productId);
+    product.isDeleted();
+    return product;
   }
 
   private static OrderItem findOrderItemOrThrow(UUID productId, Order orderFound) {

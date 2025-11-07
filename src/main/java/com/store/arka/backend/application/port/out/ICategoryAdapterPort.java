@@ -14,8 +14,6 @@ public interface ICategoryAdapterPort {
 
   Optional<Category> findCategoryByName(String name);
 
-  Optional<Category> findCategoryByNameAndStatus(String name, CategoryStatus status);
-
   List<Category> findAllCategories();
 
   List<Category> findAllCategoriesByStatus(CategoryStatus status);

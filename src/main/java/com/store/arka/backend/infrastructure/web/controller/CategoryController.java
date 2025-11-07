@@ -45,22 +45,12 @@ public class CategoryController {
 
   @GetMapping
   public ResponseEntity<List<CategoryResponseDto>> getAllCategories(
-      @RequestParam(required = false) String name,
       @RequestParam(required = false) String status) {
-
-    if (name == null && status == null) {
+    if (status == null) {
       return ResponseEntity.ok(categoryUseCase.getAllCategories().stream().map(mapper::toDto).toList());
     }
-    if (status != null && name == null) {
-      CategoryStatus statusEnum = PathUtils.validateEnumOrThrow(CategoryStatus.class, status, "CategoryStatus");
-      return ResponseEntity.ok(categoryUseCase.getAllCategoriesByStatus(statusEnum).stream().map(mapper::toDto).toList());
-    }
-    if (name != null && status != null) {
-      CategoryStatus statusEnum = PathUtils.validateEnumOrThrow(CategoryStatus.class, status, "CategoryStatus");
-      return ResponseEntity.ok(
-          List.of(mapper.toDto(categoryUseCase.getCategoryByNameAndStatus(name, statusEnum))));
-    }
-    return ResponseEntity.ok(List.of(mapper.toDto(categoryUseCase.getCategoryByName(name))));
+    CategoryStatus statusEnum = PathUtils.validateEnumOrThrow(CategoryStatus.class, status, "CategoryStatus");
+    return ResponseEntity.ok(categoryUseCase.getAllCategoriesByStatus(statusEnum).stream().map(mapper::toDto).toList());
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -76,7 +66,7 @@ public class CategoryController {
   @DeleteMapping("/{id}")
   public ResponseEntity<MessageResponseDto> softDeleteCategory(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    categoryUseCase.deleteCategory(uuid);
+    categoryUseCase.softDeleteCategory(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Category deleted successfully"));
   }
 

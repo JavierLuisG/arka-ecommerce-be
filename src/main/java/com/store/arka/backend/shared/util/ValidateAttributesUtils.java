@@ -3,29 +3,42 @@ package com.store.arka.backend.shared.util;
 import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.exception.QuantityBadRequestException;
-import com.store.arka.backend.domain.model.Product;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 public final class ValidateAttributesUtils {
   public static void throwIfIdNull(UUID id) {
-    if (id == null) {
-      throw new InvalidArgumentException("Id is required");
-    }
+    log.warn("Id is required");
+    if (id == null) throw new InvalidArgumentException("Id is required");
   }
 
-  public static void throwIfProductNull(Product product) {
-    if (product == null) {
-      throw new ModelNullException("Product cannot be null");
-    }
+  public static void throwIfModelNull(Object product, String name) {
+    log.warn("An attempt was made to enter a null value: {}", name);
+    if (product == null) throw new ModelNullException(name + " cannot be null");
   }
 
   public static void validateQuantity(Integer quantity) {
-    if (quantity == null) {
-      throw new InvalidArgumentException("Quantity is required, cannot be null");
+    if (quantity == null) throw new InvalidArgumentException("Quantity is required, cannot be null");
+    if (quantity <= 0) throw new QuantityBadRequestException("Quantity must be greater than 0");
+  }
+
+  public static String throwIfValueNotAllowed(String value, String name) {
+    throwIfNullOrEmpty(value, name);
+    String normalized = value.trim().toLowerCase();
+    List<String> forbiddenNames = List.of("null", "default", "admin");
+    if (forbiddenNames.contains(normalized)) {
+      log.warn("An attempt was made to enter a wrong value: {}", name);
+      throw new InvalidArgumentException("This " + name + " is not allowed");
     }
-    if (quantity <= 0) {
-      throw new QuantityBadRequestException("Quantity must be greater than 0");
-    }
+    return normalized;
+  }
+
+  public static String throwIfNullOrEmpty(String value, String field) {
+    log.warn("An attempt was made to enter a null value: {}", field);
+    if (value == null || value.isEmpty()) throw new InvalidArgumentException(field + " cannot be null or empty");
+    return value.trim();
   }
 }

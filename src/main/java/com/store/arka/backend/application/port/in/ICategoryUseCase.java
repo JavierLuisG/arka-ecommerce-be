@@ -13,15 +13,13 @@ public interface ICategoryUseCase {
 
   Category getCategoryByName(String name);
 
-  Category getCategoryByNameAndStatus(String name, CategoryStatus status);
-
   List<Category> getAllCategories();
 
   List<Category> getAllCategoriesByStatus(CategoryStatus status);
 
   Category updateFieldsCategory(UUID id, Category category);
 
-  void deleteCategory(UUID id);
+  void softDeleteCategory(UUID id);
 
   Category restoreCategory(UUID id);
 }

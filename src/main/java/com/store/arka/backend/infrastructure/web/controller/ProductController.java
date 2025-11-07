@@ -17,6 +17,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class ProductController {
   public final IProductUseCase productUseCase;
   public final ProductDtoMapper mapper;
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @PostMapping
   public ResponseEntity<ProductResponseDto> postProduct(@RequestBody @Valid CreateProductDto dto) {
     return ResponseEntity.status(HttpStatus.CREATED)
@@ -42,96 +44,88 @@ public class ProductController {
     return ResponseEntity.ok(mapper.toDto(productUseCase.getProductById(uuid)));
   }
 
-  @GetMapping("/{id}/status/{status}")
-  public ResponseEntity<ProductResponseDto> getProductByIdAndStatus(
-      @PathVariable("id") String id,
-      @PathVariable("status") String status) {
-    UUID uuid = PathUtils.validateAndParseUUID(id);
-    ProductStatus statusEnum = PathUtils.validateEnumOrThrow(ProductStatus.class, status, "ProductStatus");
-    return ResponseEntity.ok(mapper.toDto(productUseCase.getProductByIdAndStatus(uuid, statusEnum)));
-  }
-
   @GetMapping("/sku/{sku}")
-  public ResponseEntity<ProductResponseDto> getProductIsNotDeletedBySku(@PathVariable("sku") String sku) {
+  public ResponseEntity<ProductResponseDto> getProductBySku(@PathVariable("sku") String sku) {
     return ResponseEntity.ok(mapper.toDto(productUseCase.getProductBySku(sku)));
   }
 
-  @GetMapping("/sku/{sku}/status/{status}")
-  public ResponseEntity<ProductResponseDto> getProductIsNotDeletedBySkuAndStatus(
-      @PathVariable("sku") String sku,
-      @PathVariable("status") String status) {
-    ProductStatus statusEnum = PathUtils.validateEnumOrThrow(ProductStatus.class, status, "ProductStatus");
-    return ResponseEntity.ok(mapper.toDto(productUseCase.getProductBySkuAndStatus(sku, statusEnum)));
-  }
-
   @GetMapping
-  public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
-    return ResponseEntity.ok(productUseCase.getAllProducts().stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
-  @GetMapping("/status/{status}")
-  public ResponseEntity<List<ProductResponseDto>> getAllProductsByStatus(@PathVariable("status") String status) {
+  public ResponseEntity<List<ProductResponseDto>> getAllProducts(
+      @RequestParam(required = false) String status
+  ) {
+    if (status == null) {
+      return ResponseEntity.ok(productUseCase.getAllProducts().stream().map(mapper::toDto).collect(Collectors.toList()));
+    }
     ProductStatus statusEnum = PathUtils.validateEnumOrThrow(ProductStatus.class, status, "ProductStatus");
     return ResponseEntity.ok(productUseCase.getAllProductsByStatus(statusEnum)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @PutMapping("/{id}")
-  public ResponseEntity<ProductResponseDto> putFieldsProductById(
+  public ResponseEntity<ProductResponseDto> updateFieldsProduct(
       @PathVariable("id") String id,
       @RequestBody UpdateFieldsProductDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(productUseCase.updateFieldsProduct(uuid, mapper.toDomain(dto))));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @PutMapping("/{id}/categories")
-  public ResponseEntity<ProductResponseDto> putCategoriesToProductById(
+  public ResponseEntity<ProductResponseDto> updateCategoriesToProduct(
       @PathVariable("id") String id,
       @RequestBody UpdateProductCategoriesDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(productUseCase.updateCategories(uuid, dto.categories())));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @PutMapping("/{id}/decrease-stock")
-  public ResponseEntity<MessageResponseDto> decreaseStockProductById(
+  public ResponseEntity<MessageResponseDto> decreaseStockProduct(
       @PathVariable("id") String id,
       @RequestBody @Valid ModifyStockRequestDto decrease) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     productUseCase.decreaseStock(uuid, decrease.quantity());
-    return ResponseEntity.ok(new MessageResponseDto("Successful decrease for product with id: " + id));
+    return ResponseEntity.ok(new MessageResponseDto(
+        "Successful decrease " + decrease.quantity() + " for product ID " + id));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @PutMapping("/{id}/increase-stock")
-  public ResponseEntity<MessageResponseDto> increaseStockProductById(
+  public ResponseEntity<MessageResponseDto> increaseStockProduct(
       @PathVariable("id") String id,
       @RequestBody @Valid ModifyStockRequestDto increase) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     productUseCase.increaseStock(uuid, increase.quantity());
-    return ResponseEntity.ok(new MessageResponseDto("Successful increase for product with id: " + id));
+    return ResponseEntity.ok(new MessageResponseDto(
+        "Successful increase " + increase.quantity() + " for product ID " + id));
   }
 
   @GetMapping("/{id}/availability")
-  public ResponseEntity<CheckProductResponseDto> checkAvailabilityById(
+  public ResponseEntity<CheckProductResponseDto> checkAvailability(
       @PathVariable("id") String id,
       @RequestParam("quantity") @Min(1) int quantity) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    Product product = productUseCase.getProductByIdAndStatus(uuid, ProductStatus.ACTIVE);
+    Product product = productUseCase.getProductById(uuid);
     return ResponseEntity.ok(new CheckProductResponseDto(
-        product.isAvailable(quantity),
+        product.isAvailableByStock(quantity),
         quantity,
         product.getStock()
     ));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @DeleteMapping("/{id}")
-  public ResponseEntity<MessageResponseDto> softDeleteProductById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> softDeleteProduct(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    productUseCase.softDeleteProductById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Product has been successfully deleted with id: " + id));
+    productUseCase.softDeleteProduct(uuid);
+    return ResponseEntity.ok(new MessageResponseDto("Product deleted successfully"));
   }
 
-  @PutMapping("/sku/{sku}/restore")
-  public ResponseEntity<ProductResponseDto> restoreProductBySku(@PathVariable("sku") String sku) {
-    return ResponseEntity.ok(mapper.toDto(productUseCase.restoreProductBySku(sku)));
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+  @PutMapping("/{id}/restore")
+  public ResponseEntity<ProductResponseDto> restoreProduct(@PathVariable("id") String id) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    return ResponseEntity.ok(mapper.toDto(productUseCase.restoreProduct(uuid)));
   }
 }

@@ -14,11 +14,7 @@ public interface IProductAdapterPort {
 
   Optional<Product> findProductById(UUID id);
 
-  Optional<Product> findProductByIdAndStatus(UUID id, ProductStatus status);
-
   Optional<Product> findProductBySku(String sku);
-
-  Optional<Product> findProductBySkuAndStatus(String sku, ProductStatus status);
 
   List<Product> findAllProducts();
 

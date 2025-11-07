@@ -9,11 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IJpaProductRepository extends JpaRepository<ProductEntity, UUID> {
-  Optional<ProductEntity> findByIdAndStatus(UUID id, ProductStatus status);
-
   Optional<ProductEntity> findBySku(String sku);
-
-  Optional<ProductEntity> findBySkuAndStatus(String sku, ProductStatus status);
 
   List<ProductEntity> findAllByStatus(ProductStatus status);
 

@@ -44,11 +44,6 @@ public class CategoryPersistenceAdapter implements ICategoryAdapterPort {
   }
 
   @Override
-  public Optional<Category> findCategoryByNameAndStatus(String name, CategoryStatus status) {
-    return jpaCategoryRepository.findByNameAndStatus(name, status).map(mapper::toDomain);
-  }
-
-  @Override
   public List<Category> findAllCategories() {
     return jpaCategoryRepository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
   }

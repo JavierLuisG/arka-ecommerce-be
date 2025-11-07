@@ -29,17 +29,17 @@ public class Product {
   private LocalDateTime updatedAt;
 
   public static Product create(String sku, String name, String description, BigDecimal price, Integer stock) {
-    validateNotNullOrEmpty(name, "Name");
-    validateNotNullOrEmpty(description, "Description");
-    validateNotNullOrEmpty(sku, "SKU");
+    String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(name, "Product Name");
+    String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
+    String normalizedSku = ValidateAttributesUtils.throwIfNullOrEmpty(sku, "SKU");
     validatePrice(price);
     ProductStatus assignStatus = ProductStatus.ACTIVE;
     if (!validateStock(stock)) assignStatus = ProductStatus.EXHAUSTED;
     return new Product(
         null,
-        sku,
-        name,
-        description,
+        normalizedSku,
+        normalizedName,
+        normalizedDescription,
         price,
         null,
         stock,
@@ -50,16 +50,83 @@ public class Product {
   }
 
   public void updateFields(String name, String description, BigDecimal price) {
-    validateNotNullOrEmpty(name, "Name");
-    validateNotNullOrEmpty(description, "Description");
+    throwIfDeleted();
+    String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(name, "Product Name");
+    String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
     validatePrice(price);
-    this.name = name;
-    this.description = description;
+    this.name = normalizedName;
+    this.description = normalizedDescription;
     this.price = price;
   }
 
   public void updateCategories(Set<Category> categories) {
+    throwIfDeleted();
     this.categories = categories;
+  }
+
+  public boolean isAvailableByStock(int quantity) {
+    throwIfDeleted();
+    return this.stock >= quantity && isNotDeleted();
+  }
+
+  public void decreaseStock(int quantity) {
+    throwIfDeleted();
+    validateAvailability(quantity);
+    this.stock -= quantity;
+    if (this.stock == 0) this.status = ProductStatus.EXHAUSTED;
+  }
+
+  public void increaseStock(int quantity) {
+    throwIfDeleted();
+    ValidateAttributesUtils.validateQuantity(quantity);
+    this.stock += quantity;
+    if (isExhausted()) this.status = ProductStatus.ACTIVE;
+  }
+
+  public boolean configurationThreshold() {
+    return this.stock <= 20;
+  }
+
+  public void delete() {
+    if (isDeleted()) throw new ModelDeletionException("Product is already marked as deleted");
+    this.status = ProductStatus.ELIMINATED;
+  }
+
+  public void restore() {
+    if (isNotDeleted()) throw new ModelActivationException("Product is already active and cannot be restored again");
+    if (this.stock == 0) {
+      this.status = ProductStatus.EXHAUSTED;
+    } else {
+      this.status = ProductStatus.ACTIVE;
+    }
+  }
+
+  public void validateAvailability(int quantity) {
+    ValidateAttributesUtils.validateQuantity(quantity);
+    throwIfDeleted();
+    if (this.stock < quantity) {
+      throw new QuantityBadRequestException("Product with id " + this.id + " does not have sufficient stock");
+    }
+  }
+
+  public boolean isActive() {
+    return this.status == ProductStatus.ACTIVE;
+  }
+
+  public boolean isExhausted() {
+    return this.status == ProductStatus.EXHAUSTED;
+  }
+
+  public boolean isDeleted() {
+    return this.status == ProductStatus.ELIMINATED;
+  }
+
+  public boolean isNotDeleted() {
+    return isActive() || isExhausted();
+  }
+
+  public void throwIfDeleted() {
+    if (isDeleted()) throw new ModelDeletionException("Product deleted previously");
   }
 
   private static boolean validateStock(Integer stock) {
@@ -71,56 +138,5 @@ public class Product {
   private static void validatePrice(BigDecimal price) {
     if (price == null) throw new InvalidArgumentException("Price cannot be null");
     if (price.signum() <= 0) throw new InvalidArgumentException("Price cannot be less than 0");
-  }
-
-  private static void validateNotNullOrEmpty(String value, String field) {
-    if (value == null || value.trim().isEmpty()) throw new InvalidArgumentException(field + " cannot be null or empty");
-  }
-
-  public boolean isNotDeleted() {
-    return this.status == ProductStatus.ACTIVE || this.status == ProductStatus.EXHAUSTED;
-  }
-
-  public boolean isAvailable(int quantity) {
-    return this.stock >= quantity && isNotDeleted();
-  }
-
-  public void validateAvailability(int quantity) {
-    ValidateAttributesUtils.validateQuantity(quantity);
-    if (this.stock < quantity) {
-      throw new QuantityBadRequestException("Product with id " + this.id + " does not have sufficient stock");
-    }
-    if (!isNotDeleted()) throw new ModelNotAvailableException("Product is not active");
-  }
-
-  public void decreaseStock(int quantity) {
-    validateAvailability(quantity);
-    this.stock -= quantity;
-    if (this.stock == 0) this.status = ProductStatus.EXHAUSTED;
-  }
-
-  public void increaseStock(int quantity) {
-    if (this.status == ProductStatus.ELIMINATED) throw new ModelDeletionException("Product deleted previously");
-    ValidateAttributesUtils.validateQuantity(quantity);
-    this.stock += quantity;
-    if (this.status == ProductStatus.EXHAUSTED) this.status = ProductStatus.ACTIVE;
-  }
-
-  public boolean lowStock() {
-    return this.stock <= 20;
-  }
-
-  public void delete() {
-    if (!isNotDeleted()) throw new ModelDeletionException("Product already deleted previously");
-    this.status = ProductStatus.ELIMINATED;
-  }
-
-  public void restore() {
-    if (isNotDeleted()) throw new ModelActivationException("Product already active previously");
-    if (this.stock == 0) {
-      this.status = ProductStatus.EXHAUSTED;
-    } else {
-      this.status = ProductStatus.ACTIVE;
-    }
   }
 }
