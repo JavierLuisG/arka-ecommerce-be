@@ -9,15 +9,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IJpaCustomerRepository extends JpaRepository<CustomerEntity, UUID> {
-  Optional<CustomerEntity> findByIdAndStatus(UUID id, CustomerStatus status);
-
   Optional<CustomerEntity> findByDocumentNumber(String number);
 
-  Optional<CustomerEntity> findByDocumentNumberAndStatus(String number, CustomerStatus status);
-
   List<CustomerEntity> findAllByStatus(CustomerStatus status);
-
-  boolean existsByDocumentNumber(String number);
 
   boolean existsByEmail(String email);
 }

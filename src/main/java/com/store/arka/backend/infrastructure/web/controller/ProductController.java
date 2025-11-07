@@ -50,15 +50,26 @@ public class ProductController {
   }
 
   @GetMapping
-  public ResponseEntity<List<ProductResponseDto>> getAllProducts(
-      @RequestParam(required = false) String status
-  ) {
+  public ResponseEntity<List<ProductResponseDto>> getAllProducts(@RequestParam(required = false) String status) {
     if (status == null) {
       return ResponseEntity.ok(productUseCase.getAllProducts().stream().map(mapper::toDto).collect(Collectors.toList()));
     }
     ProductStatus statusEnum = PathUtils.validateEnumOrThrow(ProductStatus.class, status, "ProductStatus");
     return ResponseEntity.ok(productUseCase.getAllProductsByStatus(statusEnum)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
+  }
+
+  @GetMapping("/{id}/availability")
+  public ResponseEntity<CheckProductResponseDto> checkAvailability(
+      @PathVariable("id") String id,
+      @RequestParam("quantity") @Min(1) int quantity) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    Product product = productUseCase.getProductById(uuid);
+    return ResponseEntity.ok(new CheckProductResponseDto(
+        product.isAvailableByStock(quantity),
+        quantity,
+        product.getStock()
+    ));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -99,19 +110,6 @@ public class ProductController {
     productUseCase.increaseStock(uuid, increase.quantity());
     return ResponseEntity.ok(new MessageResponseDto(
         "Successful increase " + increase.quantity() + " for product ID " + id));
-  }
-
-  @GetMapping("/{id}/availability")
-  public ResponseEntity<CheckProductResponseDto> checkAvailability(
-      @PathVariable("id") String id,
-      @RequestParam("quantity") @Min(1) int quantity) {
-    UUID uuid = PathUtils.validateAndParseUUID(id);
-    Product product = productUseCase.getProductById(uuid);
-    return ResponseEntity.ok(new CheckProductResponseDto(
-        product.isAvailableByStock(quantity),
-        quantity,
-        product.getStock()
-    ));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")

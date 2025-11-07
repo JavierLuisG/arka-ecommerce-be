@@ -196,13 +196,15 @@ public class CartService implements ICartUseCase {
 
   private Customer findCustomerOrThrow(UUID customerId) {
     if (customerId == null) throw new InvalidArgumentException("CustomerId in Cart cannot be null");
-    return customerUseCase.getCustomerByIdAndStatus(customerId, CustomerStatus.ACTIVE);
+    Customer customer = customerUseCase.getCustomerById(customerId);
+    customer.throwIfDeleted();
+    return customer;
   }
 
   private Product findProductOrThrow(UUID productId) {
     if (productId == null) throw new InvalidArgumentException("ProductId in Cart cannot be null");
     Product product =  productUseCase.getProductById(productId);
-    product.isDeleted();
+    product.throwIfDeleted();
     return product;
   }
 

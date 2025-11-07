@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,70 +26,58 @@ public class CustomerController {
   private final ICustomerUseCase customerUseCase;
   private final CustomerDtoMapper mapper;
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PostMapping
   public ResponseEntity<CustomerResponseDto> postCustomer(@RequestBody @Valid CreateCustomerDto dto) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(mapper.toDto(customerUseCase.createCustomer(mapper.toDomain(dto))));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @GetMapping("/{id}")
   public ResponseEntity<CustomerResponseDto> getCustomerById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerById(uuid)));
   }
 
-  @GetMapping("/{id}/status/{status}")
-  public ResponseEntity<CustomerResponseDto> getCustomerByIdAndStatus(
-      @PathVariable("id") String id,
-      @PathVariable("status") String status) {
-    UUID uuid = PathUtils.validateAndParseUUID(id);
-    CustomerStatus statusEnum = PathUtils.validateEnumOrThrow(CustomerStatus.class, status, "CustomerStatus");
-    return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerByIdAndStatus(uuid, statusEnum)));
-  }
-
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @GetMapping("/number/{number}")
   public ResponseEntity<CustomerResponseDto> getCustomerByNumber(@PathVariable("number") String number) {
     return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerByDocumentNumber(number)));
   }
 
-  @GetMapping("/number/{number}/status/{status}")
-  public ResponseEntity<CustomerResponseDto> getCustomerByNumberAndStatus(
-      @PathVariable("number") String number,
-      @PathVariable("status") String status) {
-    CustomerStatus statusEnum = PathUtils.validateEnumOrThrow(CustomerStatus.class, status, "CustomerStatus");
-    return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerByDocumentNumberAndStatus(number, statusEnum)));
-  }
-
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping
-  public ResponseEntity<List<CustomerResponseDto>> getAllCustomers() {
-    return ResponseEntity.ok(
-        customerUseCase.getAllCustomers().stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
-  @GetMapping("/status/{status}")
-  public ResponseEntity<List<CustomerResponseDto>> getAllCustomersByStatus(@PathVariable("status") String status) {
+  public ResponseEntity<List<CustomerResponseDto>> getAllCustomers(@RequestParam(required = false) String status) {
+    if (status == null) {
+      return ResponseEntity.ok(customerUseCase.getAllCustomers().stream().map(mapper::toDto).collect(Collectors.toList()));
+    }
     CustomerStatus statusEnum = PathUtils.validateEnumOrThrow(CustomerStatus.class, status, "CustomerStatus");
-    return ResponseEntity.ok(
-        customerUseCase.getAllCustomersByStatus(statusEnum).stream().map(mapper::toDto).collect(Collectors.toList()));
+    return ResponseEntity.ok(customerUseCase.getAllCustomersByStatus(statusEnum)
+        .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}")
-  public ResponseEntity<CustomerResponseDto> putCustomerById(
+  public ResponseEntity<CustomerResponseDto> updateCustomer(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdateFieldsCustomerDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(customerUseCase.updateFieldsCustomer(uuid, mapper.toDomain(dto))));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @DeleteMapping("/{id}")
-  public ResponseEntity<MessageResponseDto> softDeleteCustomerById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> softDeleteCustomer(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    customerUseCase.deleteCustomerById(uuid);
+    customerUseCase.softDeleteCustomer(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Customer with id " + id + " eliminated successfully"));
   }
 
-  @PutMapping("/number/{number}/restore")
-  public ResponseEntity<CustomerResponseDto> restoreCustomerByNumber(@PathVariable("number") String number) {
-    return ResponseEntity.ok(mapper.toDto(customerUseCase.restoreCustomerByDocumentNumber(number)));
+  @PreAuthorize("hasAnyRole('ADMIN')")
+  @PutMapping("/{id}/restore")
+  public ResponseEntity<CustomerResponseDto> restoreCustomer(@PathVariable("id") String id) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    return ResponseEntity.ok(mapper.toDto(customerUseCase.restoreCustomer(uuid)));
   }
 }

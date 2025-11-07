@@ -58,18 +58,8 @@ public class CustomerPersistenceAdapter implements ICustomerAdapterPort {
   }
 
   @Override
-  public Optional<Customer> findCustomerByIdAndStatus(UUID id, CustomerStatus status) {
-    return jpaCustomerRepository.findByIdAndStatus(id, status).map(mapper::toDomain);
-  }
-
-  @Override
   public Optional<Customer> findCustomerByDocumentNumber(String number) {
     return jpaCustomerRepository.findByDocumentNumber(number).map(mapper::toDomain);
-  }
-
-  @Override
-  public Optional<Customer> findCustomerByDocumentNumberAndStatus(String number, CustomerStatus status) {
-    return jpaCustomerRepository.findByDocumentNumberAndStatus(number, status).map(mapper::toDomain);
   }
 
   @Override
@@ -80,11 +70,6 @@ public class CustomerPersistenceAdapter implements ICustomerAdapterPort {
   @Override
   public List<Customer> findAllCustomersByStatus(CustomerStatus status) {
     return jpaCustomerRepository.findAllByStatus(status).stream().map(mapper::toDomain).collect(Collectors.toList());
-  }
-
-  @Override
-  public boolean existsCustomerByDocumentNumber(String number) {
-    return jpaCustomerRepository.existsByDocumentNumber(number);
   }
 
   @Override

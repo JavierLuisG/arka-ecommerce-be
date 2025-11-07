@@ -2,9 +2,11 @@ package com.store.arka.backend.domain.model;
 
 import com.store.arka.backend.domain.enums.DocumentStatus;
 import com.store.arka.backend.domain.enums.DocumentType;
+import com.store.arka.backend.domain.enums.ProductStatus;
 import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelActivationException;
 import com.store.arka.backend.domain.exception.ModelDeletionException;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -21,16 +23,16 @@ public class Document {
   private DocumentType type;
   private String number;
   private DocumentStatus status;
-  private LocalDateTime createdAt;
+  private final LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
   public static Document create(DocumentType type, String number) {
-    validateNotNullOrEmpty(type.toString(), "Document type");
-    validateNotNullOrEmpty(number, "Document number");
+    ValidateAttributesUtils.throwIfModelNull(type, "Document type");
+    String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(number, "Document number");
     return new Document(
         null,
         type,
-        number,
+        normalizedNumber,
         DocumentStatus.ACTIVE,
         null,
         null
@@ -38,34 +40,32 @@ public class Document {
   }
 
   public void update(DocumentType type, String number) {
-    validateNotNullOrEmpty(type.toString(), "Document type");
-    validateNotNullOrEmpty(number, "Document number");
+    throwIfDeleted();
+    ValidateAttributesUtils.throwIfModelNull(type, "Document type");
+    String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(number, "Document number");
     this.type = type;
-    this.number = number;
-  }
-
-  private static void validateNotNullOrEmpty(String value, String field) {
-    if (value == null || value.trim().isEmpty()) throw new InvalidArgumentException(field + " cannot be null or empty");
-  }
-
-  public boolean isActive() {
-    return this.status.equals(DocumentStatus.ACTIVE);
+    this.number = normalizedNumber;
   }
 
   public void delete() {
-    if (isActive()) {
-      this.status = DocumentStatus.ELIMINATED;
-    } else {
-      throw new ModelDeletionException("Document already deleted previously");
-    }
+    if (isDeleted()) throw new ModelDeletionException("Document is already marked as deleted");
+    this.status = DocumentStatus.ELIMINATED;
   }
 
   public void restore() {
-    if (this.status == DocumentStatus.ELIMINATED) {
-      this.status = DocumentStatus.ACTIVE;
-      this.updatedAt = LocalDateTime.now();
-    } else {
-      throw new ModelActivationException("Document already active previously");
-    }
+    if (isActive()) throw new ModelActivationException("Document is already active and cannot be restored again");
+    this.status = DocumentStatus.ACTIVE;
+  }
+
+  public boolean isActive() {
+    return this.status == DocumentStatus.ACTIVE;
+  }
+
+  public boolean isDeleted() {
+    return this.status == DocumentStatus.ELIMINATED;
+  }
+
+  public void throwIfDeleted() {
+    if (isDeleted()) throw new ModelDeletionException("Document deleted previously");
   }
 }

@@ -12,11 +12,7 @@ public interface IDocumentAdapterPort {
 
   Optional<Document> findDocumentById(UUID id);
 
-  Optional<Document> findDocumentByIdAndStatus(UUID id, DocumentStatus status);
-
   Optional<Document> findDocumentByNumber(String number);
-
-  Optional<Document> findDocumentByNumberAndStatus(String number, DocumentStatus status);
 
   List<Document> findAllDocuments();
 

@@ -11,11 +11,7 @@ public interface IDocumentUseCase {
 
   Document getDocumentById(UUID id);
 
-  Document getDocumentByIdAndStatus(UUID id, DocumentStatus status);
-
   Document getDocumentByNumber(String number);
-
-  Document getDocumentByNumberAndStatus(String number, DocumentStatus status);
 
   List<Document> getAllDocuments();
 
@@ -23,7 +19,7 @@ public interface IDocumentUseCase {
 
   Document updateDocument(UUID id, Document document);
 
-  void deleteDocument(UUID id);
+  void softDeleteDocument(UUID id);
 
-  Document restoreDocumentByNumber(String number);
+  Document restoreDocument(UUID id);
 }

@@ -9,11 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IJpaDocumentRepository extends JpaRepository<DocumentEntity, UUID> {
-  Optional<DocumentEntity> findByIdAndStatus(UUID id, DocumentStatus status);
-
   Optional<DocumentEntity> findByNumber(String number);
-
-  Optional<DocumentEntity> findByNumberAndStatus(String number, DocumentStatus status);
 
   List<DocumentEntity> findAllByStatus(DocumentStatus status);
 

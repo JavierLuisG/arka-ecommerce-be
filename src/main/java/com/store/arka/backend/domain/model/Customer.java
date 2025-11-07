@@ -2,9 +2,11 @@ package com.store.arka.backend.domain.model;
 
 import com.store.arka.backend.domain.enums.Country;
 import com.store.arka.backend.domain.enums.CustomerStatus;
+import com.store.arka.backend.domain.enums.DocumentStatus;
 import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelActivationException;
 import com.store.arka.backend.domain.exception.ModelDeletionException;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -32,22 +34,23 @@ public class Customer {
 
   public static Customer create(Document document, String firstName, String lastName, String email, String phone,
                                 String address, String city, Country country) {
-    validateNotNullOrEmpty(firstName, "First name");
-    validateNotNullOrEmpty(lastName, "Last name");
-    validateNotNullOrEmpty(email, "Email");
-    validateNotNullOrEmpty(phone, "Phone");
-    validateNotNullOrEmpty(address, "Address");
-    validateNotNullOrEmpty(city, "City");
-    if (country == null) throw new InvalidArgumentException("Country cannot be null or empty");
+    ValidateAttributesUtils.throwIfModelNull(document, "Document in Customer");
+    String normalizedFirstName = ValidateAttributesUtils.throwIfValueNotAllowed(firstName, "First name");
+    String normalizedLastName = ValidateAttributesUtils.throwIfValueNotAllowed(lastName, "Last name");
+    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email");
+    String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
+    String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
+    String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
+    ValidateAttributesUtils.throwIfModelNull(country.toString(), "Country in Customer");
     return new Customer(
         null,
         document,
-        firstName,
-        lastName,
-        email,
-        phone,
-        address,
-        city,
+        normalizedFirstName,
+        normalizedLastName,
+        normalizedEmail,
+        normalizedPhone,
+        normalizedAddress,
+        normalizedCity,
         country,
         CustomerStatus.ACTIVE,
         null,
@@ -57,45 +60,42 @@ public class Customer {
 
   public void updateFields(String firstName, String lastName, String email, String phone,
                            String address, String city, Country country) {
-    validateNotNullOrEmpty(firstName, "First name");
-    validateNotNullOrEmpty(lastName, "Last name");
-    validateNotNullOrEmpty(email, "Email");
-    validateNotNullOrEmpty(address, "Address");
-    validateNotNullOrEmpty(city, "City");
-    validateNotNullOrEmpty(phone, "Phone");
-    if (country == null) throw new InvalidArgumentException("Country cannot be null or empty");
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.email = email;
-    this.phone = phone;
-    this.address = address;
-    this.city = city;
+    String normalizedFirstName = ValidateAttributesUtils.throwIfValueNotAllowed(firstName, "First name");
+    String normalizedLastName = ValidateAttributesUtils.throwIfValueNotAllowed(lastName, "Last name");
+    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email");
+    String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
+    String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
+    String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
+    ValidateAttributesUtils.throwIfModelNull(country.toString(), "Country in Customer");
+    this.firstName = normalizedFirstName;
+    this.lastName = normalizedLastName;
+    this.email = normalizedEmail;
+    this.phone = normalizedPhone;
+    this.address = normalizedAddress;
+    this.city = normalizedCity;
     this.country = country;
   }
 
-  private static void validateNotNullOrEmpty(String value, String field) {
-    if (value == null || value.trim().isEmpty()) throw new InvalidArgumentException(field + " cannot be null or empty");
+  public void delete() {
+    if (isDeleted()) throw new ModelDeletionException("Customer is already marked as deleted");
+    this.status = CustomerStatus.ELIMINATED;
+  }
+
+  public void restore() {
+    if (isActive()) throw new ModelActivationException("Customer is already active and cannot be restored again");
+    this.status = CustomerStatus.ACTIVE;
   }
 
   public boolean isActive() {
     return this.status == CustomerStatus.ACTIVE;
   }
 
-  public void delete() {
-    if (isActive()) {
-      this.status = CustomerStatus.ELIMINATED;
-    } else {
-      throw new ModelDeletionException("Customer already deleted previously");
-    }
+  public boolean isDeleted() {
+    return this.status == CustomerStatus.ELIMINATED;
   }
 
-  public void restore() {
-    if (this.status == CustomerStatus.ELIMINATED) {
-      this.status = CustomerStatus.ACTIVE;
-      this.updatedAt = LocalDateTime.now();
-    } else {
-      throw new ModelActivationException("Customer already active previously");
-    }
+  public void throwIfDeleted() {
+    if (isDeleted()) throw new ModelDeletionException("Customer deleted previously");
   }
 }
 

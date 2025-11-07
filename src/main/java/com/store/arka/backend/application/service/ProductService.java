@@ -33,7 +33,7 @@ public class ProductService implements IProductUseCase {
     String normalizedSku = ValidateAttributesUtils.throwIfNullOrEmpty(product.getSku(), "SKU");
     if (productAdapterPort.existsProductBySku(normalizedSku)) {
       log.warn("SKU '{}' already exists", normalizedSku);
-      throw new FieldAlreadyExistsException("SKU " + product.getSku() + " already exists. Choose a different SKU");
+      throw new FieldAlreadyExistsException("SKU " + normalizedSku + " already exists. Choose a different SKU");
     }
     Product created = Product.create(
         normalizedSku,
@@ -64,7 +64,7 @@ public class ProductService implements IProductUseCase {
     String normalizedSku = ValidateAttributesUtils.throwIfNullOrEmpty(sku, "SKU");
     return productAdapterPort.findProductBySku(sku)
         .orElseThrow(() -> {
-          log.warn("Product with SKU {} not found", sku);
+          log.warn("Product with SKU {} not found", normalizedSku);
           return new ModelNotFoundException("Product with SKU " + normalizedSku + " not found");
         });
   }

@@ -5,19 +5,19 @@ import com.store.arka.backend.application.port.out.IDocumentAdapterPort;
 import com.store.arka.backend.domain.enums.DocumentStatus;
 import com.store.arka.backend.domain.enums.DocumentType;
 import com.store.arka.backend.domain.exception.FieldAlreadyExistsException;
-import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
-import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.model.Document;
 import com.store.arka.backend.shared.util.PathUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DocumentService implements IDocumentUseCase {
@@ -25,12 +25,17 @@ public class DocumentService implements IDocumentUseCase {
 
   @Override
   public Document createDocument(Document document) {
-    if (document == null) throw new ModelNullException("Document cannot be null");
-    if (documentAdapterPort.existsDocumentByNumber(document.getNumber())) {
-      throw new FieldAlreadyExistsException("Document number already exist");
+    ValidateAttributesUtils.throwIfModelNull(document, "Document");
+    String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(document.getNumber(), "Document number");
+    if (documentAdapterPort.existsDocumentByNumber(normalizedNumber)) {
+      log.warn("Document number '{}' already exists", normalizedNumber);
+      throw new FieldAlreadyExistsException("Document number " + normalizedNumber + " already exists. Choose a different");
     }
-    Document created = Document.create(document.getType(), document.getNumber());
-    return documentAdapterPort.saveDocument(created);
+    DocumentType type = PathUtils.validateEnumOrThrow(DocumentType.class, document.getType().toString(), "DocumentType");
+    Document created = Document.create(type, normalizedNumber);
+    Document saved = documentAdapterPort.saveDocument(created);
+    log.info("Created new document {}, (ID: {}))", saved.getNumber(), saved.getId());
+    return saved;
   }
 
   @Override
@@ -38,71 +43,68 @@ public class DocumentService implements IDocumentUseCase {
   public Document getDocumentById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return documentAdapterPort.findDocumentById(id)
-        .orElseThrow(() -> new ModelNotFoundException("Document with id " + id + " not found"));
-  }
-
-  @Override
-  @Transactional
-  public Document getDocumentByIdAndStatus(UUID id, DocumentStatus status) {
-    ValidateAttributesUtils.throwIfIdNull(id);
-    return documentAdapterPort.findDocumentByIdAndStatus(id, status)
-        .orElseThrow(() -> new ModelNotFoundException("Document with id " + id + " and status " + status + " not found"));
+        .orElseThrow(() -> {
+          log.warn("Document with ID {} not found", id);
+          return new ModelNotFoundException("Document with ID " + id + " not found");
+        });
   }
 
   @Override
   @Transactional
   public Document getDocumentByNumber(String number) {
-    if (number == null || number.isBlank()) throw new InvalidArgumentException("Number is required");
-    return documentAdapterPort.findDocumentByNumber(number)
-        .orElseThrow(() -> new ModelNotFoundException("Document with number " + number + " not found"));
-  }
-
-  @Override
-  @Transactional
-  public Document getDocumentByNumberAndStatus(String number, DocumentStatus status) {
-    if (number == null || number.isBlank()) throw new InvalidArgumentException("Number is required");
-    return documentAdapterPort.findDocumentByNumberAndStatus(number, status)
-        .orElseThrow(() -> new ModelNotFoundException("Document with number " + number + " and status " + status + " not found"));
+    String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(number, "Number");
+    return documentAdapterPort.findDocumentByNumber(normalizedNumber)
+        .orElseThrow(() -> {
+          log.warn("Document with number {} not found", normalizedNumber);
+          return new ModelNotFoundException("Document with number " + normalizedNumber + " not found");
+        });
   }
 
   @Override
   @Transactional
   public List<Document> getAllDocuments() {
+    log.info("Fetching all documents");
     return documentAdapterPort.findAllDocuments();
   }
 
   @Override
   @Transactional
   public List<Document> getAllDocumentsByStatus(DocumentStatus status) {
+    log.info("Fetching all documents with status {}", status);
     return documentAdapterPort.findAllDocumentsByStatus(status);
   }
 
   @Override
   @Transactional
   public Document updateDocument(UUID id, Document document) {
-    if (document == null) throw new ModelNullException("Document cannot be null");
-    DocumentType normalizedType = PathUtils.validateEnumOrThrow(
-        DocumentType.class, document.getType().toString(), "DocumentType");
-    Document found = getDocumentByIdAndStatus(id, DocumentStatus.ACTIVE);
-    if (documentAdapterPort.existsDocumentByNumber(document.getNumber())
-        && !found.getNumber().equals(document.getNumber())) {
-      throw new FieldAlreadyExistsException("Document number already exist");
+    ValidateAttributesUtils.throwIfModelNull(document, "Document");
+    String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(document.getNumber(), "Document number");
+    Document found = getDocumentById(id);
+    if (documentAdapterPort.existsDocumentByNumber(normalizedNumber) && !found.getNumber().equals(normalizedNumber)) {
+      throw new FieldAlreadyExistsException("Document number already exists. Choose a different");
     }
-    found.update(normalizedType, document.getNumber());
-    return documentAdapterPort.saveDocument(found);
+    DocumentType type = PathUtils.validateEnumOrThrow(DocumentType.class, document.getType().toString(), "DocumentType");
+    found.throwIfDeleted();
+    found.update(type, normalizedNumber);
+    Document saved = documentAdapterPort.saveDocument(found);
+    log.info("Updated document ID {} ", saved.getId());
+    return saved;
   }
 
   @Override
-  public void deleteDocument(UUID id) {
-    Document found = getDocumentByIdAndStatus(id, DocumentStatus.ACTIVE);
+  public void softDeleteDocument(UUID id) {
+    Document found = getDocumentById(id);
     found.delete();
     documentAdapterPort.saveDocument(found);
+    log.info("Document ID {} marked as deleted", id);
   }
 
   @Override
-  public Document restoreDocumentByNumber(String number) {
-    Document found = getDocumentByNumberAndStatus(number, DocumentStatus.ELIMINATED);
+  public Document restoreDocument(UUID id) {
+    Document found = getDocumentById(id);
     found.restore();
-    return documentAdapterPort.saveDocument(found);
+    Document restored = documentAdapterPort.saveDocument(found);
+    log.info("Document ID {} restored successfully", id);
+    return restored;
   }
 }

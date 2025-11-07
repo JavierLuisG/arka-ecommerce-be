@@ -118,6 +118,8 @@ public class NotificationService implements INotificationUseCase {
 
   private Customer findCustomerOrThrow(UUID customerId) {
     if (customerId == null) throw new InvalidArgumentException("CustomerId in Notification cannot be null");
-    return customerUseCase.getCustomerByIdAndStatus(customerId, CustomerStatus.ACTIVE);
+    Customer customer = customerUseCase.getCustomerById(customerId);
+    customer.throwIfDeleted();
+    return customer;
   }
 }

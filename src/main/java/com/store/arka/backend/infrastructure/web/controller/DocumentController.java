@@ -9,6 +9,7 @@ import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,49 +23,33 @@ public class DocumentController {
   private final IDocumentUseCase documentUseCase;
   private final DocumentDtoMapper mapper;
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @GetMapping("/{id}")
   public ResponseEntity<DocumentResponseDto> getDocumentById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(documentUseCase.getDocumentById(uuid)));
   }
 
-  @GetMapping("/{id}/status/{status}")
-  public ResponseEntity<DocumentResponseDto> getDocumentByIdAndStatus(
-      @PathVariable("id") String id,
-      @PathVariable("status") String status) {
-    UUID uuid = PathUtils.validateAndParseUUID(id);
-    DocumentStatus statusEnum = PathUtils.validateEnumOrThrow(DocumentStatus.class, status, "DocumentStatus");
-    return ResponseEntity.ok(mapper.toDto(documentUseCase.getDocumentByIdAndStatus(uuid, statusEnum)));
-  }
-
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @GetMapping("/number/{number}")
   public ResponseEntity<DocumentResponseDto> getDocumentByNumber(@PathVariable("number") String number) {
     return ResponseEntity.ok(mapper.toDto(documentUseCase.getDocumentByNumber(number)));
   }
 
-  @GetMapping("/number/{number}/status/{status}")
-  public ResponseEntity<DocumentResponseDto> getDocumentByNumberAndStatus(
-      @PathVariable("number") String number,
-      @PathVariable("status") String status) {
-    DocumentStatus statusEnum = PathUtils.validateEnumOrThrow(DocumentStatus.class, status, "DocumentStatus");
-    return ResponseEntity.ok(mapper.toDto(documentUseCase.getDocumentByNumberAndStatus(number, statusEnum)));
-  }
-
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping
-  public ResponseEntity<List<DocumentResponseDto>> getAllDocuments() {
-    return ResponseEntity.ok(
-        documentUseCase.getAllDocuments().stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
-  @GetMapping("/status/{status}")
-  public ResponseEntity<List<DocumentResponseDto>> getAllDocumentsByStatus(@PathVariable("status") String status) {
+  public ResponseEntity<List<DocumentResponseDto>> getAllDocuments(@RequestParam(required = false) String status) {
+    if (status == null) {
+      return ResponseEntity.ok(documentUseCase.getAllDocuments().stream().map(mapper::toDto).collect(Collectors.toList()));
+    }
     DocumentStatus statusEnum = PathUtils.validateEnumOrThrow(DocumentStatus.class, status, "DocumentStatus");
-    return ResponseEntity.ok(
-        documentUseCase.getAllDocumentsByStatus(statusEnum).stream().map(mapper::toDto).collect(Collectors.toList()));
+    return ResponseEntity.ok(documentUseCase.getAllDocumentsByStatus(statusEnum)
+        .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}")
-  public ResponseEntity<DocumentResponseDto> putDocumentById(
+  public ResponseEntity<DocumentResponseDto> updateDocument(
       @PathVariable("id") String id,
       @RequestBody @Valid DocumentRequestDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);

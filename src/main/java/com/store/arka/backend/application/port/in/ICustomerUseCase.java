@@ -11,11 +11,7 @@ public interface ICustomerUseCase {
 
   Customer getCustomerById(UUID id);
 
-  Customer getCustomerByIdAndStatus(UUID id, CustomerStatus status);
-
   Customer getCustomerByDocumentNumber(String number);
-
-  Customer getCustomerByDocumentNumberAndStatus(String number, CustomerStatus status);
 
   List<Customer> getAllCustomers();
 
@@ -23,7 +19,7 @@ public interface ICustomerUseCase {
 
   Customer updateFieldsCustomer(UUID id, Customer customer);
 
-  void deleteCustomerById(UUID id);
+  void softDeleteCustomer(UUID id);
 
-  Customer restoreCustomerByDocumentNumber(String number);
+  Customer restoreCustomer(UUID id);
 }
