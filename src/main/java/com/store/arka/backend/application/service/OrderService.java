@@ -44,37 +44,37 @@ public class OrderService implements IOrderUseCase {
   @Override
   @Transactional(readOnly = true)
   public Order getOrderById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Order ID");
     return orderAdapterPort.findOrderById(id)
-        .orElseThrow(() -> new ModelNotFoundException("Order with id " + id + " not found"));
+        .orElseThrow(() -> new ModelNotFoundException("Order ID " + id + " not found"));
   }
 
   @Override
   @Transactional(readOnly = true)
   public Order getOrderByIdAndStatus(UUID id, OrderStatus status) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Order ID");
     return orderAdapterPort.findOrderByIdAndStatus(id, status)
-        .orElseThrow(() -> new ModelNotFoundException("Order with id " + id + " and status " + status + " not found"));
+        .orElseThrow(() -> new ModelNotFoundException("Order ID " + id + " and status " + status + " not found"));
   }
 
   @Override
   @Transactional(readOnly = true)
   public Order getOrderByIdAndCustomerId(UUID id, UUID customerId) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Order ID");
     findCustomerOrThrow(customerId);
     return orderAdapterPort.findOrderByIdAndCustomerId(id, customerId)
         .orElseThrow(() -> new ModelNotFoundException(
-            "Order with id " + id + " and customerId " + customerId + " not found"));
+            "Order ID " + id + " and customer ID " + customerId + " not found"));
   }
 
   @Override
   @Transactional(readOnly = true)
   public Order getOrderByIdAndCustomerIdAndStatus(UUID id, UUID customerId, OrderStatus status) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Order ID");
     findCustomerOrThrow(customerId);
     return orderAdapterPort.findOrderByIdAndCustomerIdAndStatus(id, customerId, status)
         .orElseThrow(() -> new ModelNotFoundException(
-            "Order with id " + id + ", customerId " + customerId + " and status " + status + " not found"));
+            "Order ID " + id + ", customer ID " + customerId + " and status " + status + " not found"));
   }
 
   @Override
@@ -154,7 +154,7 @@ public class OrderService implements IOrderUseCase {
     Product productFound = findProductOrThrow(productId);
     orderFound.ensureOrderIsModifiable();
     if (!orderFound.containsProduct(productFound.getId())) {
-      throw new ProductNotFoundInOperationException("Product not found in Order id " + orderFound.getId());
+      throw new ProductNotFoundInOperationException("Product not found in Order ID " + orderFound.getId());
     }
     OrderItem orderItem = findOrderItemOrThrow(productFound.getId(), orderFound);
     orderItemUseCase.updateQuantity(orderItem.getId(), quantity);
@@ -170,7 +170,7 @@ public class OrderService implements IOrderUseCase {
     Product productFound = findProductOrThrow(productId);
     orderFound.ensureOrderIsModifiable();
     if (!orderFound.containsProduct(productFound.getId())) {
-      throw new ProductNotFoundInOperationException("Product not found in Order id " + orderFound.getId());
+      throw new ProductNotFoundInOperationException("Product not found in Order ID " + orderFound.getId());
     }
     orderFound.removeOrderItem(productFound);
     return orderAdapterPort.saveUpdateOrder(orderFound);
@@ -226,20 +226,20 @@ public class OrderService implements IOrderUseCase {
   }
 
   private Cart findCartOrThrow(UUID cartId) {
-    if (cartId == null) throw new InvalidArgumentException("CartId in Order cannot be null");
+    if (cartId == null) throw new InvalidArgumentException("Cart ID in Order cannot be null");
     return cartAdapterPort.findCartByIdAndStatus(cartId, CartStatus.CHECKED_OUT)
         .orElseThrow(() -> new ModelNotFoundException("Cart must be CHECKED_OUT to create an Order"));
   }
 
   private Customer findCustomerOrThrow(UUID customerId) {
-    if (customerId == null) throw new InvalidArgumentException("CustomerId in Order cannot be null");
+    if (customerId == null) throw new InvalidArgumentException("Customer ID in Order cannot be null");
     Customer customer = customerUseCase.getCustomerById(customerId);
     customer.throwIfDeleted();
     return customer;
   }
 
   private Product findProductOrThrow(UUID productId) {
-    if (productId == null) throw new InvalidArgumentException("ProductId in Order cannot be null");
+    if (productId == null) throw new InvalidArgumentException("Product ID in Order cannot be null");
     Product product =  productUseCase.getProductById(productId);
     product.throwIfDeleted();
     return product;
@@ -251,6 +251,6 @@ public class OrderService implements IOrderUseCase {
         .filter(item -> item.getProductId().equals(productId))
         .findFirst()
         .orElseThrow(() -> new ProductNotFoundInOperationException(
-            "Product " + productId + " not found in Order " + orderFound.getId()));
+            "Product ID " + productId + " not found in Order " + orderFound.getId()));
   }
 }

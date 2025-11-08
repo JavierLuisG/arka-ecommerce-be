@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,60 +27,32 @@ public class PurchaseController {
   private final IPurchaseUseCase purchaseUseCase;
   private final PurchaseDtoMapper mapper;
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PostMapping
   public ResponseEntity<PurchaseResponseDto> postPurchase(@RequestBody @Valid CreatePurchaseDto dto) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(mapper.toDto(purchaseUseCase.createPurchase(mapper.toDomain(dto), dto.supplierId())));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @GetMapping("/{id}")
   public ResponseEntity<PurchaseResponseDto> getPurchaseById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(purchaseUseCase.getPurchaseById(uuid)));
   }
 
-  @GetMapping("/{id}/status/{status}")
-  public ResponseEntity<PurchaseResponseDto> getPurchaseByIdAndStatus(
-      @PathVariable("id") String id,
-      @PathVariable("status") String status) {
-    UUID uuid = PathUtils.validateAndParseUUID(id);
-    PurchaseStatus statusEnum = PathUtils.validateEnumOrThrow(PurchaseStatus.class, status, "PurchaseStatus");
-    return ResponseEntity.ok(mapper.toDto(purchaseUseCase.getPurchaseByIdAndStatus(uuid, statusEnum)));
-  }
-
-  @GetMapping("/{id}/supplier/{supplierId}")
-  public ResponseEntity<PurchaseResponseDto> getPurchaseByIdAndSupplierId(
-      @PathVariable("id") String id,
-      @PathVariable("supplierId") String supplierId) {
-    UUID uuid = PathUtils.validateAndParseUUID(id);
-    UUID supplierUuid = PathUtils.validateAndParseUUID(supplierId);
-    return ResponseEntity.ok(mapper.toDto(purchaseUseCase.getPurchaseByIdAndSupplierId(uuid, supplierUuid)));
-  }
-
-  @GetMapping("/{id}/supplier/{supplierId}/status/{status}")
-  public ResponseEntity<PurchaseResponseDto> getPurchaseByIdAndSupplierIdAndStatus(
-      @PathVariable("id") String id,
-      @PathVariable("supplierId") String supplierId,
-      @PathVariable("status") String status) {
-    UUID uuid = PathUtils.validateAndParseUUID(id);
-    UUID supplierUuid = PathUtils.validateAndParseUUID(supplierId);
-    PurchaseStatus statusEnum = PathUtils.validateEnumOrThrow(PurchaseStatus.class, status, "PurchaseStatus");
-    return ResponseEntity.ok(
-        mapper.toDto(purchaseUseCase.getPurchaseByIdAndSupplierIdAndStatus(uuid, supplierUuid, statusEnum)));
-  }
-
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @GetMapping
-  public ResponseEntity<List<PurchaseResponseDto>> getAllPurchases() {
-    return ResponseEntity.ok(purchaseUseCase.getAllPurchases().stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
-  @GetMapping("/status/{status}")
-  public ResponseEntity<List<PurchaseResponseDto>> getAllPurchasesByStatus(@PathVariable("status") String status) {
+  public ResponseEntity<List<PurchaseResponseDto>> getAllPurchases(@RequestParam(required = false) String status) {
+    if (status == null) {
+      return ResponseEntity.ok(purchaseUseCase.getAllPurchases().stream().map(mapper::toDto).collect(Collectors.toList()));
+    }
     PurchaseStatus statusEnum = PathUtils.validateEnumOrThrow(PurchaseStatus.class, status, "PurchaseStatus");
     return ResponseEntity.ok(purchaseUseCase.getAllPurchasesByStatus(statusEnum)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @GetMapping("/supplier/{supplierId}")
   public ResponseEntity<List<PurchaseResponseDto>> getAllPurchasesBySupplierId(@PathVariable("supplierId") String supplierId) {
     UUID supplierUuid = PathUtils.validateAndParseUUID(supplierId);
@@ -87,16 +60,7 @@ public class PurchaseController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/supplier/{supplierId}/status/{status}")
-  public ResponseEntity<List<PurchaseResponseDto>> getAllPurchasesBySupplierIdAndStatus(
-      @PathVariable("supplierId") String supplierId,
-      @PathVariable("status") String status) {
-    UUID supplierUuid = PathUtils.validateAndParseUUID(supplierId);
-    PurchaseStatus statusEnum = PathUtils.validateEnumOrThrow(PurchaseStatus.class, status, "PurchaseStatus");
-    return ResponseEntity.ok(purchaseUseCase.getAllPurchasesBySupplierIdAndStatus(supplierUuid, statusEnum)
-        .stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @GetMapping("/items/product/{productId}")
   public ResponseEntity<List<PurchaseResponseDto>> getAllPurchasesByItemsProductId(@PathVariable("productId") String productId) {
     UUID productUuid = PathUtils.validateAndParseUUID(productId);
@@ -104,29 +68,7 @@ public class PurchaseController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/items/product/{productId}/status/{status}")
-  public ResponseEntity<List<PurchaseResponseDto>> getAllPurchasesByItemsProductIdAndStatus(
-      @PathVariable("productId") String productId,
-      @PathVariable("status") String status) {
-    UUID productUuid = PathUtils.validateAndParseUUID(productId);
-    PurchaseStatus statusEnum = PathUtils.validateEnumOrThrow(PurchaseStatus.class, status, "PurchaseStatus");
-    return ResponseEntity.ok(purchaseUseCase.getAllPurchasesByItemsProductIdAndStatus(productUuid, statusEnum)
-        .stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
-  @GetMapping("/supplier/{supplierId}/items/product/{productId}/status/{status}")
-  public ResponseEntity<List<PurchaseResponseDto>> getAllPurchasesBySupplierIdAndItemsProductIdAndStatus(
-      @PathVariable("supplierId") String supplierId,
-      @PathVariable("productId") String productId,
-      @PathVariable("status") String status) {
-    UUID supplierUuid = PathUtils.validateAndParseUUID(supplierId);
-    UUID productUuid = PathUtils.validateAndParseUUID(productId);
-    PurchaseStatus statusEnum = PathUtils.validateEnumOrThrow(PurchaseStatus.class, status, "PurchaseStatus");
-    return ResponseEntity.ok(purchaseUseCase
-        .getAllPurchasesBySupplierIdAndItemsProductIdAndStatus(supplierUuid, productUuid, statusEnum)
-        .stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/product/{productId}/add-item")
   public ResponseEntity<PurchaseResponseDto> addPurchaseItemById(
       @PathVariable("id") String id,
@@ -134,9 +76,10 @@ public class PurchaseController {
       @RequestBody @Valid UpdateQuantityToPurchaseItemDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     UUID productUuid = PathUtils.validateAndParseUUID(productId);
-    return ResponseEntity.ok(mapper.toDto(purchaseUseCase.addPurchaseItemById(uuid, productUuid, dto.quantity())));
+    return ResponseEntity.ok(mapper.toDto(purchaseUseCase.addPurchaseItem(uuid, productUuid, dto.quantity())));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/product/{productId}/update-item-quantity")
   public ResponseEntity<PurchaseResponseDto> updatePurchaseItemQuantityById(
       @PathVariable("id") String id,
@@ -144,45 +87,50 @@ public class PurchaseController {
       @RequestBody @Valid UpdateQuantityToPurchaseItemDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     UUID productUuid = PathUtils.validateAndParseUUID(productId);
-    return ResponseEntity.ok(mapper.toDto(purchaseUseCase.updatePurchaseItemQuantityById(uuid, productUuid, dto.quantity())));
+    return ResponseEntity.ok(mapper.toDto(purchaseUseCase.updatePurchaseItemQuantity(uuid, productUuid, dto.quantity())));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/product/{productId}/remove-item")
   public ResponseEntity<PurchaseResponseDto> removePurchaseItemById(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     UUID productUuid = PathUtils.validateAndParseUUID(productId);
-    return ResponseEntity.ok(mapper.toDto(purchaseUseCase.removePurchaseItemById(uuid, productUuid)));
+    return ResponseEntity.ok(mapper.toDto(purchaseUseCase.removePurchaseItem(uuid, productUuid)));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/confirm")
   public ResponseEntity<MessageResponseDto> confirmPurchaseById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    purchaseUseCase.confirmPurchaseById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully confirmed with id: " + id));
+    purchaseUseCase.confirmPurchase(uuid);
+    return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully confirmed with ID " + id));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/receive")
   public ResponseEntity<MessageResponseDto> receivePurchaseById(
       @PathVariable("id") String id,
       @RequestBody @Valid ReceivePurchaseDto request) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    purchaseUseCase.receivePurchaseById(uuid, mapper.toDomain(request));
-    return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully received with id: " + id));
+    purchaseUseCase.receivePurchase(uuid, mapper.toDomain(request));
+    return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully received with ID " + id));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/close")
   public ResponseEntity<MessageResponseDto> closePurchaseById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    purchaseUseCase.closePurchaseById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully closed with id: " + id));
+    purchaseUseCase.closePurchase(uuid);
+    return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully closed with ID " + id));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @DeleteMapping("/{id}")
   public ResponseEntity<MessageResponseDto> deletePurchaseById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    purchaseUseCase.deletePurchaseById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully deleted with id: " + id));
+    purchaseUseCase.deletePurchase(uuid);
+    return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully deleted with ID " + id));
   }
 }

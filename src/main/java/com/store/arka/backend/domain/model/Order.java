@@ -2,6 +2,7 @@ package com.store.arka.backend.domain.model;
 
 import com.store.arka.backend.domain.enums.OrderStatus;
 import com.store.arka.backend.domain.exception.*;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import com.store.arka.backend.shared.util.ValidateStatusUtils;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -28,7 +29,7 @@ public class Order {
   private LocalDateTime updatedAt;
 
   public static Order create(UUID cartId, Customer customer, List<OrderItem> items) {
-    if (cartId == null) throw new InvalidArgumentException("CartId in Order cannot be null");
+    ValidateAttributesUtils.throwIfIdNull(cartId, "Cart ID in Order");
     if (!customer.isActive()) throw new ModelNullException("Customer already deleted previously");
     if (items == null) items = new ArrayList<>();
     return new Order(

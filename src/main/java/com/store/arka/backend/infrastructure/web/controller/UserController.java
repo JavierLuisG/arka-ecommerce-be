@@ -99,7 +99,7 @@ public class UserController {
   public ResponseEntity<MessageResponseDto> softDeleteUserById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     userUseCase.softDeleteUserById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("User has been successfully deleted with id: " + id));
+    return ResponseEntity.ok(new MessageResponseDto("User has been successfully deleted with ID " + id));
   }
 
   @PutMapping("/email/{email}/restore")

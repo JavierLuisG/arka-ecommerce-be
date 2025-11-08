@@ -11,7 +11,7 @@ public final class PathUtils {
   public static UUID validateAndParseUUID(String id) {
     if(id == null || id.isBlank()) {
       log.warn("[PATH_UTILS][UUID] Id in controller is required");
-      throw new IllegalArgumentException("Id is required");
+      throw new IllegalArgumentException("ID is required");
     }
     try {
       return UUID.fromString(id);

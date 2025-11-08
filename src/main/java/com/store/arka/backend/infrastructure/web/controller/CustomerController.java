@@ -71,7 +71,7 @@ public class CustomerController {
   public ResponseEntity<MessageResponseDto> softDeleteCustomer(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     customerUseCase.softDeleteCustomer(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Customer with id " + id + " eliminated successfully"));
+    return ResponseEntity.ok(new MessageResponseDto("Customer with ID " + id + " eliminated successfully"));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN')")

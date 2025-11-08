@@ -30,15 +30,15 @@ public class SupplierService implements ISupplierUseCase {
   public Supplier createSupplier(Supplier supplier) {
     ValidateAttributesUtils.throwIfModelNull(supplier, "Supplier");
     String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(supplier.getEmail(), "Email").toLowerCase();
-    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(supplier.getTaxId(), "Tax id");
+    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(supplier.getTaxId(), "TaId");
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, supplier.getCountry().toString(), "Country");
     if (supplierAdapterPort.existsSupplierByEmail(normalizedEmail)) {
-      log.warn("[SUPPLIER_SERVICE][CREATE] Email {} already exists for creating a supplier", normalizedEmail);
+      log.warn("[SUPPLIER_SERVICE][CREATED] Email {} already exists for creating a supplier", normalizedEmail);
       throw new FieldAlreadyExistsException("Email " + normalizedEmail + " always exists in Supplier");
     }
     if (supplierAdapterPort.existsSupplierByTaxId(normalizedTaxId)) {
-      log.warn("[SUPPLIER_SERVICE][CREATE] TaxId {} already exists for creating a supplier", normalizedTaxId);
+      log.warn("[SUPPLIER_SERVICE][CREATED] TaxId {} already exists for creating a supplier", normalizedTaxId);
       throw new FieldAlreadyExistsException("TaxId " + normalizedTaxId + " always exists in Supplier");
     }
     Supplier created = Supplier.create(
@@ -52,18 +52,18 @@ public class SupplierService implements ISupplierUseCase {
         normalizedCountry
     );
     Supplier saved = supplierAdapterPort.saveCreateSupplier(created);
-    log.info("[SUPPLIER_SERVICE][CREATE] Created new supplier ID: {}", saved.getId());
+    log.info("[SUPPLIER_SERVICE][CREATED] Created new supplier ID: {}", saved.getId());
     return saved;
   }
 
   @Override
   @Transactional(readOnly = true)
   public Supplier getSupplierById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Supplier ID");
     return supplierAdapterPort.findSupplierById(id)
         .orElseThrow(() -> {
-          log.warn("[SUPPLIER_SERVICE][GET_BY_ID] Supplier with ID {} not found", id);
-          return new ModelNotFoundException("Supplier with ID " + id + " not found");
+          log.warn("[SUPPLIER_SERVICE][GET_BY_ID] Supplier ID {} not found", id);
+          return new ModelNotFoundException("Supplier ID " + id + " not found");
         });
   }
 
@@ -73,7 +73,7 @@ public class SupplierService implements ISupplierUseCase {
     String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email in Supplier").toLowerCase();
     return supplierAdapterPort.findSupplierByEmail(normalizedEmail)
         .orElseThrow(() -> {
-          log.warn("[SUPPLIER_SERVICE][GET_BY_EMAIL] Supplier with Email {} not found", normalizedEmail);
+          log.warn("[SUPPLIER_SERVICE][GET_BY_EMAIL] Supplier with email {} not found", normalizedEmail);
           return new ModelNotFoundException("Supplier with email " + normalizedEmail + " not found");
         });
   }
@@ -81,10 +81,10 @@ public class SupplierService implements ISupplierUseCase {
   @Override
   @Transactional(readOnly = true)
   public Supplier getSupplierByTaxId(String taxId) {
-    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(taxId, "Taxt Id in Supplier");
+    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(taxId, "TaxId in Supplier");
     return supplierAdapterPort.findSupplierByTaxId(normalizedTaxId)
         .orElseThrow(() -> {
-          log.warn("[SUPPLIER_SERVICE][GET_BY_TAX] Supplier with TaxId {} not found", normalizedTaxId);
+          log.warn("[SUPPLIER_SERVICE][GET_BY_TAX] Supplier with taxId {} not found", normalizedTaxId);
           return new ModelNotFoundException("Supplier with taxId " + normalizedTaxId + " not found");
         });
   }
@@ -117,16 +117,16 @@ public class SupplierService implements ISupplierUseCase {
     ValidateAttributesUtils.throwIfModelNull(supplier, "Supplier");
     Supplier found = getSupplierById(id);
     String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(supplier.getEmail(), "Email").toLowerCase();
-    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(supplier.getTaxId(), "Tax id");
+    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(supplier.getTaxId(), "TaxId");
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, supplier.getCountry().toString(), "Country");
     if (!normalizedEmail.equals(found.getEmail()) && supplierAdapterPort.existsSupplierByEmail(normalizedEmail)) {
-      log.warn("[SUPPLIER_SERVICE][UPDATE] Email {} already exists for updating a supplier", normalizedEmail);
+      log.warn("[SUPPLIER_SERVICE][UPDATED] Email {} already exists for updating a supplier", normalizedEmail);
       throw new FieldAlreadyExistsException("Email " + normalizedEmail + " always exists in Supplier");
     }
     if (!normalizedTaxId.equals(found.getTaxId()) && supplierAdapterPort.existsSupplierByTaxId(normalizedTaxId)) {
-      log.warn("[SUPPLIER_SERVICE][UPDATE] TaxId {} already exists for updating a supplier", normalizedTaxId);
-      throw new FieldAlreadyExistsException("Tax " + normalizedTaxId + " always exists in Supplier");
+      log.warn("[SUPPLIER_SERVICE][UPDATED] TaxId {} already exists for updating a supplier", normalizedTaxId);
+      throw new FieldAlreadyExistsException("TaxId " + normalizedTaxId + " always exists in Supplier");
     }
     found.updateFields(
         supplier.getCommercialName(),
@@ -139,7 +139,7 @@ public class SupplierService implements ISupplierUseCase {
         normalizedCountry
     );
     Supplier saved = supplierAdapterPort.saveUpdateSupplier(found);
-    log.info("[SUPPLIER_SERVICE][UPDATE] Updated fields supplier ID {} ", saved.getId());
+    log.info("[SUPPLIER_SERVICE][UPDATED] Updated fields supplier ID {} ", saved.getId());
     return saved;
   }
 
@@ -149,7 +149,7 @@ public class SupplierService implements ISupplierUseCase {
     Product productFound = findProductOrThrow(productId);
     Supplier supplierFound = getSupplierById(id);
     supplierFound.addProduct(productFound);
-    log.info("[SUPPLIER_SERVICE][ADD_PRODUCT] Supplier ID {} has added the product ID {}", supplierFound.getId(), productId);
+    log.info("[SUPPLIER_SERVICE][ADDED_PRODUCT] Supplier ID {} has added the product ID {}", supplierFound.getId(), productId);
     return supplierAdapterPort.saveUpdateSupplier(supplierFound);
   }
 
@@ -160,7 +160,7 @@ public class SupplierService implements ISupplierUseCase {
     Product productFound = findProductOrThrow(productId);
     supplierFound.removeProduct(productFound);
     Supplier saved = supplierAdapterPort.saveUpdateSupplier(supplierFound);
-    log.info("[SUPPLIER_SERVICE][REMOVE_PRODUCT] Supplier ID {} has removed the product ID {}", supplierFound.getId(), productId);
+    log.info("[SUPPLIER_SERVICE][REMOVED_PRODUCT] Supplier ID {} has removed the product ID {}", supplierFound.getId(), productId);
     return saved;
   }
 
@@ -170,7 +170,7 @@ public class SupplierService implements ISupplierUseCase {
     Supplier found = getSupplierById(id);
     found.delete();
     supplierAdapterPort.saveUpdateSupplier(found);
-    log.info("[SUPPLIER_SERVICE][DELETE] Supplier ID {} marked as deleted", id);
+    log.info("[SUPPLIER_SERVICE][DELETED] Supplier ID {} marked as deleted", id);
   }
 
   @Transactional
@@ -178,12 +178,12 @@ public class SupplierService implements ISupplierUseCase {
     Supplier found = getSupplierById(id);
     found.restore();
     Supplier saved = supplierAdapterPort.saveUpdateSupplier(found);
-    log.info("[SUPPLIER_SERVICE][RESTORE] Supplier ID {} restored successfully", id);
+    log.info("[SUPPLIER_SERVICE][RESTORED] Supplier ID {} restored successfully", id);
     return saved;
   }
 
   private Product findProductOrThrow(UUID productId) {
-    ValidateAttributesUtils.throwIfModelNull(productId, "ProductId in Supplier");
+    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Supplier");
     Product product =  productUseCase.getProductById(productId);
     product.throwIfDeleted();
     return product;

@@ -10,10 +10,10 @@ import java.util.UUID;
 
 @Slf4j
 public final class ValidateAttributesUtils {
-  public static void throwIfIdNull(UUID id) {
+  public static void throwIfIdNull(UUID id, String name) {
     if (id == null) {
-      log.warn("[VALIDATE_ATTRIBUTES][ID_NULL] Id is required");
-      throw new InvalidArgumentException("Id is required");
+      log.warn("[VALIDATE_ATTRIBUTES][ID_NULL] ID is required");
+      throw new InvalidArgumentException(name + "  is required");
     }
   }
 

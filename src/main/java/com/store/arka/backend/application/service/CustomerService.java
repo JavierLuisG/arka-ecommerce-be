@@ -35,7 +35,7 @@ public class CustomerService implements ICustomerUseCase {
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, customer.getCountry().toString(), "Country");
     if (customerAdapterPort.existsCustomerByEmail(normalizedEmail)) {
-      log.warn("[CUSTOMER_SERVICE][CREATE] Email {} already exists for creating a customer", normalizedEmail);
+      log.warn("[CUSTOMER_SERVICE][CREATED] Email {} already exists for creating a customer", normalizedEmail);
       throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
     }
     Document documentCreated = documentUseCase.createDocument(customer.getDocument());
@@ -50,18 +50,18 @@ public class CustomerService implements ICustomerUseCase {
         normalizedCountry
     );
     Customer saved = customerAdapterPort.saveCreateCustomer(created);
-    log.info("[CUSTOMER_SERVICE][CREATE] Created new customer ID: {}", saved.getId());
+    log.info("[CUSTOMER_SERVICE][CREATED] Created new customer ID {}", saved.getId());
     return saved;
   }
 
   @Override
   @Transactional(readOnly = true)
   public Customer getCustomerById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Customer ID");
     return customerAdapterPort.findCustomerById(id)
         .orElseThrow(() -> {
-          log.warn("[CUSTOMER_SERVICE][GET_BY_ID] Customer with ID {} not found", id);
-          return new ModelNotFoundException("Customer with ID " + id + " not found");
+          log.warn("[CUSTOMER_SERVICE][GET_BY_ID] Customer ID {} not found", id);
+          return new ModelNotFoundException("Customer ID " + id + " not found");
         });
   }
 
@@ -99,7 +99,7 @@ public class CustomerService implements ICustomerUseCase {
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, customer.getCountry().toString(), "Country");
     if (customerAdapterPort.existsCustomerByEmail(normalizedEmail)) {
-      log.warn("[CUSTOMER_SERVICE][CREATE] Email {} already exists for updating a customer", normalizedEmail);
+      log.warn("[CUSTOMER_SERVICE][UPDATED] Email {} already exists for updating a customer", normalizedEmail);
       throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
     }
     found.updateFields(
@@ -112,7 +112,7 @@ public class CustomerService implements ICustomerUseCase {
         normalizedCountry
     );
     Customer saved = customerAdapterPort.saveUpdateCustomer(found);
-    log.info("[CUSTOMER_SERVICE][UPDATE] Updated customer ID {} ", saved.getId());
+    log.info("[CUSTOMER_SERVICE][UPDATED] Updated customer ID {} ", saved.getId());
     return saved;
   }
 
@@ -122,7 +122,7 @@ public class CustomerService implements ICustomerUseCase {
     Customer found = getCustomerById(id);
     found.delete();
     customerAdapterPort.saveUpdateCustomer(found);
-    log.info("[CUSTOMER_SERVICE][DELETE] Customer ID {} marked as deleted", id);
+    log.info("[CUSTOMER_SERVICE][DELETED] Customer ID {} marked as deleted", id);
     documentUseCase.softDeleteDocument(found.getDocument().getId());
   }
 
@@ -132,7 +132,7 @@ public class CustomerService implements ICustomerUseCase {
     Customer found = getCustomerById(id);
     found.restore();
     customerAdapterPort.saveUpdateCustomer(found);
-    log.info("[CUSTOMER_SERVICE][RESTORE] Customer ID {} restored successfully", id);
+    log.info("[CUSTOMER_SERVICE][RESTORED] Customer ID {} restored successfully", id);
     documentUseCase.restoreDocument(found.getDocument().getId());
     return found;
   }

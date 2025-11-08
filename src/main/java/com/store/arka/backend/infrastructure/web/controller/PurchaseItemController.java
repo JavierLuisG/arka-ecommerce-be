@@ -6,6 +6,7 @@ import com.store.arka.backend.infrastructure.web.mapper.PurchaseItemDtoMapper;
 import com.store.arka.backend.shared.util.PathUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,18 +23,21 @@ public class PurchaseItemController {
   private final IPurchaseItemUseCase purchaseItemUseCase;
   private final PurchaseItemDtoMapper mapper;
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @GetMapping("/{id}")
   public ResponseEntity<PurchaseItemResponseDto> getPurchaseItemById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(purchaseItemUseCase.getPurchaseItemById(uuid)));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @GetMapping
   public ResponseEntity<List<PurchaseItemResponseDto>> getAllPurchaseItems() {
     return ResponseEntity.ok(purchaseItemUseCase.getAllPurchaseItems()
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @GetMapping("/product/{productId}")
   public ResponseEntity<List<PurchaseItemResponseDto>> getAllPurchaseItemsByProductId(
       @PathVariable("productId") String productId) {

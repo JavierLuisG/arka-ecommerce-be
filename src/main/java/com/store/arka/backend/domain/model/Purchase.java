@@ -26,7 +26,7 @@ public class Purchase {
   private LocalDateTime updatedAt;
 
   public static Purchase create(Supplier supplier, List<PurchaseItem> items) {
-    if (!supplier.isActive()) throw new ModelDeletionException("Supplier already deleted previously");
+    supplier.throwIfDeleted();
     if (items == null) items = new ArrayList<>();
     return new Purchase(
         null,
@@ -92,39 +92,51 @@ public class Purchase {
   }
 
   public void confirm() {
-    throwIfNotCreated(this.status);
+    ensurePurchaseIsModifiable();
     if (items.isEmpty()) throw new ItemsEmptyException("Purchase items cannot be empty to confirm");
     this.status = PurchaseStatus.CONFIRMED;
   }
 
   public void reschedule() {
-    if (status != PurchaseStatus.CONFIRMED && status != PurchaseStatus.RESCHEDULED) {
+    if (!isConfirmed() && !isRescheduled()) {
       throw new InvalidStateException("Purchase must be CONFIRMED or RESCHEDULED to be marked RECEIVED");
     }
     this.status = PurchaseStatus.RESCHEDULED;
   }
 
   public void receive() {
-    if (status != PurchaseStatus.CONFIRMED && status != PurchaseStatus.RESCHEDULED) {
+    if (!isConfirmed() && !isRescheduled()) {
       throw new InvalidStateException("Purchase must be CONFIRMED or RESCHEDULED to be marked RECEIVED");
     }
     this.status = PurchaseStatus.RECEIVED;
   }
 
   public void close() {
-    if (status != PurchaseStatus.RECEIVED) {
-      throw new InvalidStateException("Purchase must be RECEIVED to be marked CLOSED");
-    }
+    if (!isReceived()) throw new InvalidStateException("Purchase must be RECEIVED to be marked CLOSED");
     this.status = PurchaseStatus.CLOSED;
   }
 
-  public void ensurePurchaseIsModifiable() {
-    throwIfNotCreated(this.status);
+  public boolean isCreated() {
+    return this.status == PurchaseStatus.CREATED;
   }
 
-  private static void throwIfNotCreated(PurchaseStatus status) {
-    if (status != PurchaseStatus.CREATED) {
-      throw new InvalidStateException("Purchase must be in CREATED state to be modified");
-    }
+  public boolean isConfirmed() {
+    return this.status == PurchaseStatus.CONFIRMED;
+  }
+
+  public boolean isReceived() {
+    return this.status == PurchaseStatus.RECEIVED;
+  }
+
+  public boolean isRescheduled() {
+    return this.status == PurchaseStatus.RESCHEDULED;
+  }
+
+  public boolean isClosed() {
+    return this.status == PurchaseStatus.CLOSED;
+  }
+
+  public void ensurePurchaseIsModifiable() {
+    if (!isCreated()) throw new InvalidStateException("Purchase must be in CREATED state to be modified");
   }
 }

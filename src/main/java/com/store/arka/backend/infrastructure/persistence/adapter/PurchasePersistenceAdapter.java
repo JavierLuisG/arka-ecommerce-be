@@ -65,21 +65,6 @@ public class PurchasePersistenceAdapter implements IPurchaseAdapterPort {
   }
 
   @Override
-  public Optional<Purchase> findPurchaseByIdAndStatus(UUID id, PurchaseStatus status) {
-    return jpaPurchaseRepository.findByIdAndStatus(id, status).map(mapper::toDomain);
-  }
-
-  @Override
-  public Optional<Purchase> findPurchaseByIdAndSupplierId(UUID id, UUID supplierId) {
-    return jpaPurchaseRepository.findByIdAndSupplierId(id, supplierId).map(mapper::toDomain);
-  }
-
-  @Override
-  public Optional<Purchase> findPurchaseByIdAndSupplierIdAndStatus(UUID id, UUID supplierId, PurchaseStatus status) {
-    return jpaPurchaseRepository.findByIdAndSupplierIdAndStatus(id, supplierId, status).map(mapper::toDomain);
-  }
-
-  @Override
   public List<Purchase> findAllPurchases() {
     return jpaPurchaseRepository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
   }
@@ -96,12 +81,6 @@ public class PurchasePersistenceAdapter implements IPurchaseAdapterPort {
   }
 
   @Override
-  public List<Purchase> findAllPurchasesBySupplierIdAndStatus(UUID supplierId, PurchaseStatus status) {
-    return jpaPurchaseRepository.findAllBySupplierIdAndStatus(supplierId, status)
-        .stream().map(mapper::toDomain).collect(Collectors.toList());
-  }
-
-  @Override
   public List<Purchase> findAllPurchasesByItemsProductId(UUID productId) {
     return jpaPurchaseRepository.findAllByItemsProductId(productId)
         .stream().map(mapper::toDomain).collect(Collectors.toList());
@@ -110,13 +89,6 @@ public class PurchasePersistenceAdapter implements IPurchaseAdapterPort {
   @Override
   public List<Purchase> findAllPurchasesByItemsProductIdAndStatus(UUID productId, PurchaseStatus status) {
     return jpaPurchaseRepository.findAllByItemsProductIdAndStatus(productId, status)
-        .stream().map(mapper::toDomain).collect(Collectors.toList());
-  }
-
-  @Override
-  public List<Purchase> findAllPurchasesBySupplierIdAndItemsProductIdAndStatus(
-      UUID supplierId, UUID productId, PurchaseStatus status) {
-    return jpaPurchaseRepository.findAllBySupplierIdAndItemsProductIdAndStatus(supplierId, productId, status)
         .stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 

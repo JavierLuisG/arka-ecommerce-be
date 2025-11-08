@@ -4,9 +4,9 @@ import com.store.arka.backend.application.port.in.IProductUseCase;
 import com.store.arka.backend.application.port.in.IPurchaseItemUseCase;
 import com.store.arka.backend.application.port.out.IPurchaseItemAdapterPort;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
-import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.model.PurchaseItem;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PurchaseItemService implements IPurchaseItemUseCase {
@@ -22,28 +23,37 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
 
   @Override
   public PurchaseItem addPurchaseItem(UUID purchaseId, PurchaseItem purchaseItem) {
-    if (purchaseItem == null) throw new ModelNullException("PurchaseItem cannot be null");
+    ValidateAttributesUtils.throwIfIdNull(purchaseId, "Purchase ID in PurchaseItem");
+    ValidateAttributesUtils.throwIfModelNull(purchaseItem, "PurchaseItem");
     productUseCase.validateAvailabilityOrThrow(purchaseItem.getProductId(), purchaseItem.getQuantity());
-    return purchaseItemAdapterPort.saveAddPurchaseItem(purchaseId, purchaseItem);
+    PurchaseItem saved = purchaseItemAdapterPort.saveAddPurchaseItem(purchaseId, purchaseItem);
+    log.info("[PURCHASE_ITEM_SERVICE][CREATED] Created new purchaseItem ID: {}", saved.getId());
+    return saved;
   }
 
   @Override
   @Transactional(readOnly = true)
   public PurchaseItem getPurchaseItemById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "PurchaseItem ID");
     return purchaseItemAdapterPort.findPurchaseItemById(id)
-        .orElseThrow(() -> new ModelNotFoundException("PurchaseItem with id " + id + " not found"));
+        .orElseThrow(() -> {
+          log.warn("[PURCHASE_ITEM_SERVICE][GET_BY_ID] PurchaseItem ID {} not found", id);
+          return new ModelNotFoundException("PurchaseItem ID " + id + " not found");
+        });
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<PurchaseItem> getAllPurchaseItems() {
+    log.info("[PURCHASE_ITEM_SERVICE][GET_ALL] Fetching all purchaseItems");
     return purchaseItemAdapterPort.findAllPurchaseItems();
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<PurchaseItem> getAllPurchaseItemsByProductId(UUID productId) {
+    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in PurchaseItem");
+    log.info("[PURCHASE_ITEM_SERVICE][GET_ALL_BY_PRODUCT] Fetching all purchases with product {}", productId);
     return purchaseItemAdapterPort.findAllPurchaseItemsByProductId(productId);
   }
 
@@ -53,7 +63,9 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
     PurchaseItem found = getPurchaseItemById(id);
     found.addQuantity(quantity);
     productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
-    return purchaseItemAdapterPort.saveUpdatePurchaseItem(found);
+    PurchaseItem saved = purchaseItemAdapterPort.saveUpdatePurchaseItem(found);
+    log.info("[PURCHASE_ITEM_SERVICE][ADDED_QUANTITY] Add quantity {} in purchaseItem ID {}", quantity, id);
+    return saved;
   }
 
   @Override
@@ -61,6 +73,8 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
     ValidateAttributesUtils.validateQuantity(quantity);
     PurchaseItem found = getPurchaseItemById(id);
     found.updateQuantity(quantity);
-    return purchaseItemAdapterPort.saveUpdatePurchaseItem(found);
+    PurchaseItem saved = purchaseItemAdapterPort.saveUpdatePurchaseItem(found);
+    log.info("[PURCHASE_ITEM_SERVICE][UPDATED_QUANTITY] Updat quantity {} in purchaseItem ID {}", quantity, id);
+    return saved;
   }
 }

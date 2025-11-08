@@ -28,24 +28,24 @@ public class DocumentService implements IDocumentUseCase {
     ValidateAttributesUtils.throwIfModelNull(document, "Document");
     String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(document.getNumber(), "Document number");
     if (documentAdapterPort.existsDocumentByNumber(normalizedNumber)) {
-      log.warn("[DOCUMENT_SERVICE][CREATE] Document number '{}' already exists", normalizedNumber);
+      log.warn("[DOCUMENT_SERVICE][CREATED] Document number '{}' already exists", normalizedNumber);
       throw new FieldAlreadyExistsException("Document number " + normalizedNumber + " already exists. Choose a different");
     }
     DocumentType type = PathUtils.validateEnumOrThrow(DocumentType.class, document.getType().toString(), "DocumentType");
     Document created = Document.create(type, normalizedNumber);
     Document saved = documentAdapterPort.saveDocument(created);
-    log.info("[DOCUMENT_SERVICE][CREATE] Created new document {}, ID: {}", saved.getNumber(), saved.getId());
+    log.info("[DOCUMENT_SERVICE][CREATED] Created new document {}, ID {}", saved.getNumber(), saved.getId());
     return saved;
   }
 
   @Override
   @Transactional(readOnly = true)
   public Document getDocumentById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Document ID");
     return documentAdapterPort.findDocumentById(id)
         .orElseThrow(() -> {
-          log.warn("[DOCUMENT_SERVICE][GET_BY_ID] Document with ID {} not found", id);
-          return new ModelNotFoundException("Document with ID " + id + " not found");
+          log.warn("[DOCUMENT_SERVICE][GET_BY_ID] Document ID {} not found", id);
+          return new ModelNotFoundException("Document ID " + id + " not found");
         });
   }
 
@@ -81,13 +81,13 @@ public class DocumentService implements IDocumentUseCase {
     String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(document.getNumber(), "Document number");
     Document found = getDocumentById(id);
     if (documentAdapterPort.existsDocumentByNumber(normalizedNumber) && !found.getNumber().equals(normalizedNumber)) {
-      log.warn("[DOCUMENT_SERVICE][UPDATE] Document number {} already exists", normalizedNumber);
+      log.warn("[DOCUMENT_SERVICE][UPDATED] Document number {} already exists", normalizedNumber);
       throw new FieldAlreadyExistsException("Document number already exists. Choose a different");
     }
     DocumentType type = PathUtils.validateEnumOrThrow(DocumentType.class, document.getType().toString(), "DocumentType");
     found.update(type, normalizedNumber);
     Document saved = documentAdapterPort.saveDocument(found);
-    log.info("[DOCUMENT_SERVICE][UPDATE] Updated document ID {} ", saved.getId());
+    log.info("[DOCUMENT_SERVICE][UPDATED] Updated document ID {} ", saved.getId());
     return saved;
   }
 
@@ -96,7 +96,7 @@ public class DocumentService implements IDocumentUseCase {
     Document found = getDocumentById(id);
     found.delete();
     documentAdapterPort.saveDocument(found);
-    log.info("[DOCUMENT_SERVICE][DELETE] Document ID {} marked as deleted", id);
+    log.info("[DOCUMENT_SERVICE][DELETED] Document ID {} marked as deleted", id);
   }
 
   @Override
@@ -104,7 +104,7 @@ public class DocumentService implements IDocumentUseCase {
     Document found = getDocumentById(id);
     found.restore();
     Document restored = documentAdapterPort.saveDocument(found);
-    log.info("[DOCUMENT_SERVICE][RESTORE] Document ID {} restored successfully", id);
+    log.info("[DOCUMENT_SERVICE][RESTORED] Document ID {} restored successfully", id);
     return restored;
   }
 }

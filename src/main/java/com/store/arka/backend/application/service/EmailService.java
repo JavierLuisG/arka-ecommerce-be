@@ -20,6 +20,6 @@ public class EmailService implements IEmailService {
     mail.setSubject(subject);
     mail.setText(message);
     mailSender.send(mail);
-    log.info("[EMAIL_SERVICE][SEND_NOTIFICATION] Email sent to: {}", to);
+    log.info("[EMAIL_SERVICE][SENT_NOTIFICATION] Email sent to: {}", to);
   }
 }

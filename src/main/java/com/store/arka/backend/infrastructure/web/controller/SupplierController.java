@@ -106,7 +106,7 @@ public class SupplierController {
   public ResponseEntity<MessageResponseDto> softDeleteSupplier(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     supplierUseCase.deleteSupplier(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Supplier with id " + id + " eliminated successfully"));
+    return ResponseEntity.ok(new MessageResponseDto("Supplier with ID " + id + " eliminated successfully"));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")

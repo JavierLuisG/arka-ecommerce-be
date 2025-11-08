@@ -11,37 +11,25 @@ public interface IPurchaseUseCase {
 
   Purchase getPurchaseById(UUID id);
 
-  Purchase getPurchaseByIdAndStatus(UUID id, PurchaseStatus status);
-
-  Purchase getPurchaseByIdAndSupplierId(UUID id, UUID supplierId);
-
-  Purchase getPurchaseByIdAndSupplierIdAndStatus(UUID id, UUID supplierId, PurchaseStatus status);
-
   List<Purchase> getAllPurchases();
 
   List<Purchase> getAllPurchasesByStatus(PurchaseStatus status);
 
   List<Purchase> getAllPurchasesBySupplierId(UUID supplierId);
 
-  List<Purchase> getAllPurchasesBySupplierIdAndStatus(UUID supplierId, PurchaseStatus status);
-
   List<Purchase> getAllPurchasesByItemsProductId(UUID productId);
 
-  List<Purchase> getAllPurchasesByItemsProductIdAndStatus(UUID productId, PurchaseStatus status);
+  Purchase addPurchaseItem(UUID id, UUID productId, Integer quantity);
 
-  List<Purchase> getAllPurchasesBySupplierIdAndItemsProductIdAndStatus(UUID supplierId, UUID productId, PurchaseStatus status);
+  Purchase updatePurchaseItemQuantity(UUID id, UUID productId, Integer quantity);
 
-  Purchase addPurchaseItemById(UUID id, UUID productId, Integer quantity);
+  Purchase removePurchaseItem(UUID id, UUID productId);
 
-  Purchase updatePurchaseItemQuantityById(UUID id, UUID productId, Integer quantity);
+  void confirmPurchase(UUID id);
 
-  Purchase removePurchaseItemById(UUID id, UUID productId);
+  void receivePurchase(UUID id, Purchase purchase);
 
-  void confirmPurchaseById(UUID id);
+  void closePurchase(UUID id);
 
-  void receivePurchaseById(UUID id, Purchase purchase);
-
-  void closePurchaseById(UUID id);
-
-  void deletePurchaseById(UUID id);
+  void deletePurchase(UUID id);
 }

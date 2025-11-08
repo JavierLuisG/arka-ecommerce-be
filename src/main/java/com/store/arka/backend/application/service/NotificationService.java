@@ -50,17 +50,17 @@ public class NotificationService implements INotificationUseCase {
   @Override
   @Transactional(readOnly = true)
   public Notification getNotificationById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Notification ID");
     return notificationAdapterPort.findNotificationById(id)
-        .orElseThrow(() -> new ModelNotFoundException("Notification with id " + id + " not found"));
+        .orElseThrow(() -> new ModelNotFoundException("Notification ID " + id + " not found"));
   }
 
   @Override
   @Transactional(readOnly = true)
   public Notification getNotificationByIdAndStatus(UUID id, NotificationStatus status) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Notification ID");
     return notificationAdapterPort.findNotificationByIdAndStatus(id, status)
-        .orElseThrow(() -> new ModelNotFoundException("Notification with id " + id + " and status " + status + " not found"));
+        .orElseThrow(() -> new ModelNotFoundException("Notification ID " + id + " and status " + status + " not found"));
   }
 
   @Override
@@ -111,13 +111,13 @@ public class NotificationService implements INotificationUseCase {
   }
 
   private Order findOrderOrThrow(UUID orderId) {
-    if (orderId == null) throw new InvalidArgumentException("OrderId in Notification cannot be null");
+    if (orderId == null) throw new InvalidArgumentException("Order ID in Notification cannot be null");
     return orderAdapterPort.findOrderById(orderId)
-        .orElseThrow(() -> new ModelNotFoundException("Order with id " + orderId + " not found"));
+        .orElseThrow(() -> new ModelNotFoundException("Order ID " + orderId + " not found"));
   }
 
   private Customer findCustomerOrThrow(UUID customerId) {
-    if (customerId == null) throw new InvalidArgumentException("CustomerId in Notification cannot be null");
+    if (customerId == null) throw new InvalidArgumentException("Customer ID in Notification cannot be null");
     Customer customer = customerUseCase.getCustomerById(customerId);
     customer.throwIfDeleted();
     return customer;

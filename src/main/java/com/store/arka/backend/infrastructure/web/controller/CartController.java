@@ -166,7 +166,7 @@ public class CartController {
   public ResponseEntity<MessageResponseDto> checkoutCartById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     String response = cartUseCase.checkedOutCartById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Cart has been successfully confirmed with id: " + id + ". " +
+    return ResponseEntity.ok(new MessageResponseDto("Cart has been successfully confirmed with ID " + id + ". " +
         "Order created whit id: " + response));
   }
 
@@ -174,6 +174,6 @@ public class CartController {
   public ResponseEntity<MessageResponseDto> deleteCartById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     cartUseCase.deleteCartById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Cart has been successfully deleted with id: " + id));
+    return ResponseEntity.ok(new MessageResponseDto("Cart has been successfully deleted with ID " + id));
   }
 }

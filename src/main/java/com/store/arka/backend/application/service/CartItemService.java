@@ -30,9 +30,9 @@ public class CartItemService implements ICartItemUseCase {
   @Override
   @Transactional(readOnly = true)
   public CartItem getCartItemById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "CartItem ID");
     return cartItemAdapterPort.findCartItemById(id)
-        .orElseThrow(() -> new ModelNotFoundException("CartItem with id " + id + " not found"));
+        .orElseThrow(() -> new ModelNotFoundException("CartItem ID " + id + " not found"));
   }
 
   @Override

@@ -2,6 +2,7 @@ package com.store.arka.backend.application.service;
 
 import com.store.arka.backend.application.port.in.IOrderUseCase;
 import com.store.arka.backend.application.port.out.IOrderPaymentSyncPort;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,11 +15,13 @@ public class OrderPaymentSyncService implements IOrderPaymentSyncPort {
 
   @Override
   public void markOrderPaid(UUID orderId) {
+    ValidateAttributesUtils.throwIfIdNull(orderId, "Order ID");
     orderUseCase.payOrderById(orderId);
   }
 
   @Override
   public void markOrderCanceled(UUID orderId) {
+    ValidateAttributesUtils.throwIfIdNull(orderId, "Order ID");
     orderUseCase.cancelOrderById(orderId);
   }
 }

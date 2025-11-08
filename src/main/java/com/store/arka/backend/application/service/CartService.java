@@ -40,37 +40,37 @@ public class CartService implements ICartUseCase {
   @Override
   @Transactional(readOnly = true)
   public Cart getCartById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Cart ID");
     return cartAdapterPort.findCartById(id)
-        .orElseThrow(() -> new ModelNotFoundException("Cart with id " + id + " not found"));
+        .orElseThrow(() -> new ModelNotFoundException("Cart ID " + id + " not found"));
   }
 
   @Override
   @Transactional(readOnly = true)
   public Cart getCartByIdAndStatus(UUID id, CartStatus status) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Cart ID");
     return cartAdapterPort.findCartByIdAndStatus(id, status)
-        .orElseThrow(() -> new ModelNotFoundException("Cart with id " + id + " and status " + status + " not found"));
+        .orElseThrow(() -> new ModelNotFoundException("Cart ID " + id + " and status " + status + " not found"));
   }
 
   @Override
   @Transactional(readOnly = true)
   public Cart getCartByIdAndCustomerId(UUID id, UUID customerId) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Cart ID");
     findCustomerOrThrow(customerId);
     return cartAdapterPort.findCartByIdAndCustomerId(id, customerId)
         .orElseThrow(() -> new ModelNotFoundException(
-            "Cart with id " + id + " and customerId " + customerId + " not found"));
+            "Cart ID " + id + " and customer ID " + customerId + " not found"));
   }
 
   @Override
   @Transactional(readOnly = true)
   public Cart getCartByIdAndCustomerIdAndStatus(UUID id, UUID customerId, CartStatus status) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Cart ID");
     findCustomerOrThrow(customerId);
     return cartAdapterPort.findCartByIdAndCustomerIdAndStatus(id, customerId, status)
         .orElseThrow(() -> new ModelNotFoundException(
-            "Cart with id " + id + ", customerId " + customerId + " and status " + status + " not found"));
+            "Cart ID " + id + ", customer ID " + customerId + " and status " + status + " not found"));
   }
 
   @Override
@@ -146,7 +146,7 @@ public class CartService implements ICartUseCase {
     Product productFound = findProductOrThrow(productId);
     cartFound.ensureCartIsModifiable();
     if (!cartFound.containsProduct(productFound.getId())) {
-      throw new ProductNotFoundInOperationException("Product not found in Cart id " + cartFound.getId());
+      throw new ProductNotFoundInOperationException("Product not found in Cart ID " + cartFound.getId());
     }
     CartItem cartItem = findCartItemInCartOrThrow(productId, cartFound);
     cartItemUseCase.updateQuantity(cartItem.getId(), quantity);
@@ -160,7 +160,7 @@ public class CartService implements ICartUseCase {
     Product productFound = findProductOrThrow(productId);
     cartFound.ensureCartIsModifiable();
     if (!cartFound.containsProduct(productFound.getId())) {
-      throw new ProductNotFoundInOperationException("Product not found in Cart id " + cartFound.getId());
+      throw new ProductNotFoundInOperationException("Product not found in Cart ID " + cartFound.getId());
     }
     cartFound.removeCartItem(productFound);
     return cartAdapterPort.saveUpdateCart(cartFound);
@@ -193,14 +193,14 @@ public class CartService implements ICartUseCase {
   }
 
   private Customer findCustomerOrThrow(UUID customerId) {
-    if (customerId == null) throw new InvalidArgumentException("CustomerId in Cart cannot be null");
+    if (customerId == null) throw new InvalidArgumentException("Customer ID in Cart cannot be null");
     Customer customer = customerUseCase.getCustomerById(customerId);
     customer.throwIfDeleted();
     return customer;
   }
 
   private Product findProductOrThrow(UUID productId) {
-    if (productId == null) throw new InvalidArgumentException("ProductId in Cart cannot be null");
+    if (productId == null) throw new InvalidArgumentException("Product ID in Cart cannot be null");
     Product product =  productUseCase.getProductById(productId);
     product.throwIfDeleted();
     return product;
@@ -212,6 +212,6 @@ public class CartService implements ICartUseCase {
         .filter(item -> item.getProductId().equals(productId))
         .findFirst()
         .orElseThrow(() -> new ProductNotFoundInOperationException(
-            "Product " + productId + " not found in Order " + cartFound.getId()));
+            "Product ID " + productId + " not found in Order " + cartFound.getId()));
   }
 }

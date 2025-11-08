@@ -151,34 +151,34 @@ public class OrderController {
   public ResponseEntity<MessageResponseDto> confirmOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.confirmOrderById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Order has been successfully confirmed with id: " + id));
+    return ResponseEntity.ok(new MessageResponseDto("Order has been successfully confirmed with ID " + id));
   }
 
   @PutMapping("/{id}/pay")
   public ResponseEntity<MessageResponseDto> payOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.payOrderById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Order has been successfully paid with id: " + id));
+    return ResponseEntity.ok(new MessageResponseDto("Order has been successfully paid with ID " + id));
   }
 
   @PutMapping("/{id}/shipped")
   public ResponseEntity<MessageResponseDto> shippedOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.shippedOrderById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Order has been successfully shipped with id: " + id));
+    return ResponseEntity.ok(new MessageResponseDto("Order has been successfully shipped with ID " + id));
   }
 
   @PutMapping("/{id}/deliver")
   public ResponseEntity<MessageResponseDto> deliverOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.deliverOrderById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Order has been successfully delivered with id: " + id));
+    return ResponseEntity.ok(new MessageResponseDto("Order has been successfully delivered with ID " + id));
   }
 
   @PutMapping("/{id}/cancel")
   public ResponseEntity<MessageResponseDto> cancelOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.cancelOrderById(uuid);
-    return ResponseEntity.ok(new MessageResponseDto("Order has been successfully canceled with id: " + id));
+    return ResponseEntity.ok(new MessageResponseDto("Order has been successfully canceled with ID " + id));
   }
 }

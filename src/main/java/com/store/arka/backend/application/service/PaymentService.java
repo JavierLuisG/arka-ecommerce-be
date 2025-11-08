@@ -32,7 +32,7 @@ public class PaymentService implements IPaymentUseCase {
   public Payment createPayment(UUID orderId, Payment payment) {
     Order orderFound = requireOrderConfirmed(orderId);
     if (paymentAdapterPort.existsPaymentByOrderId(orderId)) {
-      throw new FieldAlreadyExistsException("A payment already exists for order id " + orderId);
+      throw new FieldAlreadyExistsException("A payment already exists for Order ID " + orderId);
     }
     Payment created = Payment.create(orderFound, payment.getMethod());
     return paymentAdapterPort.saveCreatePayment(created);
@@ -41,9 +41,9 @@ public class PaymentService implements IPaymentUseCase {
   @Override
   @Transactional(readOnly = true)
   public Payment getPaymentById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Payment ID");
     return paymentAdapterPort.findPaymentById(id)
-        .orElseThrow(() -> new ModelNotFoundException("Payment not found for id " + id));
+        .orElseThrow(() -> new ModelNotFoundException("Payment not found for ID " + id));
   }
 
   @Override
@@ -51,7 +51,7 @@ public class PaymentService implements IPaymentUseCase {
   public Payment getPaymentByOrderId(UUID orderId) {
     Order found = ensureOrderExists(orderId);
     return paymentAdapterPort.findPaymentByOrderId(found.getId())
-        .orElseThrow(() -> new ModelNotFoundException("Payment not found for orderId " + orderId));
+        .orElseThrow(() -> new ModelNotFoundException("Payment not found for Order ID " + orderId));
   }
 
   @Override
@@ -124,14 +124,14 @@ public class PaymentService implements IPaymentUseCase {
   }
 
   private Order requireOrderConfirmed(UUID orderId) {
-    if (orderId == null) throw new InvalidArgumentException("OrderId in Payment cannot be null");
+    if (orderId == null) throw new InvalidArgumentException("Order ID in Payment cannot be null");
     return orderAdapterPort.findOrderByIdAndStatus(orderId, OrderStatus.CONFIRMED)
         .orElseThrow(() -> new InvalidStateException("Cannot create payment: Order "
             + orderId + " must be in CONFIRMED state"));
   }
 
   private Order ensureOrderExists(UUID orderId) {
-    if (orderId == null) throw new InvalidArgumentException("OrderId in Payment cannot be null");
+    if (orderId == null) throw new InvalidArgumentException("Order ID in Payment cannot be null");
     return orderAdapterPort.findOrderById(orderId)
         .orElseThrow(() -> new InvalidStateException("Order must be CONFIRMED to create a payment"));
   }

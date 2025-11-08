@@ -25,9 +25,9 @@ public class UserService implements IUserUseCase {
   @Override
   @Transactional(readOnly = true)
   public User getUserById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "User ID");
     return userAdapterPort.findUserById(id)
-        .orElseThrow(() -> new ModelNotFoundException("User with id " + id + " not found"));
+        .orElseThrow(() -> new ModelNotFoundException("User ID " + id + " not found"));
   }
 
   @Override

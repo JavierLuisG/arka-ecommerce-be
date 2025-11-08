@@ -18,6 +18,6 @@ public class PurchaseReschedulerService {
   public void markPurchaseAsRescheduled(Purchase purchase) {
     purchase.reschedule();
     purchaseAdapterPort.saveUpdatePurchase(purchase);
-    log.info("Purchase {} marked as RESCHEDULED due to discrepancies", purchase.getId());
+    log.info("[PURCHASE_RESCHEDULER][RESCHEDULED] Purchase {} marked as RESCHEDULED due to discrepancies", purchase.getId());
   }
 }

@@ -32,7 +32,7 @@ public class ProductService implements IProductUseCase {
     ValidateAttributesUtils.throwIfModelNull(product, "Product");
     String normalizedSku = ValidateAttributesUtils.throwIfNullOrEmpty(product.getSku(), "SKU");
     if (productAdapterPort.existsProductBySku(normalizedSku)) {
-      log.warn("[PRODUCT_SERVICE][CREATE] SKU '{}' already exists", normalizedSku);
+      log.warn("[PRODUCT_SERVICE][CREATED] SKU '{}' already exists", normalizedSku);
       throw new FieldAlreadyExistsException("SKU " + normalizedSku + " already exists. Choose a different SKU");
     }
     Product created = Product.create(
@@ -43,18 +43,18 @@ public class ProductService implements IProductUseCase {
         product.getStock()
     );
     Product saved = productAdapterPort.saveCreateProduct(created);
-    log.info("[PRODUCT_SERVICE][CREATE] Created new product {}, ID: {}", saved.getName(), saved.getId());
+    log.info("[PRODUCT_SERVICE][CREATED] Created new product {}, ID {}", saved.getName(), saved.getId());
     return saved;
   }
 
   @Override
   @Transactional(readOnly = true)
   public Product getProductById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "Product ID");
     return productAdapterPort.findProductById(id)
         .orElseThrow(() -> {
-          log.warn("[PRODUCT_SERVICE][GET_BY_ID] Product with ID {} not found", id);
-          return new ModelNotFoundException("Product with ID " + id + " not found");
+          log.warn("[PRODUCT_SERVICE][GET_BY_ID] Product ID {} not found", id);
+          return new ModelNotFoundException("Product ID " + id + " not found");
         });
   }
 
@@ -90,7 +90,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.updateFields(product.getName(), product.getDescription(), product.getPrice());
     Product saved = productAdapterPort.saveUpdateProduct(found);
-    log.info("[PRODUCT_SERVICE][UPDATE] Updated product ID {} ", saved.getId());
+    log.info("[PRODUCT_SERVICE][UPDATED] Updated product ID {} ", saved.getId());
     return saved;
   }
 
@@ -104,13 +104,13 @@ public class ProductService implements IProductUseCase {
       newCategories.add(categoryAdapterPort.findCategoryById(uuid)
           .filter(category -> category.getStatus().equals(CategoryStatus.ACTIVE))
           .orElseThrow(() -> {
-            log.info("[PRODUCT_SERVICE][UPDATE_CATEGORIES] Category ID {} in product not found", uuid);
-            return new ModelNotFoundException("Category with ID " + uuid + " not found");
+            log.info("[PRODUCT_SERVICE][UPDATED_CATEGORIES] Category ID {} in product not found", uuid);
+            return new ModelNotFoundException("Category ID " + uuid + " not found");
           }));
     });
     found.updateCategories(newCategories);
     Product saved = productAdapterPort.saveUpdateProduct(found);
-    log.info("[PRODUCT_SERVICE][UPDATE_CATEGORIES] Updated categories product ID {} ", saved.getId());
+    log.info("[PRODUCT_SERVICE][UPDATED_CATEGORIES] Updated categories product ID {} ", saved.getId());
     return saved;
   }
 
@@ -120,7 +120,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.decreaseStock(quantity);
     productAdapterPort.saveUpdateProduct(found);
-    log.info("[PRODUCT_SERVICE][DECREASE_STOCK] Product ID {} has decreased its stock by {}", id, quantity);
+    log.info("[PRODUCT_SERVICE][DECREASED_STOCK] Product ID {} has decreased its stock by {}", id, quantity);
   }
 
   @Override
@@ -129,7 +129,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.increaseStock(quantity);
     productAdapterPort.saveUpdateProduct(found);
-    log.info("[PRODUCT_SERVICE][INCREASE_STOCK] Product ID {} has increased its stock by {}", id, quantity);
+    log.info("[PRODUCT_SERVICE][INCREASED_STOCK] Product ID {} has increased its stock by {}", id, quantity);
   }
 
   @Override
@@ -138,7 +138,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.delete();
     productAdapterPort.saveUpdateProduct(found);
-    log.info("[PRODUCT_SERVICE][DELETE] Product ID {} marked as deleted", id);
+    log.info("[PRODUCT_SERVICE][DELETED] Product ID {} marked as deleted", id);
   }
 
   @Override
@@ -147,7 +147,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.restore();
     Product restored = productAdapterPort.saveUpdateProduct(found);
-    log.info("[PRODUCT_SERVICE][RESTORE] Product ID {} restored successfully", id);
+    log.info("[PRODUCT_SERVICE][RESTORED] Product ID {} restored successfully", id);
     return restored;
   }
 

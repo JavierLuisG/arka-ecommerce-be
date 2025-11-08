@@ -30,9 +30,9 @@ public class OrderItemService implements IOrderItemUseCase {
   @Override
   @Transactional(readOnly = true)
   public OrderItem getOrderItemById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id);
+    ValidateAttributesUtils.throwIfIdNull(id, "OrderItem ID");
     return orderItemAdapterPort.findOrderItemById(id)
-        .orElseThrow(() -> new ModelNotFoundException("OrderItem with id " + id + " not found"));
+        .orElseThrow(() -> new ModelNotFoundException("OrderItem ID " + id + " not found"));
   }
 
   @Override
