@@ -7,7 +7,7 @@ import com.store.arka.backend.domain.enums.*;
 import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.domain.model.*;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +42,7 @@ public class OrderService implements IOrderUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Order getOrderById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return orderAdapterPort.findOrderById(id)
@@ -50,7 +50,7 @@ public class OrderService implements IOrderUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Order getOrderByIdAndStatus(UUID id, OrderStatus status) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return orderAdapterPort.findOrderByIdAndStatus(id, status)
@@ -58,7 +58,7 @@ public class OrderService implements IOrderUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Order getOrderByIdAndCustomerId(UUID id, UUID customerId) {
     ValidateAttributesUtils.throwIfIdNull(id);
     findCustomerOrThrow(customerId);
@@ -68,7 +68,7 @@ public class OrderService implements IOrderUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Order getOrderByIdAndCustomerIdAndStatus(UUID id, UUID customerId, OrderStatus status) {
     ValidateAttributesUtils.throwIfIdNull(id);
     findCustomerOrThrow(customerId);
@@ -78,47 +78,47 @@ public class OrderService implements IOrderUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Order> getAllOrders() {
     return orderAdapterPort.findAllOrders();
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Order> getAllOrdersByStatus(OrderStatus status) {
     return orderAdapterPort.findAllOrdersByStatus(status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Order> getAllOrdersByCustomerId(UUID customerId) {
     findCustomerOrThrow(customerId);
     return orderAdapterPort.findAllOrdersByCustomerId(customerId);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Order> getAllOrdersByCustomerIdAndStatus(UUID customerId, OrderStatus status) {
     findCustomerOrThrow(customerId);
     return orderAdapterPort.findAllOrdersByCustomerIdAndStatus(customerId, status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Order> getAllOrdersByItemsProductId(UUID productId) {
     findProductOrThrow(productId);
     return orderAdapterPort.findAllOrdersByItemsProductId(productId);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Order> getAllOrdersByItemsProductIdAndStatus(UUID productId, OrderStatus status) {
     findProductOrThrow(productId);
     return orderAdapterPort.findAllOrdersByItemsProductIdAndStatus(productId, status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Order> getAllOrdersByCustomerIdAndItemsProductIdAndStatus(
       UUID customerId, UUID productId, OrderStatus status) {
     findCustomerOrThrow(customerId);

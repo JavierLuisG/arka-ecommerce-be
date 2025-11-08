@@ -3,13 +3,11 @@ package com.store.arka.backend.application.service;
 import com.store.arka.backend.application.port.in.*;
 import com.store.arka.backend.application.port.out.ICartAdapterPort;
 import com.store.arka.backend.domain.enums.CartStatus;
-import com.store.arka.backend.domain.enums.CustomerStatus;
-import com.store.arka.backend.domain.enums.ProductStatus;
 import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.domain.model.*;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import com.store.arka.backend.shared.util.ValidateStatusUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +38,7 @@ public class CartService implements ICartUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Cart getCartById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return cartAdapterPort.findCartById(id)
@@ -48,7 +46,7 @@ public class CartService implements ICartUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Cart getCartByIdAndStatus(UUID id, CartStatus status) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return cartAdapterPort.findCartByIdAndStatus(id, status)
@@ -56,7 +54,7 @@ public class CartService implements ICartUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Cart getCartByIdAndCustomerId(UUID id, UUID customerId) {
     ValidateAttributesUtils.throwIfIdNull(id);
     findCustomerOrThrow(customerId);
@@ -66,7 +64,7 @@ public class CartService implements ICartUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Cart getCartByIdAndCustomerIdAndStatus(UUID id, UUID customerId, CartStatus status) {
     ValidateAttributesUtils.throwIfIdNull(id);
     findCustomerOrThrow(customerId);
@@ -76,47 +74,47 @@ public class CartService implements ICartUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Cart> getAllCarts() {
     return cartAdapterPort.findAllCarts();
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Cart> getAllCartsByStatus(CartStatus status) {
     return cartAdapterPort.findAllCartsByStatus(status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Cart> getAllCartsByCustomerId(UUID customerId) {
     findCustomerOrThrow(customerId);
     return cartAdapterPort.findAllCartsByCustomerId(customerId);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Cart> getAllCartsByCustomerIdAndStatus(UUID customerId, CartStatus status) {
     findCustomerOrThrow(customerId);
     return cartAdapterPort.findAllCartsByCustomerIdAndStatus(customerId, status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Cart> getAllCartsByItemsProductId(UUID productId) {
     findProductOrThrow(productId);
     return cartAdapterPort.findAllCartsByItemsProductId(productId);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Cart> getAllCartsByItemsProductIdAndStatus(UUID productId, CartStatus status) {
     findProductOrThrow(productId);
     return cartAdapterPort.findAllCartsByItemsProductIdAndStatus(productId, status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Cart> getAllCartsByCustomerIdAndItemsProductIdAndStatus(
       UUID customerId, UUID productId, CartStatus status) {
     findCustomerOrThrow(customerId);

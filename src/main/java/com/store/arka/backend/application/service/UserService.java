@@ -8,7 +8,7 @@ import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.User;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ public class UserService implements IUserUseCase {
   private final PasswordEncoder passwordEncoder;
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public User getUserById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return userAdapterPort.findUserById(id)
@@ -31,7 +31,7 @@ public class UserService implements IUserUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public User getUserByUserName(String userName) {
     throwIfUserNameNull(userName);
     String normalizedUserName = userName.trim().toLowerCase();
@@ -40,7 +40,7 @@ public class UserService implements IUserUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public User getUserByEmail(String email) {
     throwIfEmailNull(email);
     String normalizedEmail = email.trim().toLowerCase();
@@ -49,25 +49,25 @@ public class UserService implements IUserUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<User> getAllUsers() {
     return userAdapterPort.findAllUsers();
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<User> getAllUsersByRole(UserRole role) {
     return userAdapterPort.findAllUsersByRole(role);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<User> getAllUsersByStatus(UserStatus status) {
     return userAdapterPort.findAllUsersByStatus(status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<User> getAllUsersByRoleAndStatus(UserRole role, UserStatus status) {
     return userAdapterPort.findAllUsersByRoleAndStatus(role, status);
   }

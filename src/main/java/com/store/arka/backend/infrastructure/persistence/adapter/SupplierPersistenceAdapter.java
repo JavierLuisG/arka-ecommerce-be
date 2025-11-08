@@ -53,33 +53,13 @@ public class SupplierPersistenceAdapter implements ISupplierAdapterPort {
   }
 
   @Override
-  public Optional<Supplier> findSupplierByIdAndStatus(UUID id, SupplierStatus status) {
-    return jpaSupplierRepository.findByIdAndStatus(id, status).map(mapper::toDomain);
-  }
-
-  @Override
   public Optional<Supplier> findSupplierByEmail(String email) {
     return jpaSupplierRepository.findByEmail(email).map(mapper::toDomain);
   }
 
   @Override
-  public Optional<Supplier> findSupplierByEmailAndStatus(String email, SupplierStatus status) {
-    return jpaSupplierRepository.findByEmailAndStatus(email, status).map(mapper::toDomain);
-  }
-
-  @Override
   public Optional<Supplier> findSupplierByTaxId(String taxId) {
     return jpaSupplierRepository.findByTaxId(taxId).map(mapper::toDomain);
-  }
-
-  @Override
-  public Optional<Supplier> findSupplierByTaxIdAndStatus(String taxId, SupplierStatus status) {
-    return jpaSupplierRepository.findByTaxIdAndStatus(taxId, status).map(mapper::toDomain);
-  }
-
-  @Override
-  public Optional<Supplier> findSupplierByIdAndProductIdAndStatus(UUID id, UUID productId, SupplierStatus status) {
-    return jpaSupplierRepository.findByIdAndProductsIdAndStatus(id, productId, status).map(mapper::toDomain);
   }
 
   @Override
@@ -93,8 +73,8 @@ public class SupplierPersistenceAdapter implements ISupplierAdapterPort {
   }
 
   @Override
-  public List<Supplier> findAllSuppliersByProductIdAndStatus(UUID productId, SupplierStatus status) {
-    return jpaSupplierRepository.findAllByProductsIdAndStatus(productId, status)
+  public List<Supplier> findAllSuppliersByProductId(UUID productId) {
+    return jpaSupplierRepository.findAllByProductsId(productId)
         .stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 

@@ -38,10 +38,9 @@ public class Category {
   }
 
   public void update(Category category) {
-    ValidateAttributesUtils.throwIfModelNull(category, "Category");
-    String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
     if (isDeleted()) throw new ModelDeletionException("Category deleted previously");
-    this.description = normalizedDescription;
+    ValidateAttributesUtils.throwIfModelNull(category, "Category");
+    this.description = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
   }
 
   public void delete() {

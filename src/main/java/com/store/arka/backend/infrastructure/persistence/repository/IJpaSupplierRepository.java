@@ -9,21 +9,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IJpaSupplierRepository extends JpaRepository<SupplierEntity, UUID> {
-  Optional<SupplierEntity> findByIdAndStatus(UUID id, SupplierStatus status);
-
   Optional<SupplierEntity> findByEmail(String email);
-
-  Optional<SupplierEntity> findByEmailAndStatus(String email, SupplierStatus status);
 
   Optional<SupplierEntity> findByTaxId(String taxId);
 
-  Optional<SupplierEntity> findByTaxIdAndStatus(String taxId, SupplierStatus status);
-
-  Optional<SupplierEntity> findByIdAndProductsIdAndStatus(UUID id, UUID productId, SupplierStatus status);
-
   List<SupplierEntity> findAllByStatus(SupplierStatus status);
 
-  List<SupplierEntity> findAllByProductsIdAndStatus(UUID productId, SupplierStatus status);
+  List<SupplierEntity> findAllByProductsId(UUID productId);
 
   boolean existsByEmail(String email);
 

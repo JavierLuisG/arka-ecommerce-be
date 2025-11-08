@@ -14,23 +14,15 @@ public interface ISupplierAdapterPort {
 
   Optional<Supplier> findSupplierById(UUID id);
 
-  Optional<Supplier> findSupplierByIdAndStatus(UUID id, SupplierStatus status);
-
   Optional<Supplier> findSupplierByEmail(String email);
 
-  Optional<Supplier> findSupplierByEmailAndStatus(String email, SupplierStatus status);
-
   Optional<Supplier> findSupplierByTaxId(String taxId);
-
-  Optional<Supplier> findSupplierByTaxIdAndStatus(String taxId, SupplierStatus status);
-
-  Optional<Supplier> findSupplierByIdAndProductIdAndStatus(UUID id, UUID productId, SupplierStatus status);
 
   List<Supplier> findAllSuppliers();
 
   List<Supplier> findAllSuppliersByStatus(SupplierStatus status);
 
-  List<Supplier> findAllSuppliersByProductIdAndStatus(UUID productId, SupplierStatus status);
+  List<Supplier> findAllSuppliersByProductId(UUID productId);
 
   boolean existsSupplierByEmail(String email);
 

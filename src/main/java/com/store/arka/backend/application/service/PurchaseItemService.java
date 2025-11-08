@@ -7,7 +7,7 @@ import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.model.PurchaseItem;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +28,7 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public PurchaseItem getPurchaseItemById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return purchaseItemAdapterPort.findPurchaseItemById(id)
@@ -36,13 +36,13 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<PurchaseItem> getAllPurchaseItems() {
     return purchaseItemAdapterPort.findAllPurchaseItems();
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<PurchaseItem> getAllPurchaseItemsByProductId(UUID productId) {
     return purchaseItemAdapterPort.findAllPurchaseItemsByProductId(productId);
   }

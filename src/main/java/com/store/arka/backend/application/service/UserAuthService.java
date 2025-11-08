@@ -7,7 +7,7 @@ import com.store.arka.backend.application.port.in.IUserAuthUseCase;
 import com.store.arka.backend.application.port.out.IUserAdapterPort;
 import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.model.User;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

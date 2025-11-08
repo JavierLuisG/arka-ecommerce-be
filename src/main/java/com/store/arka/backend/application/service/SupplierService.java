@@ -4,20 +4,21 @@ import com.store.arka.backend.application.port.in.IProductUseCase;
 import com.store.arka.backend.application.port.in.ISupplierUseCase;
 import com.store.arka.backend.application.port.out.ISupplierAdapterPort;
 import com.store.arka.backend.domain.enums.Country;
-import com.store.arka.backend.domain.enums.ProductStatus;
 import com.store.arka.backend.domain.enums.SupplierStatus;
 import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.domain.model.Product;
 import com.store.arka.backend.domain.model.Supplier;
 import com.store.arka.backend.shared.util.PathUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SupplierService implements ISupplierUseCase {
@@ -27,184 +28,164 @@ public class SupplierService implements ISupplierUseCase {
   @Override
   @Transactional
   public Supplier createSupplier(Supplier supplier) {
-    if (supplier == null) throw new ModelNullException("Supplier cannot be null");
-    String normalizedCommercialName = supplier.getCommercialName().trim().toLowerCase();
-    String normalizedContactName = supplier.getContactName().trim().toLowerCase();
-    String normalizedEmail = supplier.getEmail().trim().toLowerCase();
-    String normalizedAddress = supplier.getAddress().trim().toLowerCase();
-    String normalizedCity = supplier.getCity().trim().toLowerCase();
+    ValidateAttributesUtils.throwIfModelNull(supplier, "Supplier");
+    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(supplier.getEmail(), "Email").toLowerCase();
+    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(supplier.getTaxId(), "Tax id");
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, supplier.getCountry().toString(), "Country");
     if (supplierAdapterPort.existsSupplierByEmail(normalizedEmail)) {
-      throw new FieldAlreadyExistsException("Email " + supplier.getEmail() + " always exist in Supplier");
+      log.warn("[SUPPLIER_SERVICE][CREATE] Email {} already exists for creating a supplier", normalizedEmail);
+      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " always exists in Supplier");
     }
-    if (supplierAdapterPort.existsSupplierByTaxId(supplier.getTaxId())) {
-      throw new FieldAlreadyExistsException("Tax " + supplier.getTaxId() + " always exist in Supplier");
+    if (supplierAdapterPort.existsSupplierByTaxId(normalizedTaxId)) {
+      log.warn("[SUPPLIER_SERVICE][CREATE] TaxId {} already exists for creating a supplier", normalizedTaxId);
+      throw new FieldAlreadyExistsException("TaxId " + normalizedTaxId + " always exists in Supplier");
     }
     Supplier created = Supplier.create(
-        normalizedCommercialName,
-        normalizedContactName,
+        supplier.getCommercialName(),
+        supplier.getContactName(),
         normalizedEmail,
         supplier.getPhone(),
         supplier.getTaxId(),
-        normalizedAddress,
-        normalizedCity,
+        supplier.getAddress(),
+        supplier.getCity(),
         normalizedCountry
     );
-    return supplierAdapterPort.saveCreateSupplier(created);
+    Supplier saved = supplierAdapterPort.saveCreateSupplier(created);
+    log.info("[SUPPLIER_SERVICE][CREATE] Created new supplier ID: {}", saved.getId());
+    return saved;
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Supplier getSupplierById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return supplierAdapterPort.findSupplierById(id)
-        .orElseThrow(() -> new ModelNotFoundException("Supplier with id " + id + " not found"));
+        .orElseThrow(() -> {
+          log.warn("[SUPPLIER_SERVICE][GET_BY_ID] Supplier with ID {} not found", id);
+          return new ModelNotFoundException("Supplier with ID " + id + " not found");
+        });
   }
 
   @Override
-  @Transactional
-  public Supplier getSupplierByIdAndStatus(UUID id, SupplierStatus status) {
-    ValidateAttributesUtils.throwIfIdNull(id);
-    return supplierAdapterPort.findSupplierByIdAndStatus(id, status)
-        .orElseThrow(() -> new ModelNotFoundException("Supplier with id " + id + " and status " + status + " not found"));
-  }
-
-  @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Supplier getSupplierByEmail(String email) {
-    if (email == null || email.isBlank()) throw new InvalidArgumentException("Email in supplier is required");
-    String normalizedEmail = email.trim().toLowerCase();
+    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email in Supplier").toLowerCase();
     return supplierAdapterPort.findSupplierByEmail(normalizedEmail)
-        .orElseThrow(() -> new ModelNotFoundException("Supplier with email " + normalizedEmail + " not found"));
+        .orElseThrow(() -> {
+          log.warn("[SUPPLIER_SERVICE][GET_BY_EMAIL] Supplier with Email {} not found", normalizedEmail);
+          return new ModelNotFoundException("Supplier with email " + normalizedEmail + " not found");
+        });
   }
 
   @Override
-  @Transactional
-  public Supplier getSupplierByEmailAndStatus(String email, SupplierStatus status) {
-    if (email == null || email.isBlank()) throw new InvalidArgumentException("Email in supplier is required");
-    String normalizedEmail = email.trim().toLowerCase();
-    return supplierAdapterPort.findSupplierByEmailAndStatus(normalizedEmail, status)
-        .orElseThrow(() -> new ModelNotFoundException("Supplier with email " + normalizedEmail +
-            " and status " + status + " not found"));
-  }
-
-  @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Supplier getSupplierByTaxId(String taxId) {
-    if (taxId == null || taxId.isBlank()) throw new InvalidArgumentException("Tax in supplier is required");
-    return supplierAdapterPort.findSupplierByTaxId(taxId)
-        .orElseThrow(() -> new ModelNotFoundException("Supplier with taxId " + taxId + " not found"));
+    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(taxId, "Taxt Id in Supplier");
+    return supplierAdapterPort.findSupplierByTaxId(normalizedTaxId)
+        .orElseThrow(() -> {
+          log.warn("[SUPPLIER_SERVICE][GET_BY_TAX] Supplier with TaxId {} not found", normalizedTaxId);
+          return new ModelNotFoundException("Supplier with taxId " + normalizedTaxId + " not found");
+        });
   }
 
   @Override
-  @Transactional
-  public Supplier getSupplierByTaxIdAndStatus(String taxId, SupplierStatus status) {
-    if (taxId == null || taxId.isBlank()) throw new InvalidArgumentException("Tax in supplier is required");
-    return supplierAdapterPort.findSupplierByTaxIdAndStatus(taxId, status)
-        .orElseThrow(() -> new ModelNotFoundException("Supplier with taxId " + taxId + " and status " + status + " not found"));
-  }
-
-  @Override
-  @Transactional
-  public Supplier getSupplierByIdAndProductIdAndStatus(UUID id, UUID productId, SupplierStatus status) {
-    ValidateAttributesUtils.throwIfIdNull(id);
-    Product productFound = findProductOrThrow(productId);
-    return supplierAdapterPort.findSupplierByIdAndProductIdAndStatus(id, productFound.getId(), status)
-        .orElseThrow(() -> new ModelNotFoundException(
-            "Supplier with id " + id + ", productId " + productId + " and status " + status + " not found"));
-  }
-
-  @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Supplier> getAllSuppliers() {
+    log.info("[SUPPLIER_SERVICE][GET_ALL] Fetching all suppliers");
     return supplierAdapterPort.findAllSuppliers();
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Supplier> getAllSuppliersByStatus(SupplierStatus status) {
+    log.info("[SUPPLIER_SERVICE][GET_ALL_BY_STATUS] Fetching all suppliers with status {}", status);
     return supplierAdapterPort.findAllSuppliersByStatus(status);
   }
 
   @Override
-  @Transactional
-  public List<Supplier> getAllSuppliersByProductIdAndStatus(UUID productId, SupplierStatus status) {
+  @Transactional(readOnly = true)
+  public List<Supplier> getAllSuppliersByProductId(UUID productId) {
     Product productFound = findProductOrThrow(productId);
-    return supplierAdapterPort.findAllSuppliersByProductIdAndStatus(productFound.getId(), status);
+    log.info("[SUPPLIER_SERVICE][GET_ALL_BY_PRODUCT] Fetching all suppliers by product ID {}", productId);
+    return supplierAdapterPort.findAllSuppliersByProductId(productFound.getId());
   }
 
   @Override
   @Transactional
   public Supplier updateFieldsSupplier(UUID id, Supplier supplier) {
-    if (supplier == null) throw new ModelNullException("Supplier cannot be null");
-    Supplier found = getSupplierByIdAndStatus(id, SupplierStatus.ACTIVE);
-    String normalizedCommercialName = supplier.getCommercialName().trim().toLowerCase();
-    String normalizedContactName = supplier.getContactName().trim().toLowerCase();
-    String normalizedEmail = supplier.getEmail().trim().toLowerCase();
-    String normalizedAddress = supplier.getAddress().trim().toLowerCase();
-    String normalizedCity = supplier.getCity().trim().toLowerCase();
+    ValidateAttributesUtils.throwIfModelNull(supplier, "Supplier");
+    Supplier found = getSupplierById(id);
+    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(supplier.getEmail(), "Email").toLowerCase();
+    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(supplier.getTaxId(), "Tax id");
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, supplier.getCountry().toString(), "Country");
     if (!normalizedEmail.equals(found.getEmail()) && supplierAdapterPort.existsSupplierByEmail(normalizedEmail)) {
-      throw new FieldAlreadyExistsException("Email " + supplier.getEmail() + " always exist in Supplier");
+      log.warn("[SUPPLIER_SERVICE][UPDATE] Email {} already exists for updating a supplier", normalizedEmail);
+      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " always exists in Supplier");
     }
-    if (!supplier.getTaxId().equals(found.getTaxId()) && supplierAdapterPort.existsSupplierByTaxId(supplier.getTaxId())) {
-      throw new FieldAlreadyExistsException("Tax " + supplier.getTaxId() + " always exist in Supplier");
+    if (!normalizedTaxId.equals(found.getTaxId()) && supplierAdapterPort.existsSupplierByTaxId(normalizedTaxId)) {
+      log.warn("[SUPPLIER_SERVICE][UPDATE] TaxId {} already exists for updating a supplier", normalizedTaxId);
+      throw new FieldAlreadyExistsException("Tax " + normalizedTaxId + " always exists in Supplier");
     }
     found.updateFields(
-        normalizedCommercialName,
-        normalizedContactName,
+        supplier.getCommercialName(),
+        supplier.getContactName(),
         normalizedEmail,
         supplier.getPhone(),
         supplier.getTaxId(),
-        normalizedAddress,
-        normalizedCity,
+        supplier.getAddress(),
+        supplier.getCity(),
         normalizedCountry
     );
-    return supplierAdapterPort.saveUpdateSupplier(found);
+    Supplier saved = supplierAdapterPort.saveUpdateSupplier(found);
+    log.info("[SUPPLIER_SERVICE][UPDATE] Updated fields supplier ID {} ", saved.getId());
+    return saved;
   }
 
   @Override
   @Transactional
   public Supplier addProduct(UUID id, UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(id);
     Product productFound = findProductOrThrow(productId);
     Supplier supplierFound = getSupplierById(id);
     supplierFound.addProduct(productFound);
+    log.info("[SUPPLIER_SERVICE][ADD_PRODUCT] Supplier ID {} has added the product ID {}", supplierFound.getId(), productId);
     return supplierAdapterPort.saveUpdateSupplier(supplierFound);
   }
 
   @Override
   @Transactional
   public Supplier removeProduct(UUID id, UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(id);
     Supplier supplierFound = getSupplierById(id);
     Product productFound = findProductOrThrow(productId);
     supplierFound.removeProduct(productFound);
-    return supplierAdapterPort.saveUpdateSupplier(supplierFound);
+    Supplier saved = supplierAdapterPort.saveUpdateSupplier(supplierFound);
+    log.info("[SUPPLIER_SERVICE][REMOVE_PRODUCT] Supplier ID {} has removed the product ID {}", supplierFound.getId(), productId);
+    return saved;
   }
 
   @Override
   @Transactional
-  public void deleteSupplierById(UUID id) {
+  public void deleteSupplier(UUID id) {
     Supplier found = getSupplierById(id);
     found.delete();
     supplierAdapterPort.saveUpdateSupplier(found);
+    log.info("[SUPPLIER_SERVICE][DELETE] Supplier ID {} marked as deleted", id);
   }
 
-  @Override
   @Transactional
-  public Supplier restoreSupplierByEmail(String email) {
-    Supplier found = getSupplierByEmail(email);
+  public Supplier restoreSupplier(UUID id) {
+    Supplier found = getSupplierById(id);
     found.restore();
-    return supplierAdapterPort.saveUpdateSupplier(found);
+    Supplier saved = supplierAdapterPort.saveUpdateSupplier(found);
+    log.info("[SUPPLIER_SERVICE][RESTORE] Supplier ID {} restored successfully", id);
+    return saved;
   }
 
   private Product findProductOrThrow(UUID productId) {
-    if (productId == null) throw new InvalidArgumentException("ProductId in Supplier cannot be null");
+    ValidateAttributesUtils.throwIfModelNull(productId, "ProductId in Supplier");
     Product product =  productUseCase.getProductById(productId);
-    product.isDeleted();
+    product.throwIfDeleted();
     return product;
   }
 }

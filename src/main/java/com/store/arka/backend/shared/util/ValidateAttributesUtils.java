@@ -11,18 +11,26 @@ import java.util.UUID;
 @Slf4j
 public final class ValidateAttributesUtils {
   public static void throwIfIdNull(UUID id) {
-    log.warn("Id is required");
-    if (id == null) throw new InvalidArgumentException("Id is required");
+    if (id == null) {
+      log.warn("[VALIDATE_ATTRIBUTES][ID_NULL] Id is required");
+      throw new InvalidArgumentException("Id is required");
+    }
   }
 
-  public static void throwIfModelNull(Object product, String name) {
-    log.warn("An attempt was made to enter a null value: {}", name);
-    if (product == null) throw new ModelNullException(name + " cannot be null");
+  public static void throwIfModelNull(Object obj, String name) {
+    if (obj == null) {
+      log.warn("[VALIDATE_ATTRIBUTES][MODEL_NULL] An attempt was made to enter a null value: {}", name);
+      throw new ModelNullException(name + " cannot be null");
+    }
   }
 
   public static void validateQuantity(Integer quantity) {
-    if (quantity == null) throw new InvalidArgumentException("Quantity is required, cannot be null");
-    if (quantity <= 0) throw new QuantityBadRequestException("Quantity must be greater than 0");
+    if (quantity == null) {
+      throw new InvalidArgumentException("Quantity is required, cannot be null");
+    }
+    if (quantity <= 0) {
+      throw new QuantityBadRequestException("Quantity must be greater than 0");
+    }
   }
 
   public static String throwIfValueNotAllowed(String value, String name) {
@@ -30,15 +38,17 @@ public final class ValidateAttributesUtils {
     String normalized = value.trim().toLowerCase();
     List<String> forbiddenNames = List.of("null", "default", "admin");
     if (forbiddenNames.contains(normalized)) {
-      log.warn("An attempt was made to enter a wrong value: {}", name);
+      log.warn("[VALIDATE_ATTRIBUTES][VALUE_ALLOWED] An attempt was made to enter a wrong value: {}", name);
       throw new InvalidArgumentException("This " + name + " is not allowed");
     }
     return normalized;
   }
 
   public static String throwIfNullOrEmpty(String value, String field) {
-    log.warn("An attempt was made to enter a null value: {}", field);
-    if (value == null || value.isEmpty()) throw new InvalidArgumentException(field + " cannot be null or empty");
+    if (value == null || value.isEmpty()) {
+      log.warn("[VALIDATE_ATTRIBUTES][NULL_OR_EMPTY] An attempt was made to enter a null value: {}", field);
+      throw new InvalidArgumentException(field + " cannot be null or empty");
+    }
     return value.trim();
   }
 }

@@ -11,7 +11,7 @@ import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.domain.model.Order;
 import com.store.arka.backend.domain.model.Payment;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,7 +39,7 @@ public class PaymentService implements IPaymentUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Payment getPaymentById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return paymentAdapterPort.findPaymentById(id)
@@ -47,7 +47,7 @@ public class PaymentService implements IPaymentUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Payment getPaymentByOrderId(UUID orderId) {
     Order found = ensureOrderExists(orderId);
     return paymentAdapterPort.findPaymentByOrderId(found.getId())
@@ -55,25 +55,25 @@ public class PaymentService implements IPaymentUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Payment> getAllPayments() {
     return paymentAdapterPort.findAllPayments();
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Payment> getAllPaymentsByMethod(PaymentMethod method) {
     return paymentAdapterPort.findAllPaymentsByMethod(method);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Payment> getAllPaymentsByStatus(PaymentStatus status) {
     return paymentAdapterPort.findAllPaymentsByStatus(status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Payment> getAllPaymentsByMethodAndStatus(PaymentMethod method, PaymentStatus status) {
     return paymentAdapterPort.findAllPaymentsByMethodAndStatus(method, status);
   }

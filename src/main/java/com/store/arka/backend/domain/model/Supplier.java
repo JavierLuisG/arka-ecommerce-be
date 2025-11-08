@@ -5,6 +5,7 @@ import com.store.arka.backend.domain.enums.SupplierStatus;
 import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelActivationException;
 import com.store.arka.backend.domain.exception.ModelDeletionException;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -35,23 +36,23 @@ public class Supplier {
 
   public static Supplier create(String commercialName, String contactName, String email, String phone, String taxId,
                                 String address, String city, Country country) {
-    validateNotNullOrEmpty(commercialName, "Commercial name");
-    validateNotNullOrEmpty(contactName, "Contact name");
-    validateNotNullOrEmpty(email, "Email");
-    validateNotNullOrEmpty(phone, "Phone");
-    validateNotNullOrEmpty(taxId, "Tax id");
-    validateNotNullOrEmpty(address, "Address");
-    validateNotNullOrEmpty(city, "City");
-    if (country == null) throw new InvalidArgumentException("Country cannot be null or empty");
+    String normalizedCommercialName = ValidateAttributesUtils.throwIfValueNotAllowed(commercialName, "Commercial name");
+    String normalizedContactName = ValidateAttributesUtils.throwIfValueNotAllowed(contactName, "Contact name");
+    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email");
+    String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
+    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(taxId, "Tax id");
+    String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
+    String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
+    ValidateAttributesUtils.throwIfModelNull(country.toString(), "Country in Customer");
     return new Supplier(
         null,
-        commercialName,
-        contactName,
-        email,
-        phone,
-        taxId,
-        address,
-        city,
+        normalizedCommercialName,
+        normalizedContactName,
+        normalizedEmail,
+        normalizedPhone,
+        normalizedTaxId,
+        normalizedAddress,
+        normalizedCity,
         country,
         new ArrayList<>(),
         SupplierStatus.ACTIVE,
@@ -62,31 +63,23 @@ public class Supplier {
 
   public void updateFields(String commercialName, String contactName, String email, String phone, String taxId, String address, String city,
                            Country country) {
-    if (!isActive()) throw new ModelDeletionException("Supplier already deleted previously");
-    validateNotNullOrEmpty(commercialName, "Commercial name");
-    validateNotNullOrEmpty(contactName, "Contact name");
-    validateNotNullOrEmpty(email, "Email");
-    validateNotNullOrEmpty(phone, "Phone");
-    validateNotNullOrEmpty(taxId, "Tax id");
-    validateNotNullOrEmpty(address, "Address");
-    validateNotNullOrEmpty(city, "City");
-    if (country == null) throw new InvalidArgumentException("Country cannot be null or empty");
-    this.commercialName = commercialName;
-    this.contactName = contactName;
-    this.email = email;
-    this.phone = phone;
-    this.taxId = taxId;
-    this.address = address;
-    this.city = city;
+    throwIfDeleted();
+    String normalizedCommercialName = ValidateAttributesUtils.throwIfValueNotAllowed(commercialName, "Commercial name");
+    String normalizedContactName = ValidateAttributesUtils.throwIfValueNotAllowed(contactName, "Contact name");
+    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email");
+    String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
+    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(taxId, "Tax id");
+    String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
+    String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
+    ValidateAttributesUtils.throwIfModelNull(country.toString(), "Country in Customer");
+    this.commercialName = normalizedCommercialName;
+    this.contactName = normalizedContactName;
+    this.email = normalizedEmail;
+    this.phone = normalizedPhone;
+    this.taxId = normalizedTaxId;
+    this.address = normalizedAddress;
+    this.city = normalizedCity;
     this.country = country;
-  }
-
-  private static void validateNotNullOrEmpty(String value, String field) {
-    if (value == null || value.trim().isEmpty()) throw new InvalidArgumentException(field + " cannot be null or empty");
-  }
-
-  public boolean isActive() {
-    return this.status == SupplierStatus.ACTIVE;
   }
 
   public boolean containsProduct(UUID productId) {
@@ -94,29 +87,37 @@ public class Supplier {
   }
 
   public void addProduct(Product product) {
-    if (!isActive()) throw new ModelDeletionException("Supplier already deleted previously");
-    if (product == null) throw new InvalidArgumentException("Product cannot be null");
+    throwIfDeleted();
+    ValidateAttributesUtils.throwIfModelNull(product, "Product in Supplier");
     if (containsProduct(product.getId())) throw new InvalidArgumentException("Product already added to supplier");
     products.add(product);
   }
 
   public void removeProduct(Product product) {
-    if (!isActive()) throw new ModelDeletionException("Supplier already deleted previously");
+    throwIfDeleted();
     if (!containsProduct(product.getId())) throw new InvalidArgumentException("Product not found in supplier");
     products.remove(product);
   }
 
   public void delete() {
-    if (!isActive()) throw new ModelDeletionException("Supplier already deleted previously");
+    if (isDeleted()) throw new ModelDeletionException("Supplier already deleted previously");
     this.status = SupplierStatus.ELIMINATED;
   }
 
   public void restore() {
-    if (this.status == SupplierStatus.ELIMINATED) {
-      this.status = SupplierStatus.ACTIVE;
-      this.updatedAt = LocalDateTime.now();
-    } else {
-      throw new ModelActivationException("Supplier already active previously");
-    }
+    if (isActive()) throw new ModelActivationException("Supplier is already active and cannot be restored again");
+    this.status = SupplierStatus.ACTIVE;
+  }
+
+  public boolean isActive() {
+    return this.status == SupplierStatus.ACTIVE;
+  }
+
+  public boolean isDeleted() {
+    return this.status == SupplierStatus.ELIMINATED;
+  }
+
+  public void throwIfDeleted() {
+    if (isDeleted()) throw new ModelDeletionException("Supplier deleted previously");
   }
 }

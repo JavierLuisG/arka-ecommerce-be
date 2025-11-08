@@ -7,7 +7,7 @@ import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.model.OrderItem;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +28,7 @@ public class OrderItemService implements IOrderItemUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public OrderItem getOrderItemById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return orderItemAdapterPort.findOrderItemById(id)
@@ -36,13 +36,13 @@ public class OrderItemService implements IOrderItemUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<OrderItem> getAllOrderItems() {
     return orderItemAdapterPort.findAllOrderItems();
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<OrderItem> getAllOrderItemsByProductId(UUID productId) {
     return orderItemAdapterPort.findAllOrderItemsByProductId(productId);
   }

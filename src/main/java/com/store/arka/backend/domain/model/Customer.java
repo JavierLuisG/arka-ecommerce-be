@@ -60,6 +60,7 @@ public class Customer {
 
   public void updateFields(String firstName, String lastName, String email, String phone,
                            String address, String city, Country country) {
+    throwIfDeleted();
     String normalizedFirstName = ValidateAttributesUtils.throwIfValueNotAllowed(firstName, "First name");
     String normalizedLastName = ValidateAttributesUtils.throwIfValueNotAllowed(lastName, "Last name");
     String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email");

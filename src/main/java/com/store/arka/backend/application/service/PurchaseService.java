@@ -42,7 +42,7 @@ public class PurchaseService implements IPurchaseUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Purchase getPurchaseById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return purchaseAdapterPort.findPurchaseById(id)
@@ -50,7 +50,7 @@ public class PurchaseService implements IPurchaseUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Purchase getPurchaseByIdAndStatus(UUID id, PurchaseStatus status) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return purchaseAdapterPort.findPurchaseByIdAndStatus(id, status)
@@ -58,7 +58,7 @@ public class PurchaseService implements IPurchaseUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Purchase getPurchaseByIdAndSupplierId(UUID id, UUID supplierId) {
     ValidateAttributesUtils.throwIfIdNull(id);
     findSupplierOrThrow(supplierId);
@@ -68,7 +68,7 @@ public class PurchaseService implements IPurchaseUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Purchase getPurchaseByIdAndSupplierIdAndStatus(UUID id, UUID supplierId, PurchaseStatus status) {
     ValidateAttributesUtils.throwIfIdNull(id);
     findSupplierOrThrow(supplierId);
@@ -78,47 +78,47 @@ public class PurchaseService implements IPurchaseUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Purchase> getAllPurchases() {
     return purchaseAdapterPort.findAllPurchases();
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Purchase> getAllPurchasesByStatus(PurchaseStatus status) {
     return purchaseAdapterPort.findAllPurchasesByStatus(status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Purchase> getAllPurchasesBySupplierId(UUID supplierId) {
     findSupplierOrThrow(supplierId);
     return purchaseAdapterPort.findAllPurchasesBySupplierId(supplierId);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Purchase> getAllPurchasesBySupplierIdAndStatus(UUID supplierId, PurchaseStatus status) {
     findSupplierOrThrow(supplierId);
     return purchaseAdapterPort.findAllPurchasesBySupplierIdAndStatus(supplierId, status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Purchase> getAllPurchasesByItemsProductId(UUID productId) {
     findProductOrThrow(productId);
     return purchaseAdapterPort.findAllPurchasesByItemsProductId(productId);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Purchase> getAllPurchasesByItemsProductIdAndStatus(UUID productId, PurchaseStatus status) {
     findProductOrThrow(productId);
     return purchaseAdapterPort.findAllPurchasesByItemsProductIdAndStatus(productId, status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Purchase> getAllPurchasesBySupplierIdAndItemsProductIdAndStatus(
       UUID supplierId, UUID productId, PurchaseStatus status) {
     findSupplierOrThrow(supplierId);
@@ -218,13 +218,15 @@ public class PurchaseService implements IPurchaseUseCase {
 
   private Supplier findSupplierOrThrow(UUID supplierId) {
     if (supplierId == null) throw new InvalidArgumentException("SupplierId in Purchase cannot be null");
-    return supplierUseCase.getSupplierByIdAndStatus(supplierId, SupplierStatus.ACTIVE);
+    Supplier supplier = supplierUseCase.getSupplierById(supplierId);
+    supplier.throwIfDeleted();
+    return supplier;
   }
 
   private Product findProductOrThrow(UUID productId) {
     if (productId == null) throw new InvalidArgumentException("ProductId in Purchase cannot be null");
     Product product =  productUseCase.getProductById(productId);
-    product.isDeleted();
+    product.throwIfDeleted();
     return product;
   }
 

@@ -11,7 +11,7 @@ import com.store.arka.backend.domain.model.Customer;
 import com.store.arka.backend.domain.model.Document;
 import com.store.arka.backend.shared.util.PathUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,7 @@ public class CustomerService implements ICustomerUseCase {
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, customer.getCountry().toString(), "Country");
     if (customerAdapterPort.existsCustomerByEmail(normalizedEmail)) {
-      log.info("Email {} already exists for creating a customer)", normalizedEmail);
+      log.warn("[CUSTOMER_SERVICE][CREATE] Email {} already exists for creating a customer", normalizedEmail);
       throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
     }
     Document documentCreated = documentUseCase.createDocument(customer.getDocument());
@@ -50,43 +50,43 @@ public class CustomerService implements ICustomerUseCase {
         normalizedCountry
     );
     Customer saved = customerAdapterPort.saveCreateCustomer(created);
-    log.info("Created new customer ID: {})", saved.getId());
+    log.info("[CUSTOMER_SERVICE][CREATE] Created new customer ID: {}", saved.getId());
     return saved;
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Customer getCustomerById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return customerAdapterPort.findCustomerById(id)
         .orElseThrow(() -> {
-          log.warn("Customer with ID {} not found", id);
+          log.warn("[CUSTOMER_SERVICE][GET_BY_ID] Customer with ID {} not found", id);
           return new ModelNotFoundException("Customer with ID " + id + " not found");
         });
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Customer getCustomerByDocumentNumber(String number) {
     String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(number, "Number");
     return customerAdapterPort.findCustomerByDocumentNumber(number)
         .orElseThrow(() -> {
-          log.warn("Customer with document number {} not found", normalizedNumber);
+          log.warn("[CUSTOMER_SERVICE][GET_BY_NUMBER] Customer with document number {} not found", normalizedNumber);
           return new ModelNotFoundException("Customer with document number " + number + " not found");
         });
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Customer> getAllCustomers() {
-    log.info("Fetching all customers");
+    log.info("[CUSTOMER_SERVICE][GET_ALL] Fetching all customers");
     return customerAdapterPort.findAllCustomers();
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Customer> getAllCustomersByStatus(CustomerStatus status) {
-    log.info("Fetching all customers with status {}", status);
+    log.info("[CUSTOMER_SERVICE][GET_ALL_BY_STATUS] Fetching all customers with status {}", status);
     return customerAdapterPort.findAllCustomersByStatus(status);
   }
 
@@ -95,12 +95,11 @@ public class CustomerService implements ICustomerUseCase {
   public Customer updateFieldsCustomer(UUID id, Customer customer) {
     ValidateAttributesUtils.throwIfModelNull(customer, "Customer");
     Customer found = getCustomerById(id);
-    found.throwIfDeleted();
     String normalizedEmail = customer.getEmail().trim().toLowerCase();
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, customer.getCountry().toString(), "Country");
     if (customerAdapterPort.existsCustomerByEmail(normalizedEmail)) {
-      log.info("Email {} already exists for updating a customer)", normalizedEmail);
+      log.warn("[CUSTOMER_SERVICE][CREATE] Email {} already exists for updating a customer", normalizedEmail);
       throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
     }
     found.updateFields(
@@ -113,7 +112,7 @@ public class CustomerService implements ICustomerUseCase {
         normalizedCountry
     );
     Customer saved = customerAdapterPort.saveUpdateCustomer(found);
-    log.info("Updated customer ID {} ", saved.getId());
+    log.info("[CUSTOMER_SERVICE][UPDATE] Updated customer ID {} ", saved.getId());
     return saved;
   }
 
@@ -123,7 +122,7 @@ public class CustomerService implements ICustomerUseCase {
     Customer found = getCustomerById(id);
     found.delete();
     customerAdapterPort.saveUpdateCustomer(found);
-    log.info("Customer ID {} marked as deleted", id);
+    log.info("[CUSTOMER_SERVICE][DELETE] Customer ID {} marked as deleted", id);
     documentUseCase.softDeleteDocument(found.getDocument().getId());
   }
 
@@ -133,7 +132,7 @@ public class CustomerService implements ICustomerUseCase {
     Customer found = getCustomerById(id);
     found.restore();
     customerAdapterPort.saveUpdateCustomer(found);
-    log.info("Customer ID {} restored successfully", id);
+    log.info("[CUSTOMER_SERVICE][RESTORE] Customer ID {} restored successfully", id);
     documentUseCase.restoreDocument(found.getDocument().getId());
     return found;
   }

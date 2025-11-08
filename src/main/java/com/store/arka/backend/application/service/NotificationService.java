@@ -13,7 +13,7 @@ import com.store.arka.backend.domain.model.Customer;
 import com.store.arka.backend.domain.model.Notification;
 import com.store.arka.backend.domain.model.Order;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +48,7 @@ public class NotificationService implements INotificationUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Notification getNotificationById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return notificationAdapterPort.findNotificationById(id)
@@ -56,7 +56,7 @@ public class NotificationService implements INotificationUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Notification getNotificationByIdAndStatus(UUID id, NotificationStatus status) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return notificationAdapterPort.findNotificationByIdAndStatus(id, status)
@@ -64,33 +64,33 @@ public class NotificationService implements INotificationUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Notification> getAllNotificationsByOrderId(UUID orderId) {
     Order order = findOrderOrThrow(orderId);
     return notificationAdapterPort.findAllNotificationsByOrderId(order.getId());
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Notification> getAllNotificationsByCustomerId(UUID customerId) {
     Customer customer = findCustomerOrThrow(customerId);
     return notificationAdapterPort.findAllNotificationsByCustomerId(customer.getId());
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Notification> getAllNotificationsByType(NotificationType type) {
     return notificationAdapterPort.findAllNotificationsByType(type);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Notification> getAllNotificationsByStatus(NotificationStatus status) {
     return notificationAdapterPort.findAllNotificationsByStatus(status);
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Notification> getAllNotificationsByTypeAndStatus(NotificationType type, NotificationStatus status) {
     return notificationAdapterPort.findAllNotificationsByTypeAndStatus(type, status);
   }

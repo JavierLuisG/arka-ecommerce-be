@@ -9,7 +9,7 @@ import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.domain.model.Category;
 import com.store.arka.backend.domain.model.Product;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class ProductService implements IProductUseCase {
     ValidateAttributesUtils.throwIfModelNull(product, "Product");
     String normalizedSku = ValidateAttributesUtils.throwIfNullOrEmpty(product.getSku(), "SKU");
     if (productAdapterPort.existsProductBySku(normalizedSku)) {
-      log.warn("SKU '{}' already exists", normalizedSku);
+      log.warn("[PRODUCT_SERVICE][CREATE] SKU '{}' already exists", normalizedSku);
       throw new FieldAlreadyExistsException("SKU " + normalizedSku + " already exists. Choose a different SKU");
     }
     Product created = Product.create(
@@ -43,43 +43,43 @@ public class ProductService implements IProductUseCase {
         product.getStock()
     );
     Product saved = productAdapterPort.saveCreateProduct(created);
-    log.info("Created new product {}, ID: {})", saved.getName(), saved.getId());
+    log.info("[PRODUCT_SERVICE][CREATE] Created new product {}, ID: {}", saved.getName(), saved.getId());
     return saved;
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Product getProductById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id);
     return productAdapterPort.findProductById(id)
         .orElseThrow(() -> {
-          log.warn("Product with ID {} not found", id);
+          log.warn("[PRODUCT_SERVICE][GET_BY_ID] Product with ID {} not found", id);
           return new ModelNotFoundException("Product with ID " + id + " not found");
         });
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public Product getProductBySku(String sku) {
     String normalizedSku = ValidateAttributesUtils.throwIfNullOrEmpty(sku, "SKU");
     return productAdapterPort.findProductBySku(sku)
         .orElseThrow(() -> {
-          log.warn("Product with SKU {} not found", normalizedSku);
+          log.warn("[PRODUCT_SERVICE][GET_BY_SKU] Product with SKU {} not found", normalizedSku);
           return new ModelNotFoundException("Product with SKU " + normalizedSku + " not found");
         });
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Product> getAllProducts() {
-    log.info("Fetching all products");
+    log.info("[PRODUCT_SERVICE][GET_ALL] Fetching all products");
     return productAdapterPort.findAllProducts();
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<Product> getAllProductsByStatus(ProductStatus status) {
-    log.info("Fetching all products with status {}", status);
+    log.info("[PRODUCT_SERVICE][GET_ALL_BY_STATUS] Fetching all products with status {}", status);
     return productAdapterPort.findAllProductsByStatus(status);
   }
 
@@ -90,7 +90,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.updateFields(product.getName(), product.getDescription(), product.getPrice());
     Product saved = productAdapterPort.saveUpdateProduct(found);
-    log.info("Updated product ID {} ", saved.getId());
+    log.info("[PRODUCT_SERVICE][UPDATE] Updated product ID {} ", saved.getId());
     return saved;
   }
 
@@ -104,13 +104,13 @@ public class ProductService implements IProductUseCase {
       newCategories.add(categoryAdapterPort.findCategoryById(uuid)
           .filter(category -> category.getStatus().equals(CategoryStatus.ACTIVE))
           .orElseThrow(() -> {
-            log.info("Category ID {} in product not found", uuid);
+            log.info("[PRODUCT_SERVICE][UPDATE_CATEGORIES] Category ID {} in product not found", uuid);
             return new ModelNotFoundException("Category with ID " + uuid + " not found");
           }));
     });
     found.updateCategories(newCategories);
     Product saved = productAdapterPort.saveUpdateProduct(found);
-    log.info("Updated categories product ID {} ", saved.getId());
+    log.info("[PRODUCT_SERVICE][UPDATE_CATEGORIES] Updated categories product ID {} ", saved.getId());
     return saved;
   }
 
@@ -120,7 +120,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.decreaseStock(quantity);
     productAdapterPort.saveUpdateProduct(found);
-    log.info("Product ID {} has decreased its stock by {}", id, quantity);
+    log.info("[PRODUCT_SERVICE][DECREASE_STOCK] Product ID {} has decreased its stock by {}", id, quantity);
   }
 
   @Override
@@ -129,7 +129,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.increaseStock(quantity);
     productAdapterPort.saveUpdateProduct(found);
-    log.info("Product ID {} has increased its stock by {}", id, quantity);
+    log.info("[PRODUCT_SERVICE][INCREASE_STOCK] Product ID {} has increased its stock by {}", id, quantity);
   }
 
   @Override
@@ -138,7 +138,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.delete();
     productAdapterPort.saveUpdateProduct(found);
-    log.info("Product ID {} marked as deleted", id);
+    log.info("[PRODUCT_SERVICE][DELETE] Product ID {} marked as deleted", id);
   }
 
   @Override
@@ -147,7 +147,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.restore();
     Product restored = productAdapterPort.saveUpdateProduct(found);
-    log.info("Product ID {} restored successfully", id);
+    log.info("[PRODUCT_SERVICE][RESTORE] Product ID {} restored successfully", id);
     return restored;
   }
 
