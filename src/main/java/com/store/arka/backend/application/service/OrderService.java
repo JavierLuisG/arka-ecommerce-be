@@ -80,7 +80,7 @@ public class OrderService implements IOrderUseCase {
   @Transactional(readOnly = true)
   public List<Order> getAllOrdersByCustomerId(UUID customerId) {
     findCustomerOrThrow(customerId);
-    log.info("[ORDER_SERVICE][GET_ALL_BY_STATUS] Fetching all orders with customer ID {}", customerId);
+    log.info("[ORDER_SERVICE][GET_ALL_BY_CUSTOMER] Fetching all orders with customer ID {}", customerId);
     return orderAdapterPort.findAllOrdersByCustomerId(customerId);
   }
 
@@ -88,7 +88,7 @@ public class OrderService implements IOrderUseCase {
   @Transactional(readOnly = true)
   public List<Order> getAllOrdersByItemsProductId(UUID productId) {
     findProductOrThrow(productId);
-    log.info("[ORDER_SERVICE][GET_ALL_BY_STATUS] Fetching all orders with product ID {}", productId);
+    log.info("[ORDER_SERVICE][GET_ALL_BY_PRODUCT] Fetching all orders with product ID {}", productId);
     return orderAdapterPort.findAllOrdersByItemsProductId(productId);
   }
 
@@ -149,7 +149,7 @@ public class OrderService implements IOrderUseCase {
     }
     orderFound.removeOrderItem(productFound);
     Order saved = orderAdapterPort.saveUpdateOrder(orderFound);
-    log.info("[ORDER_SERVICE][REMOVED_ITEM] Product ID {} has removed of order ID {}", productId, id);
+    log.info("[ORDER_SERVICE][REMOVED_ITEM] Product ID {} has removed of order ID {}", productId, saved.getId());
     return saved;
   }
 
@@ -209,11 +209,16 @@ public class OrderService implements IOrderUseCase {
 
   private Cart findCartOrThrow(UUID cartId) {
     ValidateAttributesUtils.throwIfIdNull(cartId, "Cart ID in Order");
-    return cartAdapterPort.findCartByIdAndStatus(cartId, CartStatus.CHECKED_OUT)
+    Cart found = cartAdapterPort.findCartById(cartId)
         .orElseThrow(() -> {
-          log.info("[ORDER_SERVICE][FIND_CARD] Cart Id {} is not checkout state to create an order", cartId);
-          return new ModelNotFoundException("Cart must be CHECKED_OUT to create an Order");
+          log.warn("[ORDER_SERVICE][FIND_CARD] Cart Id {} in order not found", cartId);
+          return new ModelNotFoundException("Cart Id " + cartId + " in Order not found");
         });
+    if (!found.isCheckout()) {
+      log.warn("[ORDER_SERVICE][FIND_CARD] Cart Id {} is not checkout state to create an order", cartId);
+      throw new InvalidStateException("Cart must be CHECKED_OUT to create an Order");
+    }
+    return found;
   }
 
   private Customer findCustomerOrThrow(UUID customerId) {
@@ -237,7 +242,7 @@ public class OrderService implements IOrderUseCase {
         .filter(item -> item.getProductId().equals(productId))
         .findFirst()
         .orElseThrow(() -> {
-          log.info("[ORDER_SERVICE][FIND_ORDER] Product ID {} not found in order", productId);
+          log.warn("[ORDER_SERVICE][FIND_ORDER_ITEM] Product ID {} not found in order", productId);
           return new ProductNotFoundInOperationException("Product ID " + productId + " not found in Order " + orderFound.getId());
         });
   }

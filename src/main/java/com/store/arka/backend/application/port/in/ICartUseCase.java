@@ -11,35 +11,23 @@ public interface ICartUseCase {
 
   Cart getCartById(UUID id);
 
-  Cart getCartByIdAndStatus(UUID id, CartStatus status);
-
-  Cart getCartByIdAndCustomerId(UUID id, UUID customerId);
-
-  Cart getCartByIdAndCustomerIdAndStatus(UUID id, UUID customerId, CartStatus status);
-
   List<Cart> getAllCarts();
 
   List<Cart> getAllCartsByStatus(CartStatus status);
 
   List<Cart> getAllCartsByCustomerId(UUID customerId);
 
-  List<Cart> getAllCartsByCustomerIdAndStatus(UUID customerId, CartStatus status);
-
   List<Cart> getAllCartsByItemsProductId(UUID productId);
 
-  List<Cart> getAllCartsByItemsProductIdAndStatus(UUID productId, CartStatus status);
+  Cart addCartItem(UUID id, UUID productId, Integer quantity);
 
-  List<Cart> getAllCartsByCustomerIdAndItemsProductIdAndStatus(UUID customerId, UUID productId, CartStatus status);
+  Cart updateCartItemQuantity(UUID id, UUID productId, Integer quantity);
 
-  Cart addCartItemById(UUID id, UUID productId, Integer quantity);
+  Cart removeCartItem(UUID id, UUID productId);
 
-  Cart updateCartItemQuantityById(UUID id, UUID productId, Integer quantity);
+  Cart emptyCartItems(UUID id);
 
-  Cart removeCartItemById(UUID id, UUID productId);
+  String checkoutCart(UUID id);
 
-  Cart emptyCartItemsById(UUID id);
-
-  String checkedOutCartById(UUID id);
-
-  void deleteCartById(UUID id);
+  void deleteCart(UUID id);
 }

@@ -7,9 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class ValidateStatusUtils {
-  public static void throwIfCheckedOut(CartStatus status) {
+  public static void throwIfCheckout(CartStatus status) {
     if (status == CartStatus.CHECKED_OUT) {
-      log.warn("[CART_STATUS][CHECKED_OUT] Cart cannot be modified (current: {})", status);
+      log.warn("[CART_STATUS][CHECK_OUT] Cart cannot be modified (current: {})", status);
       throw new InvalidStateException("Cart CHECKED_OUT, cannot be modified");
     }
   }

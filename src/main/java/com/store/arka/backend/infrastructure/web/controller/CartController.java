@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,60 +26,32 @@ public class CartController {
   private final ICartUseCase cartUseCase;
   private final CartDtoMapper mapper;
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PostMapping
   public ResponseEntity<CartResponseDto> postCart(@RequestBody @Valid CreateCartDto dto) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(mapper.toDto(cartUseCase.createCart(mapper.toDomain(dto), dto.customerId())));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   @GetMapping("/{id}")
   public ResponseEntity<CartResponseDto> getCartById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(cartUseCase.getCartById(uuid)));
   }
 
-  @GetMapping("/{id}/status/{status}")
-  public ResponseEntity<CartResponseDto> getCartByIdAndStatus(
-      @PathVariable("id") String id,
-      @PathVariable("status") String status) {
-    UUID uuid = PathUtils.validateAndParseUUID(id);
-    CartStatus statusEnum = PathUtils.validateEnumOrThrow(CartStatus.class, status, "CartStatus");
-    return ResponseEntity.ok(mapper.toDto(cartUseCase.getCartByIdAndStatus(uuid, statusEnum)));
-  }
-
-  @GetMapping("/{id}/customer/{customerId}")
-  public ResponseEntity<CartResponseDto> getCartByIdAndCustomerId(
-      @PathVariable("id") String id,
-      @PathVariable("customerId") String customerId) {
-    UUID uuid = PathUtils.validateAndParseUUID(id);
-    UUID customerUuid = PathUtils.validateAndParseUUID(customerId);
-    return ResponseEntity.ok(mapper.toDto(cartUseCase.getCartByIdAndCustomerId(uuid, customerUuid)));
-  }
-
-  @GetMapping("/{id}/customer/{customerId}/status/{status}")
-  public ResponseEntity<CartResponseDto> getCartByIdAndCustomerIdAndStatus(
-      @PathVariable("id") String id,
-      @PathVariable("customerId") String customerId,
-      @PathVariable("status") String status) {
-    UUID uuid = PathUtils.validateAndParseUUID(id);
-    UUID customerUuid = PathUtils.validateAndParseUUID(customerId);
-    CartStatus statusEnum = PathUtils.validateEnumOrThrow(CartStatus.class, status, "CartStatus");
-    return ResponseEntity.ok(
-        mapper.toDto(cartUseCase.getCartByIdAndCustomerIdAndStatus(uuid, customerUuid, statusEnum)));
-  }
-
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping
-  public ResponseEntity<List<CartResponseDto>> getAllCarts() {
-    return ResponseEntity.ok(cartUseCase.getAllCarts().stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
-  @GetMapping("/status/{status}")
-  public ResponseEntity<List<CartResponseDto>> getAllCartsByStatus(@PathVariable("status") String status) {
+  public ResponseEntity<List<CartResponseDto>> getAllCarts(@RequestParam(required = false) String status) {
+    if (status == null) {
+      return ResponseEntity.ok(cartUseCase.getAllCarts().stream().map(mapper::toDto).collect(Collectors.toList()));
+    }
     CartStatus statusEnum = PathUtils.validateEnumOrThrow(CartStatus.class, status, "CartStatus");
     return ResponseEntity.ok(cartUseCase.getAllCartsByStatus(statusEnum)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping("/customer/{customerId}")
   public ResponseEntity<List<CartResponseDto>> getAllCartsByCustomerId(@PathVariable("customerId") String customerId) {
     UUID customerUuid = PathUtils.validateAndParseUUID(customerId);
@@ -86,16 +59,7 @@ public class CartController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/customer/{customerId}/status/{status}")
-  public ResponseEntity<List<CartResponseDto>> getAllCartsByCustomerIdAndStatus(
-      @PathVariable("customerId") String customerId,
-      @PathVariable("status") String status) {
-    UUID customerUuid = PathUtils.validateAndParseUUID(customerId);
-    CartStatus statusEnum = PathUtils.validateEnumOrThrow(CartStatus.class, status, "CartStatus");
-    return ResponseEntity.ok(cartUseCase.getAllCartsByCustomerIdAndStatus(customerUuid, statusEnum)
-        .stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping("/items/product/{productId}")
   public ResponseEntity<List<CartResponseDto>> getAllCartsByItemsProductId(@PathVariable("productId") String productId) {
     UUID productUuid = PathUtils.validateAndParseUUID(productId);
@@ -103,77 +67,59 @@ public class CartController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @GetMapping("/items/product/{productId}/status/{status}")
-  public ResponseEntity<List<CartResponseDto>> getAllCartsByItemsProductIdAndStatus(
-      @PathVariable("productId") String productId,
-      @PathVariable("status") String status) {
-    UUID productUuid = PathUtils.validateAndParseUUID(productId);
-    CartStatus statusEnum = PathUtils.validateEnumOrThrow(CartStatus.class, status, "CartStatus");
-    return ResponseEntity.ok(cartUseCase.getAllCartsByItemsProductIdAndStatus(productUuid, statusEnum)
-        .stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
-  @GetMapping("/customer/{customerId}/items/product/{productId}/status/{status}")
-  public ResponseEntity<List<CartResponseDto>> getAllCartsByCustomerIdAndItemsProductIdAndStatus(
-      @PathVariable("customerId") String customerId,
-      @PathVariable("productId") String productId,
-      @PathVariable("status") String status) {
-    UUID customerUuid = PathUtils.validateAndParseUUID(customerId);
-    UUID productUuid = PathUtils.validateAndParseUUID(productId);
-    CartStatus statusEnum = PathUtils.validateEnumOrThrow(CartStatus.class, status, "CartStatus");
-    return ResponseEntity.ok(
-        cartUseCase
-            .getAllCartsByCustomerIdAndItemsProductIdAndStatus(customerUuid, productUuid, statusEnum)
-            .stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
-  @PutMapping("/{id}/product/{productId}/add-Item")
-  public ResponseEntity<CartResponseDto> addCartItemById(
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+  @PutMapping("/{id}/product/{productId}/add-item")
+  public ResponseEntity<CartResponseDto> addCartItem(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId,
       @RequestBody @Valid UpdateQuantityToCartItemDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     UUID productUuid = PathUtils.validateAndParseUUID(productId);
-    return ResponseEntity.ok(mapper.toDto(cartUseCase.addCartItemById(uuid, productUuid, dto.quantity())));
+    return ResponseEntity.ok(mapper.toDto(cartUseCase.addCartItem(uuid, productUuid, dto.quantity())));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/product/{productId}/update-item-quantity")
-  public ResponseEntity<CartResponseDto> updateCartItemQuantityById(
+  public ResponseEntity<CartResponseDto> updateCartItemQuantity(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId,
       @RequestBody @Valid UpdateQuantityToCartItemDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     UUID productUuid = PathUtils.validateAndParseUUID(productId);
-    return ResponseEntity.ok(mapper.toDto(cartUseCase.updateCartItemQuantityById(uuid, productUuid, dto.quantity())));
+    return ResponseEntity.ok(mapper.toDto(cartUseCase.updateCartItemQuantity(uuid, productUuid, dto.quantity())));
   }
 
-  @PutMapping("/{id}/productId/{productId}/remove-item")
-  public ResponseEntity<CartResponseDto> removeCartItemById(
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+  @PutMapping("/{id}/product/{productId}/remove-item")
+  public ResponseEntity<CartResponseDto> removeCartItem(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     UUID productUuid = PathUtils.validateAndParseUUID(productId);
-    return ResponseEntity.ok(mapper.toDto(cartUseCase.removeCartItemById(uuid, productUuid)));
+    return ResponseEntity.ok(mapper.toDto(cartUseCase.removeCartItem(uuid, productUuid)));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/empty-items")
-  public ResponseEntity<CartResponseDto> emptyCartItemsById(@PathVariable("id") String id) {
+  public ResponseEntity<CartResponseDto> emptyCartItems(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(cartUseCase.emptyCartItemsById(uuid)));
+    return ResponseEntity.ok(mapper.toDto(cartUseCase.emptyCartItems(uuid)));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/checkout")
-  public ResponseEntity<MessageResponseDto> checkoutCartById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> checkoutCart(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    String response = cartUseCase.checkedOutCartById(uuid);
+    String response = cartUseCase.checkoutCart(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Cart has been successfully confirmed with ID " + id + ". " +
-        "Order created whit id: " + response));
+        "Order created with ID " + response));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @DeleteMapping("/{id}")
-  public ResponseEntity<MessageResponseDto> deleteCartById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> deleteCart(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    cartUseCase.deleteCartById(uuid);
+    cartUseCase.deleteCart(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Cart has been successfully deleted with ID " + id));
   }
 }

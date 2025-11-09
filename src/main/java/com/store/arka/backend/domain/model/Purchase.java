@@ -42,6 +42,7 @@ public class Purchase {
   }
 
   private static BigDecimal calculateTotal(List<PurchaseItem> items) {
+    if (items == null || items.isEmpty()) return BigDecimal.ZERO;
     return items.stream().map(PurchaseItem::calculateSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 

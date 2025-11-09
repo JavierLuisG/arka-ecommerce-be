@@ -14,25 +14,13 @@ public interface ICartAdapterPort {
 
   Optional<Cart> findCartById(UUID id);
 
-  Optional<Cart> findCartByIdAndStatus(UUID id, CartStatus status);
-
-  Optional<Cart> findCartByIdAndCustomerId(UUID id, UUID customerId);
-
-  Optional<Cart> findCartByIdAndCustomerIdAndStatus(UUID id, UUID customerId, CartStatus status);
-
   List<Cart> findAllCarts();
 
   List<Cart> findAllCartsByStatus(CartStatus status);
 
   List<Cart> findAllCartsByCustomerId(UUID customerId);
 
-  List<Cart> findAllCartsByCustomerIdAndStatus(UUID customerId, CartStatus status);
-
   List<Cart> findAllCartsByItemsProductId(UUID productId);
-
-  List<Cart> findAllCartsByItemsProductIdAndStatus(UUID productId, CartStatus status);
-
-  List<Cart> findAllCartsByCustomerIdAndItemsProductIdAndStatus(UUID customerId, UUID productId, CartStatus status);
 
   void deleteCartById(UUID id);
 }

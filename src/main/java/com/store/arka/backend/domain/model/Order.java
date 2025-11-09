@@ -46,6 +46,7 @@ public class Order {
   }
 
   private static BigDecimal calculateTotal(List<OrderItem> items) {
+    if (items == null || items.isEmpty()) return BigDecimal.ZERO;
     return items.stream().map(OrderItem::calculateSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
@@ -105,6 +106,7 @@ public class Order {
   public boolean isCreated() {
     return this.status == OrderStatus.CREATED;
   }
+
   public boolean isConfirmed() {
     return this.status == OrderStatus.CONFIRMED;
   }

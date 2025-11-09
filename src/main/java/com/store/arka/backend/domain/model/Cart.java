@@ -4,7 +4,7 @@ import com.store.arka.backend.domain.enums.CartStatus;
 import com.store.arka.backend.domain.exception.ItemsEmptyException;
 import com.store.arka.backend.domain.exception.InvalidStateException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
-import com.store.arka.backend.domain.exception.ModelNullException;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import com.store.arka.backend.shared.util.ValidateStatusUtils;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -28,7 +28,8 @@ public class Cart {
   private LocalDateTime abandonedAt;
 
   public static Cart create(Customer customer, List<CartItem> items) {
-    if (!customer.isActive()) throw new ModelNullException("Customer cannot be null or deleted");
+    ValidateAttributesUtils.throwIfModelNull(customer, "Customer in Cart");
+    customer.throwIfDeleted();
     if (items == null) items = new ArrayList<>();
     return new Cart(
         null,
@@ -42,7 +43,7 @@ public class Cart {
   }
 
   public static BigDecimal calculateTotal(List<CartItem> items) {
-    if (items.size() == 0) return BigDecimal.ZERO;
+    if (items == null || items.isEmpty()) return BigDecimal.ZERO;
     return items.stream().map(CartItem::calculateSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
@@ -51,10 +52,12 @@ public class Cart {
   }
 
   public boolean containsProduct(UUID productId) {
+    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Cart");
     return items.stream().anyMatch(item -> item.getProductId().equals(productId));
   }
 
   public void removeCartItem(Product product) {
+    ValidateAttributesUtils.throwIfModelNull(product, "Product in Cart");
     ensureCartIsModifiable();
     CartItem found = this.items.stream()
         .filter(cartItem -> cartItem.getProductId().equals(product.getId()))
@@ -68,28 +71,41 @@ public class Cart {
     this.items.clear();
   }
 
-  public void checkedOut() {
-    ValidateStatusUtils.throwIfCheckedOut(this.status);
-    if (items.isEmpty()) throw new ItemsEmptyException("Cart items cannot be empty to confirm");
-    if (this.status != CartStatus.ACTIVE) throw new InvalidStateException("Cart must be ACTIVE to checkout");
+  public void checkout() {
+    ensureCartIsModifiable();
+    if (items.isEmpty()) throw new ItemsEmptyException("Cart items cannot be empty to checkout");
+    if (!isActive()) throw new InvalidStateException("Cart must be active to checkout");
     this.status = CartStatus.CHECKED_OUT;
   }
 
   public void abandon() {
-    ValidateStatusUtils.throwIfCheckedOut(this.status);
-    if (this.status != CartStatus.ABANDONED) this.abandonedAt = LocalDateTime.now();
+    if (isAbandoned()) throw new InvalidStateException("Cart already abandoned");
+    ensureCartIsModifiable();
+    this.abandonedAt = LocalDateTime.now();
     this.status = CartStatus.ABANDONED;
   }
 
-  public void ensureCartIsModifiable() {
-    ValidateStatusUtils.throwIfCheckedOut(this.status);
-    markActive();
+  public boolean isActive() {
+    return this.status == CartStatus.ACTIVE;
   }
 
-  private void markActive() {
-    if (this.status == CartStatus.ABANDONED) {
+  public boolean isCheckout() {
+    return this.status == CartStatus.CHECKED_OUT;
+  }
+
+  public boolean isAbandoned() {
+    return this.status == CartStatus.ABANDONED;
+  }
+
+  private void markActiveIfAbandoned() {
+    if (isAbandoned()) {
       this.status = CartStatus.ACTIVE;
       this.abandonedAt = null;
     }
+  }
+
+  public void ensureCartIsModifiable() {
+    ValidateStatusUtils.throwIfCheckout(this.status);
+    markActiveIfAbandoned();
   }
 }

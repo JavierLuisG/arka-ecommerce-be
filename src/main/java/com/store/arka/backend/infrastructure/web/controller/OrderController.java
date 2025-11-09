@@ -60,7 +60,7 @@ public class OrderController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/product/{productId}/add-item")
-  public ResponseEntity<OrderResponseDto> addOrderItemById(
+  public ResponseEntity<OrderResponseDto> addOrderItem(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId,
       @RequestBody @Valid UpdateQuantityToOrderItemDto dto) {
@@ -71,7 +71,7 @@ public class OrderController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/product/{productId}/update-item-quantity")
-  public ResponseEntity<OrderResponseDto> updateOrderItemQuantityById(
+  public ResponseEntity<OrderResponseDto> updateOrderItemQuantity(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId,
       @RequestBody @Valid UpdateQuantityToOrderItemDto dto) {
@@ -82,7 +82,7 @@ public class OrderController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/product/{productId}/remove-item")
-  public ResponseEntity<OrderResponseDto> removeOrderItemById(
+  public ResponseEntity<OrderResponseDto> removeOrderItem(
       @PathVariable("id") String id,
       @PathVariable("productId") String productId) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
@@ -92,7 +92,7 @@ public class OrderController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/confirm")
-  public ResponseEntity<MessageResponseDto> confirmOrderById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> confirmOrder(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.confirmOrderById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Order has been successfully confirmed with ID " + id));
@@ -100,7 +100,7 @@ public class OrderController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/pay")
-  public ResponseEntity<MessageResponseDto> payOrderById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> payOrder(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.payOrderById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Order has been successfully paid with ID " + id));
@@ -108,7 +108,7 @@ public class OrderController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @PutMapping("/{id}/shipped")
-  public ResponseEntity<MessageResponseDto> shippedOrderById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> shippedOrder(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.shippedOrderById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Order has been successfully shipped with ID " + id));
@@ -116,7 +116,7 @@ public class OrderController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @PutMapping("/{id}/deliver")
-  public ResponseEntity<MessageResponseDto> deliverOrderById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> deliverOrder(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.deliverOrderById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Order has been successfully delivered with ID " + id));
@@ -124,7 +124,7 @@ public class OrderController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/cancel")
-  public ResponseEntity<MessageResponseDto> cancelOrderById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> cancelOrder(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     orderUseCase.cancelOrderById(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Order has been successfully canceled with ID " + id));

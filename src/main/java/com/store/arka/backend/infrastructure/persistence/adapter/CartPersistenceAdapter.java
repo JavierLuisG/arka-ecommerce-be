@@ -70,21 +70,6 @@ public class CartPersistenceAdapter implements ICartAdapterPort {
   }
 
   @Override
-  public Optional<Cart> findCartByIdAndStatus(UUID id, CartStatus status) {
-    return jpaCartRepository.findByIdAndStatus(id, status).map(mapper::toDomain);
-  }
-
-  @Override
-  public Optional<Cart> findCartByIdAndCustomerId(UUID id, UUID customerId) {
-    return jpaCartRepository.findByIdAndCustomerId(id, customerId).map(mapper::toDomain);
-  }
-
-  @Override
-  public Optional<Cart> findCartByIdAndCustomerIdAndStatus(UUID id, UUID customerId, CartStatus status) {
-    return jpaCartRepository.findByIdAndCustomerIdAndStatus(id, customerId, status).map(mapper::toDomain);
-  }
-
-  @Override
   public List<Cart> findAllCarts() {
     return jpaCartRepository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
   }
@@ -100,26 +85,8 @@ public class CartPersistenceAdapter implements ICartAdapterPort {
   }
 
   @Override
-  public List<Cart> findAllCartsByCustomerIdAndStatus(UUID customerId, CartStatus status) {
-    return jpaCartRepository.findAllByCustomerIdAndStatus(customerId, status)
-        .stream().map(mapper::toDomain).collect(Collectors.toList());
-  }
-
-  @Override
   public List<Cart> findAllCartsByItemsProductId(UUID productId) {
     return jpaCartRepository.findAllByItemsProductId(productId)
-        .stream().map(mapper::toDomain).collect(Collectors.toList());
-  }
-
-  @Override
-  public List<Cart> findAllCartsByItemsProductIdAndStatus(UUID productId, CartStatus status) {
-    return jpaCartRepository.findAllByItemsProductIdAndStatus(productId, status)
-        .stream().map(mapper::toDomain).collect(Collectors.toList());
-  }
-
-  @Override
-  public List<Cart> findAllCartsByCustomerIdAndItemsProductIdAndStatus(UUID customerId, UUID productId, CartStatus status) {
-    return jpaCartRepository.findAllByCustomerIdAndItemsProductIdAndStatus(customerId, productId, status)
         .stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 
