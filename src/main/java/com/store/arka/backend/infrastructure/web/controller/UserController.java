@@ -58,7 +58,7 @@ public class UserController {
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
-  @PutMapping("/{id}/update-username")
+  @PutMapping("/{id}/username")
   public ResponseEntity<UserResponseDto> updateUserName(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdateUserNameDto dto) {
@@ -67,7 +67,7 @@ public class UserController {
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
-  @PutMapping("/{id}/update-email")
+  @PutMapping("/{id}/email")
   public ResponseEntity<UserResponseDto> updateEmail(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdateEmailDto dto) {
@@ -76,7 +76,7 @@ public class UserController {
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
-  @PutMapping("/{id}/update-password")
+  @PutMapping("/{id}/password")
   public ResponseEntity<UserResponseDto> updatePassword(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdatePasswordDto dto) {
