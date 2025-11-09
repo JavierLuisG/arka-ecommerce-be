@@ -3,6 +3,7 @@ package com.store.arka.backend.domain.model;
 import com.store.arka.backend.domain.enums.NotificationStatus;
 import com.store.arka.backend.domain.enums.NotificationType;
 import com.store.arka.backend.shared.util.MessageNotificationType;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -25,8 +26,9 @@ public class Notification {
   private LocalDateTime readAt;
 
   public static Notification create(Customer customer, Order order, NotificationType type) {
-    if (customer == null) throw new IllegalArgumentException("Customer in Notification cannot be null");
-    if (order == null) throw new IllegalArgumentException("Order in Notification cannot be null");
+    ValidateAttributesUtils.throwIfModelNull(customer, "Customer in Notification");
+    ValidateAttributesUtils.throwIfModelNull(order, "Order in Notification");
+    ValidateAttributesUtils.throwIfModelNull(type.toString(), "Notification type");
     String fullName = customer.getFirstName() + " " + customer.getLastName();
     return new Notification(
         null,

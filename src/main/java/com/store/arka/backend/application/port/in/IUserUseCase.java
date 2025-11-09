@@ -14,7 +14,7 @@ public interface IUserUseCase {
 
   User getUserByEmail(String email);
 
-  List<User> getAllUsersByFilters(UserRole role, UserStatus status);
+  List<User> getAllUsersByFilters(String role, String status);
 
   User updateUserName(UUID id, String userName);
 

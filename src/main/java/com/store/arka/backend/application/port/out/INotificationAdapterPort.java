@@ -13,7 +13,7 @@ public interface INotificationAdapterPort {
 
   Optional<Notification> findNotificationById(UUID id);
 
-  Optional<Notification> findNotificationByIdAndStatus(UUID id, NotificationStatus status);
+  List<Notification> findAllNotifications();
 
   List<Notification> findAllNotificationsByOrderId(UUID orderId);
 

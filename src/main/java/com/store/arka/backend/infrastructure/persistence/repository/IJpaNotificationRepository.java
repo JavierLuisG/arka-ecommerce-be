@@ -6,12 +6,9 @@ import com.store.arka.backend.infrastructure.persistence.entity.NotificationEnti
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface IJpaNotificationRepository extends JpaRepository<NotificationEntity, UUID> {
-  Optional<NotificationEntity> findByIdAndStatus(UUID id, NotificationStatus status);
-
   List<NotificationEntity> findAllByOrderId(UUID orderId);
 
   List<NotificationEntity> findAllByCustomerId(UUID customerId);

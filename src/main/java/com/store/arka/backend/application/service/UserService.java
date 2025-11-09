@@ -4,8 +4,10 @@ import com.store.arka.backend.application.port.in.IUserUseCase;
 import com.store.arka.backend.application.port.out.IUserAdapterPort;
 import com.store.arka.backend.domain.enums.UserRole;
 import com.store.arka.backend.domain.enums.UserStatus;
+import com.store.arka.backend.domain.exception.FieldAlreadyExistsException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.User;
+import com.store.arka.backend.shared.util.PathUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,18 +60,22 @@ public class UserService implements IUserUseCase {
 
   @Override
   @Transactional(readOnly = true)
-  public List<User> getAllUsersByFilters(UserRole role, UserStatus status) {
+  public List<User> getAllUsersByFilters(String role, String status) {
     if (role != null && status != null) {
-      log.info("[USER_SERVICE][GET_ALL_BY_ROLE_AND_STATUS] Fetching all users with role {} and status {}", role, status);
-      return userAdapterPort.findAllUsersByRoleAndStatus(role, status);
+      UserRole roleEnum = PathUtils.validateEnumOrThrow(UserRole.class, role, "UserRole");
+      UserStatus statusEnum = PathUtils.validateEnumOrThrow(UserStatus.class, status, "UserStatus");
+      log.info("[USER_SERVICE][GET_ALL] Fetching all users with role {} and status {}", roleEnum, statusEnum);
+      return userAdapterPort.findAllUsersByRoleAndStatus(roleEnum, statusEnum);
     }
     if (role != null) {
-      log.info("[USER_SERVICE][GET_ALL_BY_ROLE] Fetching all users with role {}", role);
-      return userAdapterPort.findAllUsersByRole(role);
+      UserRole roleEnum = PathUtils.validateEnumOrThrow(UserRole.class, role, "UserRole");
+      log.info("[USER_SERVICE][GET_ALL] Fetching all users with role {}", roleEnum);
+      return userAdapterPort.findAllUsersByRole(roleEnum);
     }
     if (status != null) {
-      log.info("[USER_SERVICE][GET_ALL_BY_STATUS] Fetching all users with status {}", status);
-      return userAdapterPort.findAllUsersByStatus(status);
+      UserStatus statusEnum = PathUtils.validateEnumOrThrow(UserStatus.class, status, "UserStatus");
+      log.info("[USER_SERVICE][GET_ALL] Fetching all users with status {}", statusEnum);
+      return userAdapterPort.findAllUsersByStatus(statusEnum);
     }
     log.info("[USER_SERVICE][GET_ALL] Fetching all users");
     return userAdapterPort.findAllUsers();
@@ -80,6 +86,10 @@ public class UserService implements IUserUseCase {
   public User updateUserName(UUID id, String userName) {
     String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
     User found = getUserById(id);
+    if (userAdapterPort.existUserByUserName(normalizedUserName) && !found.getUserName().equals(normalizedUserName)) {
+      log.warn("[USER_SERVICE][UPDATED_USERNAME] Username {} already exists in users", normalizedUserName);
+      throw new FieldAlreadyExistsException("Username " + normalizedUserName + " is already taken");
+    }
     found.updateUserName(normalizedUserName);
     User saved = userAdapterPort.saveUpdateUser(found);
     log.info("[USER_SERVICE][UPDATED_USERNAME] Updated username {} in user ID {} ", saved.getUserName(), saved.getId());
@@ -89,8 +99,12 @@ public class UserService implements IUserUseCase {
   @Override
   @Transactional
   public User updateEmail(UUID id, String email) {
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email in User");
     User found = getUserById(id);
+    if (userAdapterPort.existUserByEmail(normalizedEmail) && !found.getEmail().equals(normalizedEmail)) {
+      log.warn("[USER_SERVICE][UPDATED_EMAIL] Email {} already exists for register in users", normalizedEmail);
+      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " is already taken");
+    }
     found.updateEmail(normalizedEmail);
     User saved = userAdapterPort.saveUpdateUser(found);
     log.info("[USER_SERVICE][UPDATED_EMAIL] Updated email {} in user ID {} ", saved.getEmail(), saved.getId());
@@ -131,14 +145,14 @@ public class UserService implements IUserUseCase {
   @Override
   @Transactional
   public boolean existUserByUserName(String userName) {
-    String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
+    String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName in User");
     return userAdapterPort.existUserByUserName(normalizedUserName);
   }
 
   @Override
   @Transactional
   public boolean existUserByEmail(String email) {
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email in User");
     return userAdapterPort.existUserByEmail(normalizedEmail);
   }
 }

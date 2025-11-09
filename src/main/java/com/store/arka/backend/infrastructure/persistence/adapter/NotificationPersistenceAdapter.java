@@ -31,8 +31,9 @@ public class NotificationPersistenceAdapter implements INotificationAdapterPort 
   }
 
   @Override
-  public Optional<Notification> findNotificationByIdAndStatus(UUID id, NotificationStatus status) {
-    return jpaNotificationRepository.findByIdAndStatus(id, status).map(mapper::toDomain);
+  public List<Notification> findAllNotifications() {
+    return jpaNotificationRepository.findAll()
+        .stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 
   @Override

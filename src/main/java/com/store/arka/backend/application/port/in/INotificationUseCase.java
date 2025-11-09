@@ -12,7 +12,9 @@ public interface INotificationUseCase {
 
   Notification getNotificationById(UUID id);
 
-  Notification getNotificationByIdAndStatus(UUID id, NotificationStatus status);
+  List<Notification> getAllNotifications();
+
+  List<Notification> getAllNotificationsByStatus(NotificationStatus status);
 
   List<Notification> getAllNotificationsByOrderId(UUID orderId);
 
@@ -20,11 +22,9 @@ public interface INotificationUseCase {
 
   List<Notification> getAllNotificationsByType(NotificationType type);
 
-  List<Notification> getAllNotificationsByStatus(NotificationStatus status);
-
   List<Notification> getAllNotificationsByTypeAndStatus(NotificationType type, NotificationStatus status);
 
-  void markNotificationAsReadById(UUID id);
+  void markNotificationAsRead(UUID id);
 
   boolean existsNotificationByOrderIdAndType(UUID orderId, NotificationType type);
 }

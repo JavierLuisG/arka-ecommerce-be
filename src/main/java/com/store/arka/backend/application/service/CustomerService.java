@@ -31,7 +31,7 @@ public class CustomerService implements ICustomerUseCase {
   public Customer createCustomer(Customer customer) {
     ValidateAttributesUtils.throwIfModelNull(customer, "Customer");
     ValidateAttributesUtils.throwIfModelNull(customer.getDocument(), "Document in Customer");
-    String normalizedEmail = customer.getEmail().trim().toLowerCase();
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(customer.getEmail(), "Email in Customer");
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, customer.getCountry().toString(), "Country");
     if (customerAdapterPort.existsCustomerByEmail(normalizedEmail)) {
@@ -95,10 +95,10 @@ public class CustomerService implements ICustomerUseCase {
   public Customer updateFieldsCustomer(UUID id, Customer customer) {
     ValidateAttributesUtils.throwIfModelNull(customer, "Customer");
     Customer found = getCustomerById(id);
-    String normalizedEmail = customer.getEmail().trim().toLowerCase();
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(customer.getEmail(), "Email in Customer");
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, customer.getCountry().toString(), "Country");
-    if (customerAdapterPort.existsCustomerByEmail(normalizedEmail)) {
+    if (customerAdapterPort.existsCustomerByEmail(normalizedEmail) && !found.getEmail().equals(normalizedEmail)) {
       log.warn("[CUSTOMER_SERVICE][UPDATED] Email {} already exists for updating a customer", normalizedEmail);
       throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
     }

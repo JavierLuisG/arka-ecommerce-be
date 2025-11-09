@@ -1,8 +1,6 @@
 package com.store.arka.backend.infrastructure.web.controller;
 
 import com.store.arka.backend.application.port.in.IUserUseCase;
-import com.store.arka.backend.domain.enums.UserRole;
-import com.store.arka.backend.domain.enums.UserStatus;
 import com.store.arka.backend.infrastructure.web.dto.MessageResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.user.request.UpdateEmailDto;
 import com.store.arka.backend.infrastructure.web.dto.user.request.UpdatePasswordDto;
@@ -51,9 +49,7 @@ public class UserController {
   public ResponseEntity<List<UserResponseDto>> getAllUsersByFilter(
       @RequestParam(required = false) String role,
       @RequestParam(required = false) String status) {
-    UserRole roleEnum = PathUtils.validateEnumOrThrow(UserRole.class, role, "UserRole");
-    UserStatus statusEnum = PathUtils.validateEnumOrThrow(UserStatus.class, status, "UserStatus");
-    return ResponseEntity.ok(userUseCase.getAllUsersByFilters(roleEnum, statusEnum)
+    return ResponseEntity.ok(userUseCase.getAllUsersByFilters(role, status)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 

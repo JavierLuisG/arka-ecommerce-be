@@ -10,13 +10,13 @@ import java.util.UUID;
 public final class PathUtils {
   public static UUID validateAndParseUUID(String id) {
     if(id == null || id.isBlank()) {
-      log.warn("[PATH_UTILS][UUID] Id in controller is required");
+      log.warn("[PATH_UTILS][VALIDATE_AND_PARSE_UUID] Id in controller is required");
       throw new IllegalArgumentException("ID is required");
     }
     try {
       return UUID.fromString(id);
     } catch (IllegalArgumentException ex) {
-      log.warn("[PATH_UTILS][FORMAT] Invalid UUID format {}", id);
+      log.warn("[PATH_UTILS][VALIDATE_AND_PARSE_UUID] Invalid UUID format {}", id);
       throw new InvalidIdException("Invalid UUID format: " + id);
     }
   }
@@ -25,7 +25,7 @@ public final class PathUtils {
     try {
       return Enum.valueOf(enumClass, status.trim().toUpperCase());
     } catch (IllegalArgumentException ex) {
-      log.warn("[PATH_UTILS][ENUM] Invalid {}:, {}", model, status);
+      log.warn("[PATH_UTILS][VALIDATE_ENUM_OR_THROW] Invalid {}:, {}", model, status);
       throw new InvalidEnumValueException("Invalid " + model + ": " + status);
     }
   }
