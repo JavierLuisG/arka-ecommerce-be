@@ -4,6 +4,7 @@ import com.store.arka.backend.domain.enums.UserRole;
 import com.store.arka.backend.domain.enums.UserStatus;
 import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.InvalidStateException;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -26,14 +27,14 @@ public class User {
   private LocalDateTime updatedAt;
 
   public static User create(String userName, String email, String password) {
-    validateNotNullOrEmpty(userName, "UserName");
-    validateNotNullOrEmpty(email, "Email");
-    validateNotNullOrEmpty(password, "Password");
+    String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
+    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email");
+    String normalizedPassword = ValidateAttributesUtils.throwIfNullOrEmpty(password, "Password");
     return new User(
         null,
-        userName,
-        email,
-        password,
+        normalizedUserName,
+        normalizedEmail,
+        normalizedPassword,
         UserRole.CUSTOMER,
         UserStatus.ACTIVE,
         null,
@@ -42,46 +43,42 @@ public class User {
   }
 
   public void updateUserName(String userName) {
-    validateNotNullOrEmpty(userName, "UserName");
+    ValidateAttributesUtils.throwIfNullOrEmpty(userName, "UserName");
     throwIfDisabled();
     this.userName = userName;
   }
 
   public void updateEmail(String email) {
-    validateNotNullOrEmpty(email, "Email");
+    ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email in User");
     throwIfDisabled();
     this.email = email;
   }
 
   public void updatePassword(String password) {
-    validateNotNullOrEmpty(password, "Password");
+    ValidateAttributesUtils.throwIfNullOrEmpty(password, "Password");
     throwIfDisabled();
     this.password = password;
   }
 
   public void delete() {
-    if (!isActive()) throw new InvalidStateException("User must be ACTIVE to be disabled");
+    if (isDisabled()) throw new InvalidStateException("User must be ACTIVE to be disabled");
     this.status = UserStatus.DISABLED;
   }
 
   public void restore() {
-    if (!isDisabled()) throw new InvalidStateException("User must be DISABLED to be restored");
+    if (isActive()) throw new InvalidStateException("User must be DISABLED to be restored");
     this.status = UserStatus.ACTIVE;
   }
 
-  private static void validateNotNullOrEmpty(String value, String field) {
-    if (value == null || value.trim().isEmpty()) throw new InvalidArgumentException(field + " must not be null or empty");
-  }
-
-  private void throwIfDisabled() {
-    if (isDisabled()) throw new InvalidStateException("Cannot be modified by disabled user");
+  public boolean isActive() {
+    return this.status == UserStatus.ACTIVE;
   }
 
   public boolean isDisabled() {
     return this.status == UserStatus.DISABLED;
   }
 
-  public boolean isActive() {
-    return this.status == UserStatus.ACTIVE;
+  private void throwIfDisabled() {
+    if (isDisabled()) throw new InvalidStateException("Cannot be modified by disabled user");
   }
 }

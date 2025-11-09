@@ -13,6 +13,7 @@ import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,92 +27,85 @@ public class UserController {
   private final IUserUseCase userUseCase;
   private final UserDtoMapper mapper;
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASES', 'CUSTOMER')")
   @GetMapping("/{id}")
   public ResponseEntity<UserResponseDto> getUserById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(userUseCase.getUserById(uuid)));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASES', 'CUSTOMER')")
   @GetMapping("/username/{userName}")
   public ResponseEntity<UserResponseDto> getUserByUserName(@PathVariable("userName") String userName) {
     return ResponseEntity.ok(mapper.toDto(userUseCase.getUserByUserName(userName)));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASES', 'CUSTOMER')")
   @GetMapping("/email/{email}")
   public ResponseEntity<UserResponseDto> getUserByEmail(@PathVariable("email") String email) {
     return ResponseEntity.ok(mapper.toDto(userUseCase.getUserByEmail(email)));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping
-  public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-    return ResponseEntity.ok(userUseCase.getAllUsers().stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
-  @GetMapping("/role/{role}")
-  public ResponseEntity<List<UserResponseDto>> getAllUsersByRole(@PathVariable("role") String role) {
-    UserRole roleEnum = PathUtils.validateEnumOrThrow(UserRole.class, role, "UserRole");
-    return ResponseEntity.ok(userUseCase.getAllUsersByRole(roleEnum)
-        .stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
-  @GetMapping("/status/{status}")
-  public ResponseEntity<List<UserResponseDto>> getAllUsersByStatus(@PathVariable("status") String status) {
-    UserStatus statusEnum = PathUtils.validateEnumOrThrow(UserStatus.class, status, "UserStatus");
-    return ResponseEntity.ok(userUseCase.getAllUsersByStatus(statusEnum)
-        .stream().map(mapper::toDto).collect(Collectors.toList()));
-  }
-
-  @GetMapping("/role/{role}/status/{status}")
-  public ResponseEntity<List<UserResponseDto>> getAllUsersByRoleAndStatus(
-      @PathVariable("role") String role,
-      @PathVariable("status") String status) {
+  public ResponseEntity<List<UserResponseDto>> getAllUsersByFilter(
+      @RequestParam(required = false) String role,
+      @RequestParam(required = false) String status) {
     UserRole roleEnum = PathUtils.validateEnumOrThrow(UserRole.class, role, "UserRole");
     UserStatus statusEnum = PathUtils.validateEnumOrThrow(UserStatus.class, status, "UserStatus");
-    return ResponseEntity.ok(userUseCase.getAllUsersByRoleAndStatus(roleEnum, statusEnum)
+    return ResponseEntity.ok(userUseCase.getAllUsersByFilters(roleEnum, statusEnum)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   @PutMapping("/{id}/update-username")
-  public ResponseEntity<UserResponseDto> updateUserNameById(
+  public ResponseEntity<UserResponseDto> updateUserName(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdateUserNameDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(userUseCase.updateUserNameById(uuid, dto.userName())));
+    return ResponseEntity.ok(mapper.toDto(userUseCase.updateUserName(uuid, dto.userName())));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   @PutMapping("/{id}/update-email")
-  public ResponseEntity<UserResponseDto> updateEmailById(
+  public ResponseEntity<UserResponseDto> updateEmail(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdateEmailDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(userUseCase.updateEmailById(uuid, dto.email())));
+    return ResponseEntity.ok(mapper.toDto(userUseCase.updateEmail(uuid, dto.email())));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   @PutMapping("/{id}/update-password")
-  public ResponseEntity<UserResponseDto> updatePasswordById(
+  public ResponseEntity<UserResponseDto> updatePassword(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdatePasswordDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(userUseCase.updatePasswordById(uuid, dto.password())));
+    return ResponseEntity.ok(mapper.toDto(userUseCase.updatePassword(uuid, dto.password())));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   @DeleteMapping("/{id}")
-  public ResponseEntity<MessageResponseDto> softDeleteUserById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> softDeleteUser(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    userUseCase.softDeleteUserById(uuid);
+    userUseCase.softDeleteUser(uuid);
     return ResponseEntity.ok(new MessageResponseDto("User has been successfully deleted with ID " + id));
   }
 
-  @PutMapping("/email/{email}/restore")
-  public ResponseEntity<UserResponseDto> restoreProductBySku(@PathVariable("email") String email) {
-    return ResponseEntity.ok(mapper.toDto(userUseCase.restoreUserByEmail(email)));
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','CUSTOMER')")
+  @PutMapping("/{id}/restore")
+  public ResponseEntity<UserResponseDto> restoreUser(@PathVariable("id") String id) {
+    UUID uuid = PathUtils.validateAndParseUUID(id);
+    return ResponseEntity.ok(mapper.toDto(userUseCase.restoreUser(uuid)));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping("/username/{userName}/exists")
   public ResponseEntity<Boolean> existsUserByUserName(@PathVariable("userName") String userName) {
     return ResponseEntity.ok(userUseCase.existUserByUserName(userName));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping("/email/{email}/exists")
   public ResponseEntity<Boolean> existsUserByEmail(@PathVariable("email") String email) {
     return ResponseEntity.ok(userUseCase.existUserByEmail(email));

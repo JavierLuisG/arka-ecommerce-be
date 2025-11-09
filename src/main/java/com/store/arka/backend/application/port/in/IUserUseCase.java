@@ -14,23 +14,17 @@ public interface IUserUseCase {
 
   User getUserByEmail(String email);
 
-  List<User> getAllUsers();
+  List<User> getAllUsersByFilters(UserRole role, UserStatus status);
 
-  List<User> getAllUsersByRole(UserRole role);
+  User updateUserName(UUID id, String userName);
 
-  List<User> getAllUsersByStatus(UserStatus status);
+  User updateEmail(UUID id, String email);
 
-  List<User> getAllUsersByRoleAndStatus(UserRole role, UserStatus status);
+  User updatePassword(UUID id, String password);
 
-  User updateUserNameById(UUID id, String userName);
+  void softDeleteUser(UUID id);
 
-  User updateEmailById(UUID id, String email);
-
-  User updatePasswordById(UUID id, String password);
-
-  void softDeleteUserById(UUID id);
-
-  User restoreUserByEmail(String email);
+  User restoreUser(UUID id);
 
   boolean existUserByUserName(String userName);
 

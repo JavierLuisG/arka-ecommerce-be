@@ -4,10 +4,10 @@ import com.store.arka.backend.application.port.in.IUserUseCase;
 import com.store.arka.backend.application.port.out.IUserAdapterPort;
 import com.store.arka.backend.domain.enums.UserRole;
 import com.store.arka.backend.domain.enums.UserStatus;
-import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.User;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements IUserUseCase {
@@ -27,124 +28,117 @@ public class UserService implements IUserUseCase {
   public User getUserById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id, "User ID");
     return userAdapterPort.findUserById(id)
-        .orElseThrow(() -> new ModelNotFoundException("User ID " + id + " not found"));
+        .orElseThrow(() -> {
+          log.warn("[USER_SERVICE][GET_BY_ID] User ID {} not found", id);
+          return new ModelNotFoundException("User ID " + id + " not found");
+        });
   }
 
   @Override
   @Transactional(readOnly = true)
   public User getUserByUserName(String userName) {
-    throwIfUserNameNull(userName);
-    String normalizedUserName = userName.trim().toLowerCase();
+    String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
     return userAdapterPort.findUserByUserName(normalizedUserName)
-        .orElseThrow(() -> new ModelNotFoundException("User with user_name " + normalizedUserName + " not found"));
+        .orElseThrow(() -> {
+          log.warn("[USER_SERVICE][GET_BY_USERNAME] User with username {} not found", normalizedUserName);
+          return new ModelNotFoundException("User with user_name " + normalizedUserName + " not found");
+        });
   }
 
   @Override
   @Transactional(readOnly = true)
   public User getUserByEmail(String email) {
-    throwIfEmailNull(email);
-    String normalizedEmail = email.trim().toLowerCase();
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
     return userAdapterPort.findUserByEmail(normalizedEmail)
-        .orElseThrow(() -> new ModelNotFoundException("User with email " + normalizedEmail + " not found"));
+        .orElseThrow(() -> {
+          log.warn("[USER_SERVICE][GET_BY_EMAIL] User with email {} not found", normalizedEmail);
+          return new ModelNotFoundException("User with email " + normalizedEmail + " not found");
+        });
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<User> getAllUsers() {
+  public List<User> getAllUsersByFilters(UserRole role, UserStatus status) {
+    if (role != null && status != null) {
+      log.info("[USER_SERVICE][GET_ALL_BY_ROLE_AND_STATUS] Fetching all users with role {} and status {}", role, status);
+      return userAdapterPort.findAllUsersByRoleAndStatus(role, status);
+    }
+    if (role != null) {
+      log.info("[USER_SERVICE][GET_ALL_BY_ROLE] Fetching all users with role {}", role);
+      return userAdapterPort.findAllUsersByRole(role);
+    }
+    if (status != null) {
+      log.info("[USER_SERVICE][GET_ALL_BY_STATUS] Fetching all users with status {}", status);
+      return userAdapterPort.findAllUsersByStatus(status);
+    }
+    log.info("[USER_SERVICE][GET_ALL] Fetching all users");
     return userAdapterPort.findAllUsers();
   }
 
   @Override
-  @Transactional(readOnly = true)
-  public List<User> getAllUsersByRole(UserRole role) {
-    return userAdapterPort.findAllUsersByRole(role);
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public List<User> getAllUsersByStatus(UserStatus status) {
-    return userAdapterPort.findAllUsersByStatus(status);
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public List<User> getAllUsersByRoleAndStatus(UserRole role, UserStatus status) {
-    return userAdapterPort.findAllUsersByRoleAndStatus(role, status);
-  }
-
-  @Override
   @Transactional
-  public User updateUserNameById(UUID id, String userName) {
-    throwIfUserNameNull(userName);
-    String normalizedUserName = userName.trim().toLowerCase();
+  public User updateUserName(UUID id, String userName) {
+    String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
     User found = getUserById(id);
     found.updateUserName(normalizedUserName);
-    return userAdapterPort.saveUpdateUser(found);
+    User saved = userAdapterPort.saveUpdateUser(found);
+    log.info("[USER_SERVICE][UPDATED_USERNAME] Updated username {} in user ID {} ", saved.getUserName(), saved.getId());
+    return saved;
   }
 
   @Override
   @Transactional
-  public User updateEmailById(UUID id, String email) {
-    throwIfUserNameNull(email);
-    String normalizedEmail = email.trim().toLowerCase();
+  public User updateEmail(UUID id, String email) {
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
     User found = getUserById(id);
     found.updateEmail(normalizedEmail);
-    return userAdapterPort.saveUpdateUser(found);
+    User saved = userAdapterPort.saveUpdateUser(found);
+    log.info("[USER_SERVICE][UPDATED_EMAIL] Updated email {} in user ID {} ", saved.getEmail(), saved.getId());
+    return saved;
   }
 
   @Override
   @Transactional
-  public User updatePasswordById(UUID id, String password) {
-    throwIfPasswordNull(password);
+  public User updatePassword(UUID id, String password) {
+    String normalizedPassword = ValidateAttributesUtils.throwIfNullOrEmpty(password, "Password");
     User found = getUserById(id);
-    String encodedPassword = passwordEncoder.encode(password);
+    String encodedPassword = passwordEncoder.encode(normalizedPassword);
     found.updatePassword(encodedPassword);
-    return userAdapterPort.saveUpdateUser(found);
+    User saved = userAdapterPort.saveUpdateUser(found);
+    log.info("[USER_SERVICE][UPDATED_PASSWORD] Updated password in user ID {} ", saved.getId());
+    return saved;
   }
 
   @Override
   @Transactional
-  public void softDeleteUserById(UUID id) {
+  public void softDeleteUser(UUID id) {
     User found = getUserById(id);
     found.delete();
     userAdapterPort.saveUpdateUser(found);
+    log.info("[USER_SERVICE][DELETED] User ID {} marked as deleted", id);
   }
 
   @Override
   @Transactional
-  public User restoreUserByEmail(String email) {
-    throwIfEmailNull(email);
-    String normalizedEmail = email.trim().toLowerCase();
-    User found = getUserByEmail(normalizedEmail);
+  public User restoreUser(UUID id) {
+    User found = getUserById(id);
     found.restore();
-    return userAdapterPort.saveUpdateUser(found);
+    User saved = userAdapterPort.saveUpdateUser(found);
+    log.info("[USER_SERVICE][RESTORE] User ID {} restored successfully", saved.getId());
+    return saved;
   }
 
   @Override
   @Transactional
   public boolean existUserByUserName(String userName) {
-    throwIfUserNameNull(userName);
-    String normalizedUserName = userName.trim().toLowerCase();
+    String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
     return userAdapterPort.existUserByUserName(normalizedUserName);
   }
 
   @Override
   @Transactional
   public boolean existUserByEmail(String email) {
-    throwIfEmailNull(email);
-    String normalizedEmail = email.trim().toLowerCase();
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
     return userAdapterPort.existUserByEmail(normalizedEmail);
-  }
-
-  private static void throwIfUserNameNull(String userName) {
-    if (userName == null) throw new InvalidArgumentException("UserName in User cannot be null");
-  }
-
-  private static void throwIfEmailNull(String email) {
-    if (email == null) throw new InvalidArgumentException("Email in User cannot be null");
-  }
-
-  private static void throwIfPasswordNull(String password) {
-    if (password == null) throw new InvalidArgumentException("Password in User cannot be null");
   }
 }
