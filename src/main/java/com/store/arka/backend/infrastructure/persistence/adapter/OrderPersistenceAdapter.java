@@ -67,21 +67,6 @@ public class OrderPersistenceAdapter implements IOrderAdapterPort {
   }
 
   @Override
-  public Optional<Order> findOrderByIdAndStatus(UUID id, OrderStatus status) {
-    return jpaOrderRepository.findByIdAndStatus(id, status).map(mapper::toDomain);
-  }
-
-  @Override
-  public Optional<Order> findOrderByIdAndCustomerId(UUID id, UUID customerId) {
-    return jpaOrderRepository.findByIdAndCustomerId(id, customerId).map(mapper::toDomain);
-  }
-
-  @Override
-  public Optional<Order> findOrderByIdAndCustomerIdAndStatus(UUID id, UUID customerId, OrderStatus status) {
-    return jpaOrderRepository.findByIdAndCustomerIdAndStatus(id, customerId, status).map(mapper::toDomain);
-  }
-
-  @Override
   public List<Order> findAllOrders() {
     return jpaOrderRepository.findAll().stream().map(mapper::toDomain).collect(Collectors.toList());
   }
@@ -98,26 +83,8 @@ public class OrderPersistenceAdapter implements IOrderAdapterPort {
   }
 
   @Override
-  public List<Order> findAllOrdersByCustomerIdAndStatus(UUID customerId, OrderStatus status) {
-    return jpaOrderRepository.findAllByCustomerIdAndStatus(customerId, status).stream().map(mapper::toDomain).toList();
-  }
-
-  @Override
   public List<Order> findAllOrdersByItemsProductId(UUID productId) {
     return jpaOrderRepository.findAllByItemsProductId(productId)
-        .stream().map(mapper::toDomain).collect(Collectors.toList());
-  }
-
-  @Override
-  public List<Order> findAllOrdersByItemsProductIdAndStatus(UUID productId, OrderStatus status) {
-    return jpaOrderRepository.findAllByItemsProductIdAndStatus(productId, status)
-        .stream().map(mapper::toDomain).collect(Collectors.toList());
-  }
-
-  @Override
-  public List<Order> findAllOrdersByCustomerIdAndItemsProductIdAndStatus(
-      UUID customerId, UUID productId, OrderStatus status) {
-    return jpaOrderRepository.findAllByCustomerIdAndItemsProductIdAndStatus(customerId, productId, status)
         .stream().map(mapper::toDomain).collect(Collectors.toList());
   }
 

@@ -14,25 +14,13 @@ public interface IOrderAdapterPort {
 
   Optional<Order> findOrderById(UUID id);
 
-  Optional<Order> findOrderByIdAndStatus(UUID id, OrderStatus status);
-
-  Optional<Order> findOrderByIdAndCustomerId(UUID id, UUID customerId);
-
-  Optional<Order> findOrderByIdAndCustomerIdAndStatus(UUID id, UUID customerId, OrderStatus status);
-
   List<Order> findAllOrders();
 
   List<Order> findAllOrdersByStatus(OrderStatus status);
 
   List<Order> findAllOrdersByCustomerId(UUID customerId);
 
-  List<Order> findAllOrdersByCustomerIdAndStatus(UUID customerId, OrderStatus status);
-
   List<Order> findAllOrdersByItemsProductId(UUID productId);
-
-  List<Order> findAllOrdersByItemsProductIdAndStatus(UUID productId, OrderStatus status);
-
-  List<Order> findAllOrdersByCustomerIdAndItemsProductIdAndStatus(UUID customerId, UUID productId, OrderStatus status);
 
   boolean existsByCartId(UUID cartId);
 }

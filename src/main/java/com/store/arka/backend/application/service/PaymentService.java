@@ -11,6 +11,7 @@ import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.domain.model.Order;
 import com.store.arka.backend.domain.model.Payment;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
+import com.store.arka.backend.shared.util.ValidateStatusUtils;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -125,9 +126,10 @@ public class PaymentService implements IPaymentUseCase {
 
   private Order requireOrderConfirmed(UUID orderId) {
     if (orderId == null) throw new InvalidArgumentException("Order ID in Payment cannot be null");
-    return orderAdapterPort.findOrderByIdAndStatus(orderId, OrderStatus.CONFIRMED)
-        .orElseThrow(() -> new InvalidStateException("Cannot create payment: Order "
-            + orderId + " must be in CONFIRMED state"));
+    Order found = orderAdapterPort.findOrderById(orderId)
+        .orElseThrow(() -> new InvalidStateException("Order ID " + orderId + " not found in payment"));
+    ValidateStatusUtils.throwIfNotConfirmed(found.getStatus());
+    return found;
   }
 
   private Order ensureOrderExists(UUID orderId) {

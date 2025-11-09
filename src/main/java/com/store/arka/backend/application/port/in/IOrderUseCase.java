@@ -11,25 +11,13 @@ public interface IOrderUseCase {
 
   Order getOrderById(UUID id);
 
-  Order getOrderByIdAndStatus(UUID id, OrderStatus status);
-
-  Order getOrderByIdAndCustomerId(UUID id, UUID customerId);
-
-  Order getOrderByIdAndCustomerIdAndStatus(UUID id, UUID customerId, OrderStatus status);
-
   List<Order> getAllOrders();
 
   List<Order> getAllOrdersByStatus(OrderStatus status);
 
   List<Order> getAllOrdersByCustomerId(UUID customerId);
 
-  List<Order> getAllOrdersByCustomerIdAndStatus(UUID customerId, OrderStatus status);
-
   List<Order> getAllOrdersByItemsProductId(UUID productId);
-
-  List<Order> getAllOrdersByItemsProductIdAndStatus(UUID productId, OrderStatus status);
-
-  List<Order> getAllOrdersByCustomerIdAndItemsProductIdAndStatus(UUID customerId, UUID productId, OrderStatus status);
 
   Order addOrderItemById(UUID id, UUID productId, Integer quantity);
 

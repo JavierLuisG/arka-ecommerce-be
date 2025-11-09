@@ -2,6 +2,7 @@ package com.store.arka.backend.domain.model;
 
 import com.store.arka.backend.domain.enums.PurchaseStatus;
 import com.store.arka.backend.domain.exception.*;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -26,6 +27,7 @@ public class Purchase {
   private LocalDateTime updatedAt;
 
   public static Purchase create(Supplier supplier, List<PurchaseItem> items) {
+    ValidateAttributesUtils.throwIfModelNull(supplier, "Supplier in Purchase");
     supplier.throwIfDeleted();
     if (items == null) items = new ArrayList<>();
     return new Purchase(
@@ -48,6 +50,7 @@ public class Purchase {
   }
 
   public boolean containsProduct(UUID productId) {
+    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Purchase");
     return items.stream().anyMatch(item -> item.getProductId().equals(productId));
   }
 
@@ -92,13 +95,15 @@ public class Purchase {
   }
 
   public void confirm() {
+    if (isConfirmed()) throw new InvalidStateException("Purchase already confirmed");
     ensurePurchaseIsModifiable();
     if (items.isEmpty()) throw new ItemsEmptyException("Purchase items cannot be empty to confirm");
     this.status = PurchaseStatus.CONFIRMED;
   }
 
   public void reschedule() {
-    if (!isConfirmed() && !isRescheduled()) {
+    if (isRescheduled()) throw new InvalidStateException("Purchase already rescheduled, It must be complete to be received");
+    if (!isConfirmed()) {
       throw new InvalidStateException("Purchase must be CONFIRMED or RESCHEDULED to be marked RECEIVED");
     }
     this.status = PurchaseStatus.RESCHEDULED;
@@ -112,6 +117,7 @@ public class Purchase {
   }
 
   public void close() {
+    if (isClosed()) throw new InvalidStateException("Purchase already closed");
     if (!isReceived()) throw new InvalidStateException("Purchase must be RECEIVED to be marked CLOSED");
     this.status = PurchaseStatus.CLOSED;
   }

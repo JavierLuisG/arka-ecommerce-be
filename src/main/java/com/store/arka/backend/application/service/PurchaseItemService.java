@@ -53,7 +53,7 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
   @Transactional(readOnly = true)
   public List<PurchaseItem> getAllPurchaseItemsByProductId(UUID productId) {
     ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in PurchaseItem");
-    log.info("[PURCHASE_ITEM_SERVICE][GET_ALL_BY_PRODUCT] Fetching all purchases with product {}", productId);
+    log.info("[PURCHASE_ITEM_SERVICE][GET_ALL_BY_PRODUCT] Fetching all purchaseItems with product {}", productId);
     return purchaseItemAdapterPort.findAllPurchaseItemsByProductId(productId);
   }
 
@@ -74,7 +74,7 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
     PurchaseItem found = getPurchaseItemById(id);
     found.updateQuantity(quantity);
     PurchaseItem saved = purchaseItemAdapterPort.saveUpdatePurchaseItem(found);
-    log.info("[PURCHASE_ITEM_SERVICE][UPDATED_QUANTITY] Updat quantity {} in purchaseItem ID {}", quantity, id);
+    log.info("[PURCHASE_ITEM_SERVICE][UPDATED_QUANTITY] Update quantity {} in purchaseItem ID {}", quantity, id);
     return saved;
   }
 }

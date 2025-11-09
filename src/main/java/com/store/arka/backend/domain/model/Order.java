@@ -30,7 +30,8 @@ public class Order {
 
   public static Order create(UUID cartId, Customer customer, List<OrderItem> items) {
     ValidateAttributesUtils.throwIfIdNull(cartId, "Cart ID in Order");
-    if (!customer.isActive()) throw new ModelNullException("Customer already deleted previously");
+    ValidateAttributesUtils.throwIfModelNull(customer, "Customer in Order");
+    customer.throwIfDeleted();
     if (items == null) items = new ArrayList<>();
     return new Order(
         null,
@@ -53,10 +54,12 @@ public class Order {
   }
 
   public boolean containsProduct(UUID productId) {
+    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Order");
     return items.stream().anyMatch(item -> item.getProductId().equals(productId));
   }
 
   public void removeOrderItem(Product product) {
+    ValidateAttributesUtils.throwIfModelNull(product, "Product in Order");
     ensureOrderIsModifiable();
     OrderItem found = this.items.stream()
         .filter(orderItem -> orderItem.getProductId().equals(product.getId()))
@@ -67,31 +70,59 @@ public class Order {
   }
 
   public void confirm() {
-    ValidateStatusUtils.throwIfNotCreated(this.status);
+    if (isConfirmed()) throw new InvalidStateException("Order already confirmed");
+    ensureOrderIsModifiable();
     if (items.isEmpty()) throw new ItemsEmptyException("Order items cannot be empty to confirm");
     this.status = OrderStatus.CONFIRMED;
   }
 
   public void pay() {
+    if (isPaid()) throw new InvalidStateException("Order already paid");
     ValidateStatusUtils.throwIfNotConfirmed(this.status);
     this.status = OrderStatus.PAID;
   }
 
   public void shipped() {
+    if (isShipped()) throw new InvalidStateException("Order already shipped");
     ValidateStatusUtils.throwIfNotPaid(this.status);
     this.status = OrderStatus.SHIPPED;
   }
 
   public void deliver() {
+    if (isDelivered()) throw new InvalidStateException("Order already delivered");
     ValidateStatusUtils.throwIfNotShipped(this.status);
     this.status = OrderStatus.DELIVERED;
   }
 
   public void cancel() {
-    if (this.status == OrderStatus.SHIPPED || this.status == OrderStatus.DELIVERED) {
+    if (isCanceled()) throw new InvalidStateException("Order already canceled");
+    if (isShipped() || isDelivered()) {
       throw new InvalidStateException("Cannot cancel an order that is already shipped or delivered");
     }
     this.status = OrderStatus.CANCELED;
+  }
+
+  public boolean isCreated() {
+    return this.status == OrderStatus.CREATED;
+  }
+  public boolean isConfirmed() {
+    return this.status == OrderStatus.CONFIRMED;
+  }
+
+  public boolean isPaid() {
+    return this.status == OrderStatus.PAID;
+  }
+
+  public boolean isShipped() {
+    return this.status == OrderStatus.SHIPPED;
+  }
+
+  public boolean isDelivered() {
+    return this.status == OrderStatus.DELIVERED;
+  }
+
+  public boolean isCanceled() {
+    return this.status == OrderStatus.CANCELED;
   }
 
   public void ensureOrderIsModifiable() {

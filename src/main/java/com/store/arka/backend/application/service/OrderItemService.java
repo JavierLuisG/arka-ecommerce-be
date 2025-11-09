@@ -4,9 +4,9 @@ import com.store.arka.backend.application.port.in.IOrderItemUseCase;
 import com.store.arka.backend.application.port.in.IProductUseCase;
 import com.store.arka.backend.application.port.out.IOrderItemAdapterPort;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
-import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.model.OrderItem;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderItemService implements IOrderItemUseCase {
@@ -22,9 +23,12 @@ public class OrderItemService implements IOrderItemUseCase {
 
   @Override
   public OrderItem addOrderItem(UUID orderId, OrderItem orderItem) {
-    if (orderItem == null) throw new ModelNullException("CartItem cannot be null");
+    ValidateAttributesUtils.throwIfIdNull(orderId, "Order ID in OrderItem");
+    ValidateAttributesUtils.throwIfModelNull(orderItem, "OrderItem");
     productUseCase.validateAvailabilityOrThrow(orderItem.getProductId(), orderItem.getQuantity());
-    return orderItemAdapterPort.saveAddOrderItem(orderId, orderItem);
+    OrderItem saved = orderItemAdapterPort.saveAddOrderItem(orderId, orderItem);
+    log.info("[ORDER_ITEM_SERVICE][CREATED] Created new orderItem ID: {}", saved.getId());
+    return saved;
   }
 
   @Override
@@ -32,18 +36,24 @@ public class OrderItemService implements IOrderItemUseCase {
   public OrderItem getOrderItemById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id, "OrderItem ID");
     return orderItemAdapterPort.findOrderItemById(id)
-        .orElseThrow(() -> new ModelNotFoundException("OrderItem ID " + id + " not found"));
+        .orElseThrow(() -> {
+          log.warn("[ORDER_ITEM_SERVICE][GET_BY_ID] OrderItem ID {} not found", id);
+          return new ModelNotFoundException("OrderItem ID " + id + " not found");
+        });
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<OrderItem> getAllOrderItems() {
+    log.info("[ORDER_ITEM_SERVICE][GET_ALL] Fetching all orderItems");
     return orderItemAdapterPort.findAllOrderItems();
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<OrderItem> getAllOrderItemsByProductId(UUID productId) {
+    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in OrderItem");
+    log.info("[ORDER_ITEM_SERVICE][GET_ALL_BY_PRODUCT] Fetching all orderItems with product {}", productId);
     return orderItemAdapterPort.findAllOrderItemsByProductId(productId);
   }
 
@@ -53,7 +63,9 @@ public class OrderItemService implements IOrderItemUseCase {
     OrderItem found = getOrderItemById(id);
     found.addQuantity(quantity);
     productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
-    return orderItemAdapterPort.saveUpdateOrderItem(found);
+    OrderItem saved = orderItemAdapterPort.saveUpdateOrderItem(found);
+    log.info("[ORDER_ITEM_SERVICE][ADDED_QUANTITY] Add quantity {} in orderItem ID {}", quantity, id);
+    return saved;
   }
 
   @Override
@@ -62,6 +74,8 @@ public class OrderItemService implements IOrderItemUseCase {
     OrderItem found = getOrderItemById(id);
     found.updateQuantity(quantity);
     productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
-    return orderItemAdapterPort.saveUpdateOrderItem(found);
+    OrderItem saved = orderItemAdapterPort.saveUpdateOrderItem(found);
+    log.info("[ORDER_ITEM_SERVICE][UPDATED_QUANTITY] Update quantity {} in orderItem ID {}", quantity, id);
+    return saved;
   }
 }

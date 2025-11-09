@@ -41,7 +41,7 @@ public class PurchaseService implements IPurchaseUseCase {
     });
     Purchase created = Purchase.create(supplierFound, purchaseItems);
     Purchase saved = purchaseAdapterPort.saveCreatePurchase(created);
-    log.info("[PURCHASE_SERVICE][CREATED] Created new purchase ID: {}", saved.getId());
+    log.info("[PURCHASE_SERVICE][CREATED] Created new purchase ID {}", saved.getId());
     return saved;
   }
 
@@ -102,7 +102,7 @@ public class PurchaseService implements IPurchaseUseCase {
       PurchaseItem newItem = PurchaseItem.create(productFound, quantity, BigDecimal.valueOf(1000));
       purchaseFound.getItems().add(newItem);
       PurchaseItem saved = purchaseItemUseCase.addPurchaseItem(purchaseFound.getId(), newItem);
-      log.info("[PURCHASE_SERVICE][ADDED_ITEM] Create item ID {} whit product ID {} in purchase {}",
+      log.info("[PURCHASE_SERVICE][ADDED_ITEM] Create item ID {} whit product ID {} in purchase ID {}",
           saved.getId(), productId, id);
     }
     purchaseFound.recalculateTotal();
@@ -170,9 +170,9 @@ public class PurchaseService implements IPurchaseUseCase {
       purchaseFound.receive();
       purchaseAdapterPort.saveUpdatePurchase(purchaseFound);
       log.info("[PURCHASE_SERVICE][RECEIVED] Purchase ID {} was confirmed", id);
-    } catch (BusinessException ex) {
-      log.error("[PURCHASE_SERVICE][RECEIVED] Error receiving purchase {}: {}", id, ex.getMessage());
+    } catch (InvalidArgumentException | InvalidStateException ex) {
       reschedulerService.markPurchaseAsRescheduled(purchaseFound);
+      log.error("[PURCHASE_SERVICE][RECEIVED] Error receiving purchase {}: {}", id, ex.getMessage());
       throw ex;
     }
   }
@@ -210,6 +210,7 @@ public class PurchaseService implements IPurchaseUseCase {
   }
 
   private PurchaseItem findPurchaseItemOrThrow(UUID productId, Purchase purchaseFound) {
+    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Purchase");
     return purchaseFound.getItems()
         .stream()
         .filter(item -> item.getProductId().equals(productId))
