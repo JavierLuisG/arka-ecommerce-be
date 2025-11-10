@@ -2,6 +2,7 @@ package com.store.arka.backend.infrastructure.web.controller;
 
 import com.store.arka.backend.application.port.in.IDocumentUseCase;
 import com.store.arka.backend.domain.enums.DocumentStatus;
+import com.store.arka.backend.domain.model.Document;
 import com.store.arka.backend.infrastructure.web.dto.customer.request.DocumentRequestDto;
 import com.store.arka.backend.infrastructure.web.dto.customer.response.DocumentResponseDto;
 import com.store.arka.backend.infrastructure.web.mapper.DocumentDtoMapper;
@@ -23,14 +24,14 @@ public class DocumentController {
   private final IDocumentUseCase documentUseCase;
   private final DocumentDtoMapper mapper;
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping("/{id}")
   public ResponseEntity<DocumentResponseDto> getDocumentById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(documentUseCase.getDocumentById(uuid)));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping("/number/{number}")
   public ResponseEntity<DocumentResponseDto> getDocumentByNumber(@PathVariable("number") String number) {
     return ResponseEntity.ok(mapper.toDto(documentUseCase.getDocumentByNumber(number)));
@@ -39,15 +40,15 @@ public class DocumentController {
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping
   public ResponseEntity<List<DocumentResponseDto>> getAllDocuments(@RequestParam(required = false) String status) {
-    if (status == null) {
-      return ResponseEntity.ok(documentUseCase.getAllDocuments().stream().map(mapper::toDto).collect(Collectors.toList()));
-    }
-    DocumentStatus statusEnum = PathUtils.validateEnumOrThrow(DocumentStatus.class, status, "DocumentStatus");
-    return ResponseEntity.ok(documentUseCase.getAllDocumentsByStatus(statusEnum)
-        .stream().map(mapper::toDto).collect(Collectors.toList()));
+    List<Document> documents = (status == null)
+        ? documentUseCase.getAllDocuments()
+        : documentUseCase.getAllDocumentsByStatus(
+        PathUtils.validateEnumOrThrow(DocumentStatus.class, status, "DocumentStatus")
+    );
+    return ResponseEntity.ok(documents.stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN')")
   @PutMapping("/{id}")
   public ResponseEntity<DocumentResponseDto> updateDocument(
       @PathVariable("id") String id,

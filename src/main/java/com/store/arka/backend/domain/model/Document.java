@@ -2,8 +2,6 @@ package com.store.arka.backend.domain.model;
 
 import com.store.arka.backend.domain.enums.DocumentStatus;
 import com.store.arka.backend.domain.enums.DocumentType;
-import com.store.arka.backend.domain.enums.ProductStatus;
-import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelActivationException;
 import com.store.arka.backend.domain.exception.ModelDeletionException;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
