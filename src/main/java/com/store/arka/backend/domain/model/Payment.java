@@ -3,7 +3,7 @@ package com.store.arka.backend.domain.model;
 import com.store.arka.backend.domain.enums.PaymentMethod;
 import com.store.arka.backend.domain.enums.PaymentStatus;
 import com.store.arka.backend.domain.exception.InvalidStateException;
-import com.store.arka.backend.domain.exception.PaymentValidationException;
+import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -30,7 +30,8 @@ public class Payment {
   private static final int MAX_FAILED_ATTEMPTS = 3;
 
   public static Payment create(Order order, PaymentMethod method) {
-    if (order == null) throw new IllegalArgumentException("Order must not be null when creating a Payment");
+    ValidateAttributesUtils.throwIfModelNull(order, "Order in Payment");
+    if (!order.isConfirmed()) throw new InvalidStateException("Order must be CONFIRMED to create a payment");
     throwIfBadAmount(order.getTotal());
     return new Payment(
         null,

@@ -16,6 +16,7 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -51,6 +52,22 @@ public class GlobalExceptionHandler {
     log.warn("[GLOBAL_EXCEPTION_HANDLER][HTTP_MESSAGE_NOT_READABLE] Malformed or missing request body");
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
         HttpStatus.BAD_REQUEST.value(), "Request body is missing or malformed", request.getRequestURI()
+    ));
+  }
+
+  /**
+   * Devuelve 400 cuando falta variable en el path. ejm /products/{productId}
+   */
+  @ExceptionHandler(MissingPathVariableException.class)
+  public ResponseEntity<ErrorResponseDto> handleMissingPathVariable(
+      MissingPathVariableException ex,
+      WebRequest request
+  ) {
+    log.warn("[GLOBAL_EXCEPTION_HANDLER][MISSING_PATH_VARIABLE] Missing variable in path: {}", ex.getVariableName());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponseDto(
+        HttpStatus.BAD_REQUEST.value(),
+        "Missing required path variable: " + ex.getVariableName(),
+        request.getDescription(false)
     ));
   }
 

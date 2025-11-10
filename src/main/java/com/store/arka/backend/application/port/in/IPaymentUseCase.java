@@ -1,7 +1,6 @@
 package com.store.arka.backend.application.port.in;
 
 import com.store.arka.backend.domain.enums.PaymentMethod;
-import com.store.arka.backend.domain.enums.PaymentStatus;
 import com.store.arka.backend.domain.model.Payment;
 
 import java.util.List;
@@ -14,13 +13,7 @@ public interface IPaymentUseCase {
 
   Payment getPaymentByOrderId(UUID orderId);
 
-  List<Payment> getAllPayments();
-
-  List<Payment> getAllPaymentsByMethod(PaymentMethod method);
-
-  List<Payment> getAllPaymentsByStatus(PaymentStatus status);
-
-  List<Payment> getAllPaymentsByMethodAndStatus(PaymentMethod method, PaymentStatus status);
+  List<Payment> getAllPaymentsByFilters(String method, String status);
 
   Payment confirmPaymentById(UUID id);
 
