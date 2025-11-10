@@ -27,6 +27,8 @@ public interface IUserAdapterPort {
 
   List<User> findAllUsersByRoleAndStatus(UserRole role, UserStatus status);
 
+  boolean existsUserById(UUID id);
+
   boolean existUserByUserName(String userName);
 
   boolean existUserByEmail(String email);

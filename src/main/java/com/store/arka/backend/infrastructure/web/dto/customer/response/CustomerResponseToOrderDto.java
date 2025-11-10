@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public record CustomerResponseToOrderDto(
     UUID id,
+    UUID userId,
     DocumentResponseToCustomerDto document,
     String firstName,
     String lastName,

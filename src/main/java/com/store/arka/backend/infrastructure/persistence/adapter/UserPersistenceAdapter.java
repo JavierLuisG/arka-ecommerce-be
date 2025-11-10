@@ -83,6 +83,11 @@ public class UserPersistenceAdapter implements IUserAdapterPort {
   }
 
   @Override
+  public boolean existsUserById(UUID id) {
+    return jpaUserRepository.existsById(id);
+  }
+
+  @Override
   public boolean existUserByUserName(String userName) {
     return jpaUserRepository.existsByUserName(userName);
   }

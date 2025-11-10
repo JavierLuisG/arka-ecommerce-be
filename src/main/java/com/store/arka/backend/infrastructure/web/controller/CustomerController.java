@@ -33,14 +33,21 @@ public class CustomerController {
         .body(mapper.toDto(customerUseCase.createCustomer(mapper.toDomain(dto))));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   @GetMapping("/{id}")
   public ResponseEntity<CustomerResponseDto> getCustomerById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerById(uuid)));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  @GetMapping("/user/{userId}")
+  public ResponseEntity<CustomerResponseDto> getCustomerByUserId(@PathVariable("userId") String userId) {
+    UUID uuid = PathUtils.validateAndParseUUID(userId);
+    return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerByUserId(uuid)));
+  }
+
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   @GetMapping("/number/{number}")
   public ResponseEntity<CustomerResponseDto> getCustomerByNumber(@PathVariable("number") String number) {
     return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerByDocumentNumber(number)));
@@ -74,7 +81,7 @@ public class CustomerController {
     return ResponseEntity.ok(new MessageResponseDto("Customer with ID " + id + " eliminated successfully"));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/restore")
   public ResponseEntity<CustomerResponseDto> restoreCustomer(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);

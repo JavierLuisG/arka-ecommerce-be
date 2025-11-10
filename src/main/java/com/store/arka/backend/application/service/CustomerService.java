@@ -3,12 +3,14 @@ package com.store.arka.backend.application.service;
 import com.store.arka.backend.application.port.in.ICustomerUseCase;
 import com.store.arka.backend.application.port.in.IDocumentUseCase;
 import com.store.arka.backend.application.port.out.ICustomerAdapterPort;
+import com.store.arka.backend.application.port.out.IUserAdapterPort;
 import com.store.arka.backend.domain.enums.Country;
 import com.store.arka.backend.domain.enums.CustomerStatus;
 import com.store.arka.backend.domain.exception.FieldAlreadyExistsException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.Customer;
 import com.store.arka.backend.domain.model.Document;
+import com.store.arka.backend.shared.security.SecurityUtils;
 import com.store.arka.backend.shared.util.PathUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,21 +27,30 @@ import java.util.UUID;
 public class CustomerService implements ICustomerUseCase {
   private final ICustomerAdapterPort customerAdapterPort;
   private final IDocumentUseCase documentUseCase;
+  private final IUserAdapterPort userAdapterPort;
+  private final SecurityUtils securityUtils;
 
   @Override
   @Transactional
   public Customer createCustomer(Customer customer) {
     ValidateAttributesUtils.throwIfModelNull(customer, "Customer");
+    ValidateAttributesUtils.throwIfIdNull(customer.getUserId(), "User ID in Customer");
+    throwIfNotExistUser(customer);
     ValidateAttributesUtils.throwIfModelNull(customer.getDocument(), "Document in Customer");
     String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(customer.getEmail(), "Email in Customer");
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, customer.getCountry().toString(), "Country");
+    if (customerAdapterPort.existsCustomerByUserId(customer.getUserId())) {
+      log.warn("[CUSTOMER_SERVICE][CREATED] User ID {} already exists for creating a customer", customer.getUserId());
+      throw new FieldAlreadyExistsException("User ID " + customer.getUserId() + " already exists. Choose a different");
+    }
     if (customerAdapterPort.existsCustomerByEmail(normalizedEmail)) {
       log.warn("[CUSTOMER_SERVICE][CREATED] Email {} already exists for creating a customer", normalizedEmail);
       throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
     }
     Document documentCreated = documentUseCase.createDocument(customer.getDocument());
     Customer created = Customer.create(
+        customer.getUserId(),
         documentCreated,
         customer.getFirstName(),
         customer.getLastName(),
@@ -58,10 +69,22 @@ public class CustomerService implements ICustomerUseCase {
   @Transactional(readOnly = true)
   public Customer getCustomerById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id, "Customer ID");
-    return customerAdapterPort.findCustomerById(id)
+    Customer found = customerAdapterPort.findCustomerById(id)
         .orElseThrow(() -> {
           log.warn("[CUSTOMER_SERVICE][GET_BY_ID] Customer ID {} not found", id);
           return new ModelNotFoundException("Customer ID " + id + " not found");
+        });
+    securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN", "MANAGER");
+    return found;
+  }
+
+  @Override
+  public Customer getCustomerByUserId(UUID userId) {
+    ValidateAttributesUtils.throwIfIdNull(userId, "User ID in Customer");
+    return customerAdapterPort.findCustomerByUserId(userId)
+        .orElseThrow(() -> {
+          log.warn("[CUSTOMER_SERVICE][GET_BY_USER] Customer with user ID {} not found", userId);
+          return new ModelNotFoundException("Customer with user ID" + userId + " not found");
         });
   }
 
@@ -135,5 +158,12 @@ public class CustomerService implements ICustomerUseCase {
     log.info("[CUSTOMER_SERVICE][RESTORED] Customer ID {} restored successfully", id);
     documentUseCase.restoreDocument(found.getDocument().getId());
     return found;
+  }
+
+  private void throwIfNotExistUser(Customer customer) {
+    if (!userAdapterPort.existsUserById(customer.getUserId())) {
+      log.warn("[CUSTOMER_SERVICE][CREATED] User ID {} does not exist", customer.getUserId());
+      throw new ModelNotFoundException("There is no User ID to create a customer");
+    }
   }
 }

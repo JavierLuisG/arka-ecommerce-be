@@ -14,11 +14,15 @@ public interface ICustomerAdapterPort {
 
   Optional<Customer> findCustomerById(UUID id);
 
+  Optional<Customer> findCustomerByUserId(UUID id);
+
   Optional<Customer> findCustomerByDocumentNumber(String number);
 
   List<Customer> findAllCustomers();
 
   List<Customer> findAllCustomersByStatus(CustomerStatus status);
+
+  boolean existsCustomerByUserId(UUID userId);
 
   boolean existsCustomerByEmail(String email);
 }

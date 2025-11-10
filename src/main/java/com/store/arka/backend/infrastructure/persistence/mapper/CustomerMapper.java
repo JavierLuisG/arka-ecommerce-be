@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CustomerMapper {
   private final DocumentMapper documentMapper;
+  private final UserMapper userMapper;
   @PersistenceContext
   private EntityManager entityManager;
 
@@ -18,6 +19,7 @@ public class CustomerMapper {
     if (entity == null) return null;
     return new Customer(
         entity.getId(),
+        entity.getUser().getId(),
         documentMapper.toDomain(entity.getDocument()),
         entity.getFirstName(),
         entity.getLastName(),
@@ -36,6 +38,7 @@ public class CustomerMapper {
     if (domain == null) return null;
     return new CustomerEntity(
         domain.getId(),
+        userMapper.toReference(domain.getUserId()),
         documentMapper.toEntity(domain.getDocument()),
         domain.getFirstName(),
         domain.getLastName(),

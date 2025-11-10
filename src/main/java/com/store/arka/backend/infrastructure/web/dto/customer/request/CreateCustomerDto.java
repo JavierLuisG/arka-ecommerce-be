@@ -4,7 +4,11 @@ import com.store.arka.backend.domain.enums.Country;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
+import java.util.UUID;
+
 public record CreateCustomerDto(
+    @NotNull(message = "User_id is required")
+    UUID userId,
     @Valid
     @NotNull(message = "Document is required")
     DocumentRequestDto document,

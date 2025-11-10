@@ -9,9 +9,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IJpaCustomerRepository extends JpaRepository<CustomerEntity, UUID> {
+  Optional<CustomerEntity> findByUserId(UUID userId);
+
   Optional<CustomerEntity> findByDocumentNumber(String number);
 
   List<CustomerEntity> findAllByStatus(CustomerStatus status);
+
+  boolean existsByUserId(UUID userId);
 
   boolean existsByEmail(String email);
 }

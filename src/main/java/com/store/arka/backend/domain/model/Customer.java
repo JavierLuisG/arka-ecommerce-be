@@ -2,8 +2,6 @@ package com.store.arka.backend.domain.model;
 
 import com.store.arka.backend.domain.enums.Country;
 import com.store.arka.backend.domain.enums.CustomerStatus;
-import com.store.arka.backend.domain.enums.DocumentStatus;
-import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.ModelActivationException;
 import com.store.arka.backend.domain.exception.ModelDeletionException;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
@@ -20,6 +18,7 @@ import java.util.UUID;
 public class Customer {
   @EqualsAndHashCode.Include
   private final UUID id;
+  private final UUID userId;
   private Document document;
   private String firstName;
   private String lastName;
@@ -32,8 +31,9 @@ public class Customer {
   private final LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
-  public static Customer create(Document document, String firstName, String lastName, String email, String phone,
+  public static Customer create(UUID userId, Document document, String firstName, String lastName, String email, String phone,
                                 String address, String city, Country country) {
+    ValidateAttributesUtils.throwIfIdNull(userId, "User ID in Customer");
     ValidateAttributesUtils.throwIfModelNull(document, "Document in Customer");
     String normalizedFirstName = ValidateAttributesUtils.throwIfValueNotAllowed(firstName, "First name");
     String normalizedLastName = ValidateAttributesUtils.throwIfValueNotAllowed(lastName, "Last name");
@@ -44,6 +44,7 @@ public class Customer {
     ValidateAttributesUtils.throwIfModelNull(country.toString(), "Country in Customer");
     return new Customer(
         null,
+        userId,
         document,
         normalizedFirstName,
         normalizedLastName,
@@ -67,7 +68,7 @@ public class Customer {
     String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
     String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
     String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
-    ValidateAttributesUtils.throwIfModelNull(country.toString(), "Country in Customer");
+    ValidateAttributesUtils.throwIfModelNull(country, "Country in Customer");
     this.firstName = normalizedFirstName;
     this.lastName = normalizedLastName;
     this.email = normalizedEmail;

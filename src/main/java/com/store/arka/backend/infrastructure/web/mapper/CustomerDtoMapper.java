@@ -16,6 +16,7 @@ public class CustomerDtoMapper {
   public Customer toDomain(CreateCustomerDto dto) {
     return new Customer(
         null,
+        dto.userId(),
         documentDtoMapper.toDomain(dto.document()),
         dto.firstName(),
         dto.lastName(),
@@ -34,6 +35,7 @@ public class CustomerDtoMapper {
     return new Customer(
         null,
         null,
+        null,
         dto.firstName(),
         dto.lastName(),
         dto.email(),
@@ -50,6 +52,7 @@ public class CustomerDtoMapper {
   public CustomerResponseDto toDto(Customer domain) {
     return new CustomerResponseDto(
         domain.getId(),
+        domain.getUserId(),
         documentDtoMapper.toCustomerDto(domain.getDocument()),
         domain.getFirstName(),
         domain.getLastName(),
@@ -67,6 +70,7 @@ public class CustomerDtoMapper {
   public CustomerResponseToOrderDto toOrderDto(Customer domain) {
     return new CustomerResponseToOrderDto(
         domain.getId(),
+        domain.getUserId(),
         documentDtoMapper.toCustomerDto(domain.getDocument()),
         domain.getFirstName(),
         domain.getLastName(),

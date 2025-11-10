@@ -24,6 +24,9 @@ public class CustomerEntity {
   @EqualsAndHashCode.Include
   @Column(updatable = false, nullable = false, unique = true)
   private UUID id;
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "user_id", nullable = false, unique = true)
+  private UserEntity user;
   @OneToOne(optional = false)
   @JoinColumn(name = "document_id", nullable = false, foreignKey = @ForeignKey(name = "fk_document"))
   @ToString.Exclude
