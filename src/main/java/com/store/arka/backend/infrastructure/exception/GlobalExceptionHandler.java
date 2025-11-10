@@ -74,6 +74,7 @@ public class GlobalExceptionHandler {
   /**
    * Devuelve 409 CONFLICT en violaciones de integridad; intenta detectar duplicados y extraer el campo
    */
+  @ExceptionHandler(DataIntegrityViolationException.class)
   public ResponseEntity<ErrorResponseDto> handleDataIntegrityViolationException(
       DataIntegrityViolationException ex, WebRequest request) {
     String message = "Data integrity violation";

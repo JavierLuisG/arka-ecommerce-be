@@ -69,34 +69,45 @@ public class CustomerService implements ICustomerUseCase {
   @Transactional(readOnly = true)
   public Customer getCustomerById(UUID id) {
     ValidateAttributesUtils.throwIfIdNull(id, "Customer ID");
-    Customer found = customerAdapterPort.findCustomerById(id)
+    return customerAdapterPort.findCustomerById(id)
         .orElseThrow(() -> {
           log.warn("[CUSTOMER_SERVICE][GET_BY_ID] Customer ID {} not found", id);
           return new ModelNotFoundException("Customer ID " + id + " not found");
+        });
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Customer getCustomerByIdSecure(UUID id) {
+    Customer found = getCustomerById(id);
+    securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN", "MANAGER");
+    return found;
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Customer getCustomerByUserId(UUID userId) {
+    ValidateAttributesUtils.throwIfIdNull(userId, "User ID in Customer");
+    Customer found = customerAdapterPort.findCustomerByUserId(userId)
+        .orElseThrow(() -> {
+          log.warn("[CUSTOMER_SERVICE][GET_BY_USER] Customer with user ID {} not found", userId);
+          return new ModelNotFoundException("Customer with user ID" + userId + " not found");
         });
     securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN", "MANAGER");
     return found;
   }
 
   @Override
-  public Customer getCustomerByUserId(UUID userId) {
-    ValidateAttributesUtils.throwIfIdNull(userId, "User ID in Customer");
-    return customerAdapterPort.findCustomerByUserId(userId)
-        .orElseThrow(() -> {
-          log.warn("[CUSTOMER_SERVICE][GET_BY_USER] Customer with user ID {} not found", userId);
-          return new ModelNotFoundException("Customer with user ID" + userId + " not found");
-        });
-  }
-
-  @Override
   @Transactional(readOnly = true)
   public Customer getCustomerByDocumentNumber(String number) {
     String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(number, "Number");
-    return customerAdapterPort.findCustomerByDocumentNumber(number)
+    Customer found = customerAdapterPort.findCustomerByDocumentNumber(number)
         .orElseThrow(() -> {
           log.warn("[CUSTOMER_SERVICE][GET_BY_NUMBER] Customer with document number {} not found", normalizedNumber);
           return new ModelNotFoundException("Customer with document number " + number + " not found");
         });
+    securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN", "MANAGER");
+    return found;
   }
 
   @Override
@@ -116,8 +127,9 @@ public class CustomerService implements ICustomerUseCase {
   @Override
   @Transactional
   public Customer updateFieldsCustomer(UUID id, Customer customer) {
-    ValidateAttributesUtils.throwIfModelNull(customer, "Customer");
     Customer found = getCustomerById(id);
+    securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN");
+    ValidateAttributesUtils.throwIfModelNull(customer, "Customer");
     String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(customer.getEmail(), "Email in Customer");
     Country normalizedCountry = PathUtils.validateEnumOrThrow(
         Country.class, customer.getCountry().toString(), "Country");
@@ -143,6 +155,7 @@ public class CustomerService implements ICustomerUseCase {
   @Transactional
   public void softDeleteCustomer(UUID id) {
     Customer found = getCustomerById(id);
+    securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN");
     found.delete();
     customerAdapterPort.saveUpdateCustomer(found);
     log.info("[CUSTOMER_SERVICE][DELETED] Customer ID {} marked as deleted", id);
@@ -153,6 +166,7 @@ public class CustomerService implements ICustomerUseCase {
   @Transactional
   public Customer restoreCustomer(UUID id) {
     Customer found = getCustomerById(id);
+    securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN");
     found.restore();
     customerAdapterPort.saveUpdateCustomer(found);
     log.info("[CUSTOMER_SERVICE][RESTORED] Customer ID {} restored successfully", id);
@@ -162,8 +176,8 @@ public class CustomerService implements ICustomerUseCase {
 
   private void throwIfNotExistUser(Customer customer) {
     if (!userAdapterPort.existsUserById(customer.getUserId())) {
-      log.warn("[CUSTOMER_SERVICE][CREATED] User ID {} does not exist", customer.getUserId());
-      throw new ModelNotFoundException("There is no User ID to create a customer");
+      log.warn("[CUSTOMER_SERVICE][CREATED] User ID {} not found in database", customer.getUserId());
+      throw new ModelNotFoundException("User ID " + customer.getUserId() + " not found in database");
     }
   }
 }

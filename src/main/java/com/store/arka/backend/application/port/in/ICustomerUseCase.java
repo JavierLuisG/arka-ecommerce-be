@@ -11,6 +11,8 @@ public interface ICustomerUseCase {
 
   Customer getCustomerById(UUID id);
 
+  Customer getCustomerByIdSecure(UUID id);
+
   Customer getCustomerByUserId(UUID userId);
 
   Customer getCustomerByDocumentNumber(String number);

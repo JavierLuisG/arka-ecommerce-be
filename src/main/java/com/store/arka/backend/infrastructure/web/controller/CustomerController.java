@@ -37,7 +37,7 @@ public class CustomerController {
   @GetMapping("/{id}")
   public ResponseEntity<CustomerResponseDto> getCustomerById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerById(uuid)));
+    return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerByIdSecure(uuid)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
