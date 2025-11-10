@@ -29,8 +29,8 @@ public class DocumentService implements IDocumentUseCase {
     validateNumberExistence(document.getNumber(), null);
     Document created = Document.create(document.getType(), document.getNumber());
     Document saved = documentAdapterPort.saveDocument(created);
-    log.info("[DOCUMENT_SERVICE][CREATED] User(id={}) has created new Document(number={}), ID {}",
-        securityUtils.getCurrentUserId(), saved.getNumber(), saved.getId());
+    log.info("[DOCUMENT_SERVICE][CREATED] User(id={}) has created new Document(id={})",
+        securityUtils.getCurrentUserId(), saved.getId());
     return saved;
   }
 

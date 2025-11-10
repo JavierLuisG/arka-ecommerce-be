@@ -25,6 +25,4 @@ public interface INotificationUseCase {
   List<Notification> getAllNotificationsByTypeAndStatus(NotificationType type, NotificationStatus status);
 
   void markNotificationAsRead(UUID id);
-
-  boolean existsNotificationByOrderIdAndType(UUID orderId, NotificationType type);
 }

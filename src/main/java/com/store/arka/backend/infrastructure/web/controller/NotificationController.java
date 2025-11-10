@@ -42,7 +42,7 @@ public class NotificationController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping("/order/{orderId}")
   public ResponseEntity<List<NotificationResponseDto>> getAllNotificationsByOrderId(
       @PathVariable("orderId") String orderId) {
@@ -80,21 +80,11 @@ public class NotificationController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/mark-read")
   public ResponseEntity<MessageResponseDto> markNotificationAsRead(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     notificationUseCase.markNotificationAsRead(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Notification has been successfully marked as read"));
-  }
-
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
-  @GetMapping("/type/{type}/order/{orderId}/exists")
-  public ResponseEntity<Boolean> existsNotification(
-      @PathVariable("type") String type,
-      @PathVariable("orderId") String orderId) {
-    NotificationType typeEnum = PathUtils.validateEnumOrThrow(NotificationType.class, type, "NotificationType");
-    UUID orderUuid = PathUtils.validateAndParseUUID(orderId);
-    return ResponseEntity.ok(notificationUseCase.existsNotificationByOrderIdAndType(orderUuid, typeEnum));
   }
 }
