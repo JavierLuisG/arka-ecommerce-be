@@ -24,7 +24,7 @@ public class OrderItemController {
   private final OrderItemDtoMapper mapper;
 
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping("/{id}")
   public ResponseEntity<OrderItemResponseDto> getOrderItemById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
