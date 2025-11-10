@@ -11,6 +11,8 @@ public interface ICartUseCase {
 
   Cart getCartById(UUID id);
 
+  Cart getCartByIdSecure(UUID id);
+
   List<Cart> getAllCarts();
 
   List<Cart> getAllCartsByStatus(CartStatus status);

@@ -23,7 +23,7 @@ public class CartItemController {
   private final ICartItemUseCase cartItemUseCase;
   private final CartItemDtoMapper mapper;
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping("/{id}")
   public ResponseEntity<CartItemResponseDto> getCartItemById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);

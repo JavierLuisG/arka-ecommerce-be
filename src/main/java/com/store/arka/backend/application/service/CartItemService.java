@@ -4,8 +4,8 @@ import com.store.arka.backend.application.port.in.ICartItemUseCase;
 import com.store.arka.backend.application.port.in.IProductUseCase;
 import com.store.arka.backend.application.port.out.ICartItemAdapterPort;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
-import com.store.arka.backend.domain.exception.ModelNullException;
 import com.store.arka.backend.domain.model.CartItem;
+import com.store.arka.backend.shared.security.SecurityUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +21,7 @@ import java.util.UUID;
 public class CartItemService implements ICartItemUseCase {
   private final ICartItemAdapterPort cartItemAdapterPort;
   private final IProductUseCase productUseCase;
+  private final SecurityUtils securityUtils;
 
   @Override
   public CartItem addCartItem(UUID cartId, CartItem cartItem) {
@@ -28,7 +29,8 @@ public class CartItemService implements ICartItemUseCase {
     ValidateAttributesUtils.throwIfModelNull(cartItem, "CartItem");
     productUseCase.validateAvailabilityOrThrow(cartItem.getProductId(), cartItem.getQuantity());
     CartItem saved = cartItemAdapterPort.saveAddCartItem(cartId, cartItem);
-    log.info("[CART_ITEM_SERVICE][CREATED] Created new cartItem ID: {}", saved.getId());
+    log.info("[CART_ITEM_SERVICE][CREATED] User(id={}) has created new CartItem(id={})",
+        securityUtils.getCurrentUserId(), saved.getId());
     return saved;
   }
 
@@ -38,7 +40,7 @@ public class CartItemService implements ICartItemUseCase {
     ValidateAttributesUtils.throwIfIdNull(id, "CartItem ID");
     return cartItemAdapterPort.findCartItemById(id)
         .orElseThrow(() -> {
-          log.warn("[CART_ITEM_SERVICE][GET_BY_ID] CartItem ID {} not found", id);
+          log.warn("[CART_ITEM_SERVICE][GET_BY_ID] CartItem(id={}) not found", id);
           return new ModelNotFoundException("CartItem ID " + id + " not found");
         });
   }
@@ -46,7 +48,7 @@ public class CartItemService implements ICartItemUseCase {
   @Override
   @Transactional(readOnly = true)
   public List<CartItem> getAllCartItems() {
-    log.info("[CART_ITEM_SERVICE][GET_ALL] Fetching all cartItems");
+    log.info("[CART_ITEM_SERVICE][GET_ALL] Fetching all CartItems");
     return cartItemAdapterPort.findAllCartItems();
   }
 
@@ -54,7 +56,7 @@ public class CartItemService implements ICartItemUseCase {
   @Transactional(readOnly = true)
   public List<CartItem> getAllCartItemsByProductId(UUID productId) {
     ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in CartItem");
-    log.info("[CART_ITEM_SERVICE][GET_ALL_BY_PRODUCT] Fetching all cartItems with product {}", productId);
+    log.info("[CART_ITEM_SERVICE][GET_ALL_BY_PRODUCT] Fetching all CartItems with Product(id={})", productId);
     return cartItemAdapterPort.findAllCartItemsByProductId(productId);
   }
 
@@ -65,7 +67,8 @@ public class CartItemService implements ICartItemUseCase {
     found.addQuantity(quantity);
     productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
     CartItem saved = cartItemAdapterPort.saveUpdateCartItem(found);
-    log.info("[CART_ITEM_SERVICE][ADDED_QUANTITY] Add quantity {} in CARTItem ID {}", quantity, id);
+    log.info("[CART_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has added quantity {} in CartItem(id={})",
+        securityUtils.getCurrentUserId(), quantity, id);
     return saved;
   }
 
@@ -76,7 +79,8 @@ public class CartItemService implements ICartItemUseCase {
     found.updateQuantity(quantity);
     productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
     CartItem saved = cartItemAdapterPort.saveUpdateCartItem(found);
-    log.info("[CART_ITEM_SERVICE][ADDED_QUANTITY] Update quantity {} in CARTItem ID {}", quantity, id);
+    log.info("[CART_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has updated quantity {} in CartItem(id={})",
+        securityUtils.getCurrentUserId(), quantity, id);
     return saved;
   }
 }

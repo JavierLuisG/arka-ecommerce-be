@@ -37,7 +37,7 @@ public class CartController {
   @GetMapping("/{id}")
   public ResponseEntity<CartResponseDto> getCartById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(cartUseCase.getCartById(uuid)));
+    return ResponseEntity.ok(mapper.toDto(cartUseCase.getCartByIdSecure(uuid)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")

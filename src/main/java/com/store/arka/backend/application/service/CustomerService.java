@@ -50,16 +50,9 @@ public class CustomerService implements ICustomerUseCase {
         customer.getCountry()
     );
     Customer saved = customerAdapterPort.saveCreateCustomer(created);
-    log.info("[CUSTOMER_SERVICE][CREATED] User {} created new customer ID {}",
+    log.info("[CUSTOMER_SERVICE][CREATED] User(id={}) has created new Customer(id={})",
         securityUtils.getCurrentUserId(), saved.getId());
     return saved;
-  }
-
-  private void validateUserIdUniqueness(UUID userId) {
-    if (customerAdapterPort.existsCustomerByUserId(userId)) {
-      log.warn("[CUSTOMER_SERVICE][CREATED] User ID {} already exists for creating a customer", userId);
-      throw new FieldAlreadyExistsException("User ID " + userId + " already exists. Choose a different");
-    }
   }
 
   @Override
@@ -68,7 +61,7 @@ public class CustomerService implements ICustomerUseCase {
     ValidateAttributesUtils.throwIfIdNull(id, "Customer ID");
     return customerAdapterPort.findCustomerById(id)
         .orElseThrow(() -> {
-          log.warn("[CUSTOMER_SERVICE][GET_BY_ID] Customer ID {} not found", id);
+          log.warn("[CUSTOMER_SERVICE][GET_BY_ID] Customer(id={}) not found", id);
           return new ModelNotFoundException("Customer ID " + id + " not found");
         });
   }
@@ -87,7 +80,7 @@ public class CustomerService implements ICustomerUseCase {
     ValidateAttributesUtils.throwIfIdNull(userId, "User ID in Customer");
     Customer found = customerAdapterPort.findCustomerByUserId(userId)
         .orElseThrow(() -> {
-          log.warn("[CUSTOMER_SERVICE][GET_BY_USER] Customer with user ID {} not found", userId);
+          log.warn("[CUSTOMER_SERVICE][GET_BY_USER] Customer with User(id={}) not found", userId);
           return new ModelNotFoundException("Customer with user ID" + userId + " not found");
         });
     securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN", "MANAGER");
@@ -100,7 +93,7 @@ public class CustomerService implements ICustomerUseCase {
     String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(number, "Number");
     Customer found = customerAdapterPort.findCustomerByDocumentNumber(number)
         .orElseThrow(() -> {
-          log.warn("[CUSTOMER_SERVICE][GET_BY_NUMBER] Customer with document number {} not found", normalizedNumber);
+          log.warn("[CUSTOMER_SERVICE][GET_BY_NUMBER] Customer(number={}) not found", normalizedNumber);
           return new ModelNotFoundException("Customer with document number " + number + " not found");
         });
     securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN", "MANAGER");
@@ -117,7 +110,7 @@ public class CustomerService implements ICustomerUseCase {
   @Override
   @Transactional(readOnly = true)
   public List<Customer> getAllCustomersByStatus(CustomerStatus status) {
-    log.info("[CUSTOMER_SERVICE][GET_ALL_BY_STATUS] Fetching all customers with status {}", status);
+    log.info("[CUSTOMER_SERVICE][GET_ALL_BY_STATUS] Fetching all Customers with status=({})", status);
     return customerAdapterPort.findAllCustomersByStatus(status);
   }
 
@@ -138,7 +131,7 @@ public class CustomerService implements ICustomerUseCase {
         customer.getCountry()
     );
     Customer saved = customerAdapterPort.saveUpdateCustomer(found);
-    log.info("[CUSTOMER_SERVICE][UPDATED] User {} Updated customer ID {} ",
+    log.info("[CUSTOMER_SERVICE][UPDATED] User(id={}) has updated Customer(id={}) ",
         securityUtils.getCurrentUserId(), saved.getId());
     return saved;
   }
@@ -150,7 +143,7 @@ public class CustomerService implements ICustomerUseCase {
     securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN");
     found.delete();
     customerAdapterPort.saveUpdateCustomer(found);
-    log.info("[CUSTOMER_SERVICE][DELETED] User {} Customer ID {} marked as deleted",
+    log.info("[CUSTOMER_SERVICE][DELETED] User(id={}) has marked as deleted Customer(id={})",
         securityUtils.getCurrentUserId(), id);
     documentUseCase.softDeleteDocument(found.getDocument().getId());
   }
@@ -162,7 +155,7 @@ public class CustomerService implements ICustomerUseCase {
     securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN");
     found.restore();
     customerAdapterPort.saveUpdateCustomer(found);
-    log.info("[CUSTOMER_SERVICE][RESTORED] User {} Customer ID {} restored successfully",
+    log.info("[CUSTOMER_SERVICE][RESTORED] User(id={}) has restored Customer(id={}) successfully",
         securityUtils.getCurrentUserId(), id);
     documentUseCase.restoreDocument(found.getDocument().getId());
     return found;
@@ -170,8 +163,15 @@ public class CustomerService implements ICustomerUseCase {
 
   private void validateUserExistence(Customer customer) {
     if (!userAdapterPort.existsUserById(customer.getUserId())) {
-      log.warn("[CUSTOMER_SERVICE][CREATED] User ID {} not found in database", customer.getUserId());
+      log.warn("[CUSTOMER_SERVICE][CREATED] User(id={}) not found in database", customer.getUserId());
       throw new ModelNotFoundException("User ID " + customer.getUserId() + " not found in database");
+    }
+  }
+
+  private void validateUserIdUniqueness(UUID userId) {
+    if (customerAdapterPort.existsCustomerByUserId(userId)) {
+      log.warn("[CUSTOMER_SERVICE][CREATED] User(id={}) already exists for creating a Customer", userId);
+      throw new FieldAlreadyExistsException("User ID " + userId + " already exists. Choose a different");
     }
   }
 
@@ -179,11 +179,11 @@ public class CustomerService implements ICustomerUseCase {
     String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(newEmail, "Email in Customer");
     boolean exists = customerAdapterPort.existsCustomerByEmail(normalizedEmail);
     if (oldEmail == null && exists) {
-      log.warn("[CUSTOMER_SERVICE][CREATED] Email {} already exists for creating a customer", normalizedEmail);
+      log.warn("[CUSTOMER_SERVICE][CREATED] Email {} already exists for creating a Customer", normalizedEmail);
       throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
     }
     if (exists && !oldEmail.equals(normalizedEmail)) {
-      log.warn("[CUSTOMER_SERVICE][UPDATED] Email {} already exists for updating a customer", normalizedEmail);
+      log.warn("[CUSTOMER_SERVICE][UPDATED] Email {} already exists for updating a Customer", normalizedEmail);
       throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
     }
   }
