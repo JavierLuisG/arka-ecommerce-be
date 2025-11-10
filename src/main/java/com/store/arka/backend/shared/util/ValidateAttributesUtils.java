@@ -26,9 +26,11 @@ public final class ValidateAttributesUtils {
 
   public static void validateQuantity(Integer quantity) {
     if (quantity == null) {
+      log.warn("[VALIDATE_ATTRIBUTES][VALIDATED_QUANTITY] Quantity in null");
       throw new InvalidArgumentException("Quantity is required, cannot be null");
     }
     if (quantity <= 0) {
+      log.warn("[VALIDATE_ATTRIBUTES][VALIDATED_QUANTITY] Quantity lest or equal than 0");
       throw new QuantityBadRequestException("Quantity must be greater than 0");
     }
   }

@@ -26,7 +26,6 @@ public class Category {
   public static Category create(String name, String description) {
     String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(name, "Category Name");
     String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
-    ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
     return new Category(
         null,
         normalizedName,
@@ -40,7 +39,7 @@ public class Category {
   public void update(Category category) {
     if (isDeleted()) throw new ModelDeletionException("Category deleted previously");
     ValidateAttributesUtils.throwIfModelNull(category, "Category");
-    this.description = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
+    this.description = ValidateAttributesUtils.throwIfNullOrEmpty(category.getDescription(), "Description");
   }
 
   public void delete() {

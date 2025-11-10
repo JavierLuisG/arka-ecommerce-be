@@ -6,6 +6,7 @@ import com.store.arka.backend.domain.enums.CategoryStatus;
 import com.store.arka.backend.domain.exception.FieldAlreadyExistsException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.Category;
+import com.store.arka.backend.shared.security.SecurityUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,22 +21,26 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CategoryService implements ICategoryUseCase {
   private final ICategoryAdapterPort categoryAdapterPort;
+  private final SecurityUtils securityUtils;
 
   @Override
   @Transactional
   public Category createCategory(Category category) {
     ValidateAttributesUtils.throwIfModelNull(category, "Category");
-    String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(category.getName(), "Category Name");
-    String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(category.getDescription(), "Description");
-    if (categoryAdapterPort.existsCategoryByName(normalizedName)) {
-      log.warn("[CATEGORY_SERVICE][CREATED] Category name '{}' already exists", normalizedName);
-      throw new FieldAlreadyExistsException("Category with name " + normalizedName +
-          " already exists. Choose a different name");
-    }
-    Category created = Category.create(normalizedName, normalizedDescription);
+    validateCategoryNameExistence(category.getName());
+    Category created = Category.create(category.getName(), category.getDescription());
     Category saved = categoryAdapterPort.saveCategory(created);
-    log.info("[CATEGORY_SERVICE][CREATED] Created new category {}, ID {})", saved.getName(), saved.getId());
+    log.info("[CATEGORY_SERVICE][CREATED] User(id={}) has created new category(name={}) and (id={})",
+        securityUtils.getCurrentUserId(), saved.getName(), saved.getId());
     return saved;
+  }
+
+  private void validateCategoryNameExistence(String name) {
+    ValidateAttributesUtils.throwIfValueNotAllowed(name, "Category Name");
+    if (categoryAdapterPort.existsCategoryByName(name)) {
+      log.warn("[CATEGORY_SERVICE][CREATED] Category(name={}) already exists", name);
+      throw new FieldAlreadyExistsException("Category with name " + name + " already exists. Choose a different name");
+    }
   }
 
   @Override
@@ -44,7 +49,7 @@ public class CategoryService implements ICategoryUseCase {
     ValidateAttributesUtils.throwIfIdNull(id, "Category ID");
     return categoryAdapterPort.findCategoryById(id)
         .orElseThrow(() -> {
-          log.warn("[CATEGORY_SERVICE][GET_BY_ID] Category ID {} not found", id);
+          log.warn("[CATEGORY_SERVICE][GET_BY_ID] Category(id={}) not found", id);
           return new ModelNotFoundException("Category ID " + id + " not found");
         });
   }
@@ -55,7 +60,7 @@ public class CategoryService implements ICategoryUseCase {
     String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(name, "Category Name");
     return categoryAdapterPort.findCategoryByName(normalizedName)
         .orElseThrow(() -> {
-          log.warn("[CATEGORY_SERVICE][GET_BY_NAME] Category with name '{}' not found", normalizedName);
+          log.warn("[CATEGORY_SERVICE][GET_BY_NAME] Category(name={}) not found", normalizedName);
           return new ModelNotFoundException("Category with name " + normalizedName + " not found");
         });
   }
@@ -70,17 +75,18 @@ public class CategoryService implements ICategoryUseCase {
   @Override
   @Transactional(readOnly = true)
   public List<Category> getAllCategoriesByStatus(CategoryStatus status) {
-    log.info("[CATEGORY_SERVICE][GET_ALL_BY_STATUS] Fetching all categories with status {}", status);
+    log.info("[CATEGORY_SERVICE][GET_ALL_BY_STATUS] Fetching all categories with status=({})", status);
     return categoryAdapterPort.findAllCategoriesByStatus(status);
   }
 
   @Override
   @Transactional
-  public Category updateFieldsCategory(UUID id, Category category) {
+  public Category updateDescription(UUID id, Category category) {
     Category found = getCategoryById(id);
     found.update(category);
     Category saved = categoryAdapterPort.saveCategory(found);
-    log.info("[CATEGORY_SERVICE][UPDATED] Updated category ID {} with new description", saved.getId());
+    log.info("[CATEGORY_SERVICE][UPDATED] User(id={}) has updated category(id={}) with new description",
+        securityUtils.getCurrentUserId(), saved.getId());
     return saved;
   }
 
@@ -90,7 +96,8 @@ public class CategoryService implements ICategoryUseCase {
     Category found = getCategoryById(id);
     found.delete();
     categoryAdapterPort.saveCategory(found);
-    log.info("[CATEGORY_SERVICE][DELETED] Category ID {} marked as deleted", id);
+    log.info("[CATEGORY_SERVICE][DELETED] User(id={}) has marked as deleted Category(id={})",
+        securityUtils.getCurrentUserId(), id);
   }
 
   @Override
@@ -99,7 +106,8 @@ public class CategoryService implements ICategoryUseCase {
     Category found = getCategoryById(id);
     found.restore();
     Category restored = categoryAdapterPort.saveCategory(found);
-    log.info("[CATEGORY_SERVICE][RESTORED] Category ID {} restored successfully", id);
+    log.info("[CATEGORY_SERVICE][RESTORED] User(id={}) has restored Category(id={}) successfully",
+        securityUtils.getCurrentUserId(), id);
     return restored;
   }
 }

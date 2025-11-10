@@ -55,11 +55,11 @@ public class CategoryController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @PutMapping("/{id}")
-  public ResponseEntity<CategoryResponseDto> updateFieldsCategory(
+  public ResponseEntity<CategoryResponseDto> updateDescription(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdateCategoryDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(categoryUseCase.updateFieldsCategory(uuid, mapper.toDomain(dto))));
+    return ResponseEntity.ok(mapper.toDto(categoryUseCase.updateDescription(uuid, mapper.toDomain(dto))));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")

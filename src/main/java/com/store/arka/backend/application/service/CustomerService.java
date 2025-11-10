@@ -32,8 +32,7 @@ public class CustomerService implements ICustomerUseCase {
   @Transactional
   public Customer createCustomer(Customer customer) {
     ValidateAttributesUtils.throwIfModelNull(customer, "Customer");
-    ValidateAttributesUtils.throwIfIdNull(customer.getUserId(), "User ID in Customer");
-    validateUserExistence(customer);
+    validateUserExistence(customer.getUserId());
     ValidateAttributesUtils.throwIfModelNull(customer.getDocument(), "Document in Customer");
     validateUserIdUniqueness(customer.getUserId());
     validateEmailUniqueness(customer.getEmail(), null);
@@ -161,10 +160,11 @@ public class CustomerService implements ICustomerUseCase {
     return found;
   }
 
-  private void validateUserExistence(Customer customer) {
-    if (!userAdapterPort.existsUserById(customer.getUserId())) {
-      log.warn("[CUSTOMER_SERVICE][CREATED] User(id={}) not found in database", customer.getUserId());
-      throw new ModelNotFoundException("User ID " + customer.getUserId() + " not found in database");
+  private void validateUserExistence(UUID userId) {
+    ValidateAttributesUtils.throwIfIdNull(userId, "User ID in Customer");
+    if (!userAdapterPort.existsUserById(userId)) {
+      log.warn("[CUSTOMER_SERVICE][CREATED] User(id={}) not found in database", userId);
+      throw new ModelNotFoundException("User ID " + userId + " not found in database");
     }
   }
 

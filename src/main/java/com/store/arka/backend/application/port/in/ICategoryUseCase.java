@@ -17,7 +17,7 @@ public interface ICategoryUseCase {
 
   List<Category> getAllCategoriesByStatus(CategoryStatus status);
 
-  Category updateFieldsCategory(UUID id, Category category);
+  Category updateDescription(UUID id, Category category);
 
   void softDeleteCategory(UUID id);
 
