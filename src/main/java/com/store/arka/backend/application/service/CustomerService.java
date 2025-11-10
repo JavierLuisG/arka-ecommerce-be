@@ -4,14 +4,12 @@ import com.store.arka.backend.application.port.in.ICustomerUseCase;
 import com.store.arka.backend.application.port.in.IDocumentUseCase;
 import com.store.arka.backend.application.port.out.ICustomerAdapterPort;
 import com.store.arka.backend.application.port.out.IUserAdapterPort;
-import com.store.arka.backend.domain.enums.Country;
 import com.store.arka.backend.domain.enums.CustomerStatus;
 import com.store.arka.backend.domain.exception.FieldAlreadyExistsException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.Customer;
 import com.store.arka.backend.domain.model.Document;
 import com.store.arka.backend.shared.security.SecurityUtils;
-import com.store.arka.backend.shared.util.PathUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,34 +33,33 @@ public class CustomerService implements ICustomerUseCase {
   public Customer createCustomer(Customer customer) {
     ValidateAttributesUtils.throwIfModelNull(customer, "Customer");
     ValidateAttributesUtils.throwIfIdNull(customer.getUserId(), "User ID in Customer");
-    throwIfNotExistUser(customer);
+    validateUserExistence(customer);
     ValidateAttributesUtils.throwIfModelNull(customer.getDocument(), "Document in Customer");
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(customer.getEmail(), "Email in Customer");
-    Country normalizedCountry = PathUtils.validateEnumOrThrow(
-        Country.class, customer.getCountry().toString(), "Country");
-    if (customerAdapterPort.existsCustomerByUserId(customer.getUserId())) {
-      log.warn("[CUSTOMER_SERVICE][CREATED] User ID {} already exists for creating a customer", customer.getUserId());
-      throw new FieldAlreadyExistsException("User ID " + customer.getUserId() + " already exists. Choose a different");
-    }
-    if (customerAdapterPort.existsCustomerByEmail(normalizedEmail)) {
-      log.warn("[CUSTOMER_SERVICE][CREATED] Email {} already exists for creating a customer", normalizedEmail);
-      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
-    }
+    validateUserIdUniqueness(customer.getUserId());
+    validateEmailUniqueness(customer.getEmail(), null);
     Document documentCreated = documentUseCase.createDocument(customer.getDocument());
     Customer created = Customer.create(
         customer.getUserId(),
         documentCreated,
         customer.getFirstName(),
         customer.getLastName(),
-        normalizedEmail,
+        customer.getEmail(),
         customer.getPhone(),
         customer.getAddress(),
         customer.getCity(),
-        normalizedCountry
+        customer.getCountry()
     );
     Customer saved = customerAdapterPort.saveCreateCustomer(created);
-    log.info("[CUSTOMER_SERVICE][CREATED] Created new customer ID {}", saved.getId());
+    log.info("[CUSTOMER_SERVICE][CREATED] User {} created new customer ID {}",
+        securityUtils.getCurrentUserId(), saved.getId());
     return saved;
+  }
+
+  private void validateUserIdUniqueness(UUID userId) {
+    if (customerAdapterPort.existsCustomerByUserId(userId)) {
+      log.warn("[CUSTOMER_SERVICE][CREATED] User ID {} already exists for creating a customer", userId);
+      throw new FieldAlreadyExistsException("User ID " + userId + " already exists. Choose a different");
+    }
   }
 
   @Override
@@ -130,24 +127,19 @@ public class CustomerService implements ICustomerUseCase {
     Customer found = getCustomerById(id);
     securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN");
     ValidateAttributesUtils.throwIfModelNull(customer, "Customer");
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(customer.getEmail(), "Email in Customer");
-    Country normalizedCountry = PathUtils.validateEnumOrThrow(
-        Country.class, customer.getCountry().toString(), "Country");
-    if (customerAdapterPort.existsCustomerByEmail(normalizedEmail) && !found.getEmail().equals(normalizedEmail)) {
-      log.warn("[CUSTOMER_SERVICE][UPDATED] Email {} already exists for updating a customer", normalizedEmail);
-      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
-    }
+    validateEmailUniqueness(customer.getEmail(), found.getEmail());
     found.updateFields(
         customer.getFirstName(),
         customer.getLastName(),
-        normalizedEmail,
+        customer.getEmail(),
         customer.getPhone(),
         customer.getAddress(),
         customer.getCity(),
-        normalizedCountry
+        customer.getCountry()
     );
     Customer saved = customerAdapterPort.saveUpdateCustomer(found);
-    log.info("[CUSTOMER_SERVICE][UPDATED] Updated customer ID {} ", saved.getId());
+    log.info("[CUSTOMER_SERVICE][UPDATED] User {} Updated customer ID {} ",
+        securityUtils.getCurrentUserId(), saved.getId());
     return saved;
   }
 
@@ -158,7 +150,8 @@ public class CustomerService implements ICustomerUseCase {
     securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN");
     found.delete();
     customerAdapterPort.saveUpdateCustomer(found);
-    log.info("[CUSTOMER_SERVICE][DELETED] Customer ID {} marked as deleted", id);
+    log.info("[CUSTOMER_SERVICE][DELETED] User {} Customer ID {} marked as deleted",
+        securityUtils.getCurrentUserId(), id);
     documentUseCase.softDeleteDocument(found.getDocument().getId());
   }
 
@@ -169,15 +162,29 @@ public class CustomerService implements ICustomerUseCase {
     securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN");
     found.restore();
     customerAdapterPort.saveUpdateCustomer(found);
-    log.info("[CUSTOMER_SERVICE][RESTORED] Customer ID {} restored successfully", id);
+    log.info("[CUSTOMER_SERVICE][RESTORED] User {} Customer ID {} restored successfully",
+        securityUtils.getCurrentUserId(), id);
     documentUseCase.restoreDocument(found.getDocument().getId());
     return found;
   }
 
-  private void throwIfNotExistUser(Customer customer) {
+  private void validateUserExistence(Customer customer) {
     if (!userAdapterPort.existsUserById(customer.getUserId())) {
       log.warn("[CUSTOMER_SERVICE][CREATED] User ID {} not found in database", customer.getUserId());
       throw new ModelNotFoundException("User ID " + customer.getUserId() + " not found in database");
+    }
+  }
+
+  private void validateEmailUniqueness(String newEmail, String oldEmail) {
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(newEmail, "Email in Customer");
+    boolean exists = customerAdapterPort.existsCustomerByEmail(normalizedEmail);
+    if (oldEmail == null && exists) {
+      log.warn("[CUSTOMER_SERVICE][CREATED] Email {} already exists for creating a customer", normalizedEmail);
+      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
+    }
+    if (exists && !oldEmail.equals(normalizedEmail)) {
+      log.warn("[CUSTOMER_SERVICE][UPDATED] Email {} already exists for updating a customer", normalizedEmail);
+      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
     }
   }
 }

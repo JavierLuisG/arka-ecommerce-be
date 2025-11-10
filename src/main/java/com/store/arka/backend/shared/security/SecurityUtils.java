@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Component
 public class SecurityUtils {
-  public UUID getAuthenticatedUserId() {
+  public UUID getCurrentUserId() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     if (auth == null || !auth.isAuthenticated()) return null;
     Object principal = auth.getPrincipal();
@@ -42,7 +42,7 @@ public class SecurityUtils {
   }
 
   public boolean isOwner(UUID ownerId) {
-    UUID authId = getAuthenticatedUserId();
+    UUID authId = getCurrentUserId();
     return authId != null && authId.equals(ownerId);
   }
 

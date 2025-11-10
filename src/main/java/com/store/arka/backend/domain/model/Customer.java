@@ -37,11 +37,11 @@ public class Customer {
     ValidateAttributesUtils.throwIfModelNull(document, "Document in Customer");
     String normalizedFirstName = ValidateAttributesUtils.throwIfValueNotAllowed(firstName, "First name");
     String normalizedLastName = ValidateAttributesUtils.throwIfValueNotAllowed(lastName, "Last name");
-    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email");
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
     String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
     String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
     String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
-    ValidateAttributesUtils.throwIfModelNull(country.toString(), "Country in Customer");
+    ValidateAttributesUtils.throwIfModelNull(country, "Country in Customer");
     return new Customer(
         null,
         userId,
@@ -64,7 +64,7 @@ public class Customer {
     throwIfDeleted();
     String normalizedFirstName = ValidateAttributesUtils.throwIfValueNotAllowed(firstName, "First name");
     String normalizedLastName = ValidateAttributesUtils.throwIfValueNotAllowed(lastName, "Last name");
-    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email");
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
     String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
     String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
     String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
