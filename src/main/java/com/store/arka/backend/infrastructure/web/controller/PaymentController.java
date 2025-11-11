@@ -35,7 +35,7 @@ public class PaymentController {
   @GetMapping("/{id}")
   public ResponseEntity<PaymentResponseDto> getPaymentById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(paymentUseCase.getPaymentById(uuid)));
+    return ResponseEntity.ok(mapper.toDto(paymentUseCase.getPaymentByIdSecure(uuid)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
@@ -56,31 +56,24 @@ public class PaymentController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/confirm")
-  public ResponseEntity<PaymentResponseDto> confirmPaymentById(@PathVariable("id") String id) {
+  public ResponseEntity<PaymentResponseDto> confirmPayment(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(paymentUseCase.confirmPaymentById(uuid)));
+    return ResponseEntity.ok(mapper.toDto(paymentUseCase.confirmPayment(uuid)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/change-method")
-  public ResponseEntity<PaymentResponseDto> changePaymentMethodById(
+  public ResponseEntity<PaymentResponseDto> changePaymentMethod(
       @PathVariable("id") String id,
       @RequestBody @Valid UpdatePaymentMethodDto methodDto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(paymentUseCase.changePaymentMethodById(uuid, methodDto.method())));
+    return ResponseEntity.ok(mapper.toDto(paymentUseCase.changePaymentMethod(uuid, methodDto.method())));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/pay-again")
-  public ResponseEntity<PaymentResponseDto> payAgainById(@PathVariable("id") String id) {
+  public ResponseEntity<PaymentResponseDto> payAgain(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(paymentUseCase.payAgainById(uuid)));
-  }
-
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-  @GetMapping("/order/{orderId}/exists")
-  public ResponseEntity<Boolean> existsPaymentByOrderId(@PathVariable("orderId") String orderId) {
-    UUID orderUuid = PathUtils.validateAndParseUUID(orderId);
-    return ResponseEntity.ok(paymentUseCase.existsPaymentByOrderId(orderUuid));
+    return ResponseEntity.ok(mapper.toDto(paymentUseCase.payAgain(uuid)));
   }
 }

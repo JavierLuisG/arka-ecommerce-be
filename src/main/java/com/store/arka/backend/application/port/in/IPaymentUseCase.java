@@ -11,15 +11,15 @@ public interface IPaymentUseCase {
 
   Payment getPaymentById(UUID id);
 
+  Payment getPaymentByIdSecure(UUID id);
+
   Payment getPaymentByOrderId(UUID orderId);
 
   List<Payment> getAllPaymentsByFilters(String method, String status);
 
-  Payment confirmPaymentById(UUID id);
+  Payment confirmPayment(UUID id);
 
-  Payment changePaymentMethodById(UUID id, PaymentMethod method);
+  Payment changePaymentMethod(UUID id, PaymentMethod method);
 
-  Payment payAgainById(UUID id);
-
-  boolean existsPaymentByOrderId(UUID orderId);
+  Payment payAgain(UUID id);
 }
