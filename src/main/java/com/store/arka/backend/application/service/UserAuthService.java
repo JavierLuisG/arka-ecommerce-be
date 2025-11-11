@@ -28,25 +28,17 @@ public class UserAuthService implements IUserAuthUseCase {
   @Transactional
   public String register(User user) {
     ValidateAttributesUtils.throwIfModelNull(user, "User");
-    String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(user.getUserName(), "UserName in register");
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(user.getEmail(), "Email in register");
-    if (userAdapterPort.existUserByUserName(normalizedUserName)) {
-      log.warn("[USER_AUTH_SERVICE][REGISTER] Username {} already exists for register a user", normalizedUserName);
-      throw new FieldAlreadyExistsException("Username " + user.getUserName() + " is already taken");
-    }
-    if (userAdapterPort.existUserByEmail(normalizedEmail)) {
-      log.warn("[USER_AUTH_SERVICE][REGISTER] Email {} already exists for register a user", normalizedEmail);
-      throw new FieldAlreadyExistsException("Email " + user.getEmail() + " is already registered");
-    }
-    // crear y guardar el usuario con contraseña encriptada
+    validateUserNameExistence(user.getUserName());
+    validateEmailExistence(user.getEmail());
+    // encriptar contraseña
     String encodedPassword = passwordEncoder.encode(user.getPassword());
-    User created = User.create(normalizedUserName, normalizedEmail, encodedPassword);
+    User created = User.create(user.getUserName(), user.getEmail(), encodedPassword);
     User saved = userAdapterPort.saveCreateUser(created);
-    log.info("[USER_AUTH_SERVICE][REGISTER] Created new user ID {}", saved.getId());
+    log.info("[USER_AUTH_SERVICE][REGISTER] Created new User(id={})", saved.getId());
     // generar el token JWT
     UserDetailsImpl userDetails = new UserDetailsImpl(saved);
     String token = jwtService.generateToken(userDetails);
-    log.info("[USER_AUTH_SERVICE][REGISTER] Generated token for user registered ID {}", saved.getId());
+    log.info("[USER_AUTH_SERVICE][REGISTER] Generated token for User(id={}) registered", saved.getId());
     return token;
   }
 
@@ -57,17 +49,36 @@ public class UserAuthService implements IUserAuthUseCase {
     String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(user.getEmail(), "Email in register");
     // Autenticar usando email y contraseña
     authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(normalizedEmail, user.getPassword()));
-    // Obtener el usuario desde base de datos
-    User found = userAdapterPort.findUserByEmail(normalizedEmail)
-        .orElseThrow(() -> {
-          log.warn("[USER_AUTH_SERVICE][LOGIN] User with email {} not found", normalizedEmail);
-          return new com.store.arka.backend.domain.exception.UserNotFoundException(
-              "User with email " + normalizedEmail + " not found");
-        });
+    User found = getUser(normalizedEmail);
     // Generar token JWT
     UserDetailsImpl userDetails = new UserDetailsImpl(found);
     String token = jwtService.generateToken(userDetails);
-    log.info("[USER_AUTH_SERVICE][LOGIN] Generated token for user logged in ID {}", found.getId());
+    log.info("[USER_AUTH_SERVICE][LOGIN] Generated token for User(id={}) logged in", found.getId());
     return token;
+  }
+
+  private User getUser(String normalizedEmail) {
+    return userAdapterPort.findUserByEmail(normalizedEmail)
+        .orElseThrow(() -> {
+          log.warn("[USER_AUTH_SERVICE][LOGIN] User(email={}) not found", normalizedEmail);
+          return new com.store.arka.backend.domain.exception.UserNotFoundException(
+              "User with email " + normalizedEmail + " not found");
+        });
+  }
+
+  private void validateEmailExistence(String email) {
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email in register");
+    if (userAdapterPort.existUserByEmail(normalizedEmail)) {
+      log.warn("[USER_AUTH_SERVICE][REGISTER] Email {} already exists for register a user", normalizedEmail);
+      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " is already registered");
+    }
+  }
+
+  private void validateUserNameExistence(String userName) {
+    String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName in register");
+    if (userAdapterPort.existUserByUserName(normalizedUserName)) {
+      log.warn("[USER_AUTH_SERVICE][REGISTER] Username={} already exists for register a User", normalizedUserName);
+      throw new FieldAlreadyExistsException("Username " + normalizedUserName + " is already taken");
+    }
   }
 }

@@ -29,7 +29,7 @@ public class UserController {
   @GetMapping("/{id}")
   public ResponseEntity<UserResponseDto> getUserById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(userUseCase.getUserById(uuid)));
+    return ResponseEntity.ok(mapper.toDto(userUseCase.getUserByIdSecure(uuid)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PURCHASES', 'CUSTOMER')")
@@ -53,7 +53,7 @@ public class UserController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/username")
   public ResponseEntity<UserResponseDto> updateUserName(
       @PathVariable("id") String id,
@@ -62,7 +62,7 @@ public class UserController {
     return ResponseEntity.ok(mapper.toDto(userUseCase.updateUserName(uuid, dto.userName())));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/email")
   public ResponseEntity<UserResponseDto> updateEmail(
       @PathVariable("id") String id,
@@ -71,7 +71,7 @@ public class UserController {
     return ResponseEntity.ok(mapper.toDto(userUseCase.updateEmail(uuid, dto.email())));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PutMapping("/{id}/password")
   public ResponseEntity<UserResponseDto> updatePassword(
       @PathVariable("id") String id,
@@ -80,7 +80,7 @@ public class UserController {
     return ResponseEntity.ok(mapper.toDto(userUseCase.updatePassword(uuid, dto.password())));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @DeleteMapping("/{id}")
   public ResponseEntity<MessageResponseDto> softDeleteUser(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
@@ -88,22 +88,10 @@ public class UserController {
     return ResponseEntity.ok(new MessageResponseDto("User has been successfully deleted with ID " + id));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','CUSTOMER')")
+  @PreAuthorize("hasAnyRole('ADMIN')")
   @PutMapping("/{id}/restore")
   public ResponseEntity<UserResponseDto> restoreUser(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     return ResponseEntity.ok(mapper.toDto(userUseCase.restoreUser(uuid)));
-  }
-
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-  @GetMapping("/username/{userName}/exists")
-  public ResponseEntity<Boolean> existsUserByUserName(@PathVariable("userName") String userName) {
-    return ResponseEntity.ok(userUseCase.existUserByUserName(userName));
-  }
-
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-  @GetMapping("/email/{email}/exists")
-  public ResponseEntity<Boolean> existsUserByEmail(@PathVariable("email") String email) {
-    return ResponseEntity.ok(userUseCase.existUserByEmail(email));
   }
 }

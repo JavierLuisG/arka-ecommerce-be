@@ -2,7 +2,6 @@ package com.store.arka.backend.domain.model;
 
 import com.store.arka.backend.domain.enums.UserRole;
 import com.store.arka.backend.domain.enums.UserStatus;
-import com.store.arka.backend.domain.exception.InvalidArgumentException;
 import com.store.arka.backend.domain.exception.InvalidStateException;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.AllArgsConstructor;
@@ -28,7 +27,7 @@ public class User {
 
   public static User create(String userName, String email, String password) {
     String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
-    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email");
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
     String normalizedPassword = ValidateAttributesUtils.throwIfNullOrEmpty(password, "Password");
     return new User(
         null,
@@ -43,13 +42,13 @@ public class User {
   }
 
   public void updateUserName(String userName) {
-    ValidateAttributesUtils.throwIfNullOrEmpty(userName, "UserName");
+    ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
     throwIfDisabled();
     this.userName = userName;
   }
 
   public void updateEmail(String email) {
-    ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email in User");
+    ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email in User");
     throwIfDisabled();
     this.email = email;
   }
@@ -61,12 +60,12 @@ public class User {
   }
 
   public void delete() {
-    if (isDisabled()) throw new InvalidStateException("User must be ACTIVE to be disabled");
+    if (!isActive()) throw new InvalidStateException("User must be ACTIVE to be disabled");
     this.status = UserStatus.DISABLED;
   }
 
   public void restore() {
-    if (isActive()) throw new InvalidStateException("User must be DISABLED to be restored");
+    if (!isDisabled()) throw new InvalidStateException("User must be DISABLED to be restored");
     this.status = UserStatus.ACTIVE;
   }
 

@@ -1,7 +1,5 @@
 package com.store.arka.backend.application.port.in;
 
-import com.store.arka.backend.domain.enums.UserRole;
-import com.store.arka.backend.domain.enums.UserStatus;
 import com.store.arka.backend.domain.model.User;
 
 import java.util.List;
@@ -9,6 +7,8 @@ import java.util.UUID;
 
 public interface IUserUseCase {
   User getUserById(UUID id);
+
+  User getUserByIdSecure(UUID id);
 
   User getUserByUserName(String userName);
 
@@ -25,8 +25,4 @@ public interface IUserUseCase {
   void softDeleteUser(UUID id);
 
   User restoreUser(UUID id);
-
-  boolean existUserByUserName(String userName);
-
-  boolean existUserByEmail(String email);
 }
