@@ -38,12 +38,12 @@ public class Supplier {
                                 String address, String city, Country country) {
     String normalizedCommercialName = ValidateAttributesUtils.throwIfValueNotAllowed(commercialName, "Commercial name");
     String normalizedContactName = ValidateAttributesUtils.throwIfValueNotAllowed(contactName, "Contact name");
-    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email");
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
     String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
-    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(taxId, "Tax id");
+    String normalizedTaxId = ValidateAttributesUtils.throwIfValueNotAllowed(taxId, "Tax id");
     String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
     String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
-    ValidateAttributesUtils.throwIfModelNull(country.toString(), "Country in Customer");
+    ValidateAttributesUtils.throwIfModelNull(country, "Country in Supplier");
     return new Supplier(
         null,
         normalizedCommercialName,
@@ -66,12 +66,12 @@ public class Supplier {
     throwIfDeleted();
     String normalizedCommercialName = ValidateAttributesUtils.throwIfValueNotAllowed(commercialName, "Commercial name");
     String normalizedContactName = ValidateAttributesUtils.throwIfValueNotAllowed(contactName, "Contact name");
-    String normalizedEmail = ValidateAttributesUtils.throwIfNullOrEmpty(email, "Email");
+    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
     String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
-    String normalizedTaxId = ValidateAttributesUtils.throwIfNullOrEmpty(taxId, "Tax id");
+    String normalizedTaxId = ValidateAttributesUtils.throwIfValueNotAllowed(taxId, "Tax id");
     String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
     String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
-    ValidateAttributesUtils.throwIfModelNull(country.toString(), "Country in Customer");
+    ValidateAttributesUtils.throwIfModelNull(country, "Country in Supplier");
     this.commercialName = normalizedCommercialName;
     this.contactName = normalizedContactName;
     this.email = normalizedEmail;

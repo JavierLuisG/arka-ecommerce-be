@@ -216,7 +216,8 @@ public class PurchaseService implements IPurchaseUseCase {
         .filter(item -> item.getProductId().equals(productId))
         .findFirst()
         .orElseThrow(() -> {
-          log.warn("[PURCHASE_SERVICE][FOUND_ITEM] Product ID {} not found in purchase {}", productId, purchaseFound.getId());
+          log.warn("[PURCHASE_SERVICE][FOUND_ITEM] Product ID {} not found in purchase {}",
+              productId, purchaseFound.getId());
           return new ProductNotFoundInOperationException("Product " + productId + " not found in Purchase " + purchaseFound.getId());
         });
   }

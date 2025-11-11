@@ -2,6 +2,7 @@ package com.store.arka.backend.infrastructure.web.controller;
 
 import com.store.arka.backend.application.port.in.ISupplierUseCase;
 import com.store.arka.backend.domain.enums.SupplierStatus;
+import com.store.arka.backend.domain.model.Supplier;
 import com.store.arka.backend.infrastructure.web.dto.MessageResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.supplier.request.SupplierDto;
 import com.store.arka.backend.infrastructure.web.dto.supplier.response.SupplierResponseDto;
@@ -25,7 +26,7 @@ public class SupplierController {
   private final ISupplierUseCase supplierUseCase;
   private final SupplierDtoMapper mapper;
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @PostMapping
   public ResponseEntity<SupplierResponseDto> postSupplier(@RequestBody @Valid SupplierDto dto) {
     return ResponseEntity.status(HttpStatus.CREATED)
@@ -55,12 +56,12 @@ public class SupplierController {
   @GetMapping
   public ResponseEntity<List<SupplierResponseDto>> getAllSuppliers(
       @RequestParam(required = false) String status) {
-    if (status == null) {
-      return ResponseEntity.ok(supplierUseCase.getAllSuppliers().stream().map(mapper::toDto).collect(Collectors.toList()));
-    }
-    SupplierStatus statusEnum = PathUtils.validateEnumOrThrow(SupplierStatus.class, status, "SupplierStatus");
-    return ResponseEntity.ok(supplierUseCase.getAllSuppliersByStatus(statusEnum)
-        .stream().map(mapper::toDto).collect(Collectors.toList()));
+    List<Supplier> suppliers = (status == null)
+        ? supplierUseCase.getAllSuppliers()
+        : supplierUseCase.getAllSuppliersByStatus(
+        PathUtils.validateEnumOrThrow(SupplierStatus.class, status, "SupplierStatus")
+    );
+    return ResponseEntity.ok(suppliers.stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
@@ -72,7 +73,7 @@ public class SupplierController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @PutMapping("/{id}")
   public ResponseEntity<SupplierResponseDto> updateSupplier(
       @PathVariable("id") String id,
@@ -81,7 +82,7 @@ public class SupplierController {
     return ResponseEntity.ok(mapper.toDto(supplierUseCase.updateFieldsSupplier(uuid, mapper.toDomain(dto))));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @PutMapping("/{id}/product/{productId}/add")
   public ResponseEntity<SupplierResponseDto> addProduct(
       @PathVariable("id") String id,
@@ -91,7 +92,7 @@ public class SupplierController {
     return ResponseEntity.ok(mapper.toDto(supplierUseCase.addProduct(uuid, productUuid)));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @PutMapping("/{id}/product/{productId}/remove")
   public ResponseEntity<SupplierResponseDto> removeProduct(
       @PathVariable("id") String id,
@@ -101,7 +102,7 @@ public class SupplierController {
     return ResponseEntity.ok(mapper.toDto(supplierUseCase.removeProduct(uuid, productUuid)));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @DeleteMapping("/{id}")
   public ResponseEntity<MessageResponseDto> softDeleteSupplier(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
@@ -109,7 +110,7 @@ public class SupplierController {
     return ResponseEntity.ok(new MessageResponseDto("Supplier with ID " + id + " eliminated successfully"));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @PutMapping("/{id}/restore")
   public ResponseEntity<SupplierResponseDto> restoreSupplier(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);

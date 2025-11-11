@@ -256,7 +256,7 @@ public class OrderService implements IOrderUseCase {
     return product;
   }
 
-  private static OrderItem findOrderItemOrThrow(UUID productId, Order orderFound) {
+  private OrderItem findOrderItemOrThrow(UUID productId, Order orderFound) {
     ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Order");
     return orderFound.getItems()
         .stream()
@@ -269,7 +269,7 @@ public class OrderService implements IOrderUseCase {
         });
   }
 
-  private static void validateItemsContent(Cart cartFound) {
+  private void validateItemsContent(Cart cartFound) {
     if (cartFound.getItems().isEmpty()) {
       log.warn("[ORDER_SERVICE][CREATED] CartItems in Cart(id={}) are empty", cartFound.getId());
       throw new ItemsEmptyException("Cart items in Order cannot be empty");

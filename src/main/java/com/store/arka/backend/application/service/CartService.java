@@ -205,7 +205,7 @@ public class CartService implements ICartUseCase {
     return product;
   }
 
-  private static CartItem findCartItemInCartOrThrow(UUID productId, Cart cartFound) {
+  private CartItem findCartItemInCartOrThrow(UUID productId, Cart cartFound) {
     return cartFound.getItems()
         .stream()
         .filter(item -> item.getProductId().equals(productId))
