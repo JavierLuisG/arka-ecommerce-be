@@ -28,7 +28,7 @@ public class OrderController {
   @GetMapping("/{id}")
   public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(orderUseCase.getOrderById(uuid)));
+    return ResponseEntity.ok(mapper.toDto(orderUseCase.getOrderByIdSecure(uuid)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -42,7 +42,7 @@ public class OrderController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   @GetMapping("/customer/{customerId}")
   public ResponseEntity<List<OrderResponseDto>> getAllOrdersByCustomerId(@PathVariable("customerId") String customerId) {
     UUID customerUuid = PathUtils.validateAndParseUUID(customerId);

@@ -11,6 +11,8 @@ public interface IOrderUseCase {
 
   Order getOrderById(UUID id);
 
+  Order getOrderByIdSecure(UUID id);
+
   List<Order> getAllOrders();
 
   List<Order> getAllOrdersByStatus(OrderStatus status);

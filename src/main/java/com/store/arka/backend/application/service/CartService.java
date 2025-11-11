@@ -89,7 +89,7 @@ public class CartService implements ICartUseCase {
   @Transactional(readOnly = true)
   public List<Cart> getAllCartsByItemsProductId(UUID productId) {
     findProductOrThrow(productId);
-    log.info("[CART_SERVICE][GET_ALL_BY_PRODUCT] Fetching all Carts with product(id={})", productId);
+    log.info("[CART_SERVICE][GET_ALL_BY_PRODUCT] Fetching all Carts with Product(id={})", productId);
     return cartAdapterPort.findAllCartsByItemsProductId(productId);
   }
 
@@ -105,7 +105,7 @@ public class CartService implements ICartUseCase {
       CartItem cartItem = findCartItemInCartOrThrow(productId, cartFound);
       CartItem saved = cartItemUseCase.addQuantityById(cartItem.getId(), quantity);
       log.info("[CART_SERVICE][ADDED_ITEM] User(id={}) has added quantity {} in CartItem(id={})",
-          securityUtils.getCurrentUserId(), quantity, cartItem.getId());
+          securityUtils.getCurrentUserId(), quantity, saved.getId());
     } else {
       CartItem saved = cartItemUseCase.addCartItem(cartFound.getId(), CartItem.create(productFound, quantity));
       log.info("[CART_SERVICE][ADDED_ITEM] User(id={}) has created new CartItem(id={}) whit Product(id={}) in cart(id={})",
