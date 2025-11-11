@@ -38,7 +38,7 @@ public class OrderService implements IOrderUseCase {
     Customer customerFound = findCustomerOrThrow(cartFound.getCustomer().getId());
     List<OrderItem> orderItems = new ArrayList<>();
     cartFound.getItems().forEach(cartItem -> {
-      productUseCase.validateAvailabilityOrThrow(cartItem.getProductId(), cartItem.getQuantity());
+      productUseCase.validateAvailability(cartItem.getProductId(), cartItem.getQuantity());
       orderItems.add(OrderItem.create(cartItem.getProduct(), cartItem.getQuantity()));
     });
     Order created = Order.create(cartId, customerFound, orderItems);
@@ -131,7 +131,7 @@ public class OrderService implements IOrderUseCase {
   public Order updateOrderItemQuantityById(UUID id, UUID productId, Integer quantity) {
     Order orderFound = getOrderById(id);
     securityUtils.requireOwnerOrRoles(orderFound.getCustomer().getUserId(), "ADMIN");
-    productUseCase.validateAvailabilityOrThrow(productId, quantity);
+    productUseCase.validateAvailability(productId, quantity);
     Product productFound = findProductOrThrow(productId);
     orderFound.ensureOrderIsModifiable();
     if (!orderFound.containsProduct(productFound.getId())) {

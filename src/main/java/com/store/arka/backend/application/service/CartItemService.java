@@ -27,7 +27,7 @@ public class CartItemService implements ICartItemUseCase {
   public CartItem addCartItem(UUID cartId, CartItem cartItem) {
     ValidateAttributesUtils.throwIfIdNull(cartId, "Cart ID in CartItem");
     ValidateAttributesUtils.throwIfModelNull(cartItem, "CartItem");
-    productUseCase.validateAvailabilityOrThrow(cartItem.getProductId(), cartItem.getQuantity());
+    productUseCase.validateAvailability(cartItem.getProductId(), cartItem.getQuantity());
     CartItem saved = cartItemAdapterPort.saveAddCartItem(cartId, cartItem);
     log.info("[CART_ITEM_SERVICE][CREATED] User(id={}) has created new CartItem(id={})",
         securityUtils.getCurrentUserId(), saved.getId());
@@ -65,7 +65,7 @@ public class CartItemService implements ICartItemUseCase {
     ValidateAttributesUtils.validateQuantity(quantity);
     CartItem found = getCartItemById(id);
     found.addQuantity(quantity);
-    productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
+    productUseCase.validateAvailability(found.getProductId(), found.getQuantity());
     CartItem saved = cartItemAdapterPort.saveUpdateCartItem(found);
     log.info("[CART_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has added quantity {} in CartItem(id={})",
         securityUtils.getCurrentUserId(), quantity, id);
@@ -77,7 +77,7 @@ public class CartItemService implements ICartItemUseCase {
     ValidateAttributesUtils.validateQuantity(quantity);
     CartItem found = getCartItemById(id);
     found.updateQuantity(quantity);
-    productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
+    productUseCase.validateAvailability(found.getProductId(), found.getQuantity());
     CartItem saved = cartItemAdapterPort.saveUpdateCartItem(found);
     log.info("[CART_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has updated quantity {} in CartItem(id={})",
         securityUtils.getCurrentUserId(), quantity, id);

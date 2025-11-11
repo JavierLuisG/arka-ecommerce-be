@@ -27,7 +27,7 @@ public class OrderItemService implements IOrderItemUseCase {
   public OrderItem addOrderItem(UUID orderId, OrderItem orderItem) {
     ValidateAttributesUtils.throwIfIdNull(orderId, "Order ID in OrderItem");
     ValidateAttributesUtils.throwIfModelNull(orderItem, "OrderItem");
-    productUseCase.validateAvailabilityOrThrow(orderItem.getProductId(), orderItem.getQuantity());
+    productUseCase.validateAvailability(orderItem.getProductId(), orderItem.getQuantity());
     OrderItem saved = orderItemAdapterPort.saveAddOrderItem(orderId, orderItem);
     log.info("[ORDER_ITEM_SERVICE][CREATED] User(id={}) has created new OrderItem(id={})",
         securityUtils.getCurrentUserId(), saved.getId());
@@ -65,7 +65,7 @@ public class OrderItemService implements IOrderItemUseCase {
     ValidateAttributesUtils.validateQuantity(quantity);
     OrderItem found = getOrderItemById(id);
     found.addQuantity(quantity);
-    productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
+    productUseCase.validateAvailability(found.getProductId(), found.getQuantity());
     OrderItem saved = orderItemAdapterPort.saveUpdateOrderItem(found);
     log.info("[ORDER_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has added quantity {} in OrderItem(id={})",
         securityUtils.getCurrentUserId(), quantity, id);
@@ -77,7 +77,7 @@ public class OrderItemService implements IOrderItemUseCase {
     ValidateAttributesUtils.validateQuantity(quantity);
     OrderItem found = getOrderItemById(id);
     found.updateQuantity(quantity);
-    productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
+    productUseCase.validateAvailability(found.getProductId(), found.getQuantity());
     OrderItem saved = orderItemAdapterPort.saveUpdateOrderItem(found);
     log.info("[ORDER_ITEM_SERVICE][UPDATED_QUANTITY] User(id={}) has updated quantity {} in OrderItem(id={})",
         securityUtils.getCurrentUserId(), quantity, id);

@@ -29,9 +29,9 @@ public class Product {
   private LocalDateTime updatedAt;
 
   public static Product create(String sku, String name, String description, BigDecimal price, Integer stock) {
+    String normalizedSku = ValidateAttributesUtils.throwIfNullOrEmpty(sku, "SKU");
     String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(name, "Product Name");
     String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
-    String normalizedSku = ValidateAttributesUtils.throwIfNullOrEmpty(sku, "SKU");
     validatePrice(price);
     ProductStatus assignStatus = ProductStatus.ACTIVE;
     if (!validateStock(stock)) assignStatus = ProductStatus.EXHAUSTED;

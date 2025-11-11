@@ -59,6 +59,7 @@ public class ProductController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
+  @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping("/{id}/availability")
   public ResponseEntity<CheckProductResponseDto> checkAvailability(
       @PathVariable("id") String id,

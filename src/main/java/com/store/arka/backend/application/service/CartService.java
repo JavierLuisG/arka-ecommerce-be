@@ -122,7 +122,7 @@ public class CartService implements ICartUseCase {
   public Cart updateCartItemQuantity(UUID id, UUID productId, Integer quantity) {
     Cart cartFound = getCartById(id);
     securityUtils.requireOwnerOrRoles(cartFound.getCustomer().getUserId(), "ADMIN");
-    productUseCase.validateAvailabilityOrThrow(productId, quantity);
+    productUseCase.validateAvailability(productId, quantity);
     Product productFound = findProductOrThrow(productId);
     cartFound.ensureCartIsModifiable();
     if (!cartFound.containsProduct(productFound.getId())) {

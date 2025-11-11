@@ -25,7 +25,7 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
   public PurchaseItem addPurchaseItem(UUID purchaseId, PurchaseItem purchaseItem) {
     ValidateAttributesUtils.throwIfIdNull(purchaseId, "Purchase ID in PurchaseItem");
     ValidateAttributesUtils.throwIfModelNull(purchaseItem, "PurchaseItem");
-    productUseCase.validateAvailabilityOrThrow(purchaseItem.getProductId(), purchaseItem.getQuantity());
+    productUseCase.validateAvailability(purchaseItem.getProductId(), purchaseItem.getQuantity());
     PurchaseItem saved = purchaseItemAdapterPort.saveAddPurchaseItem(purchaseId, purchaseItem);
     log.info("[PURCHASE_ITEM_SERVICE][CREATED] Created new purchaseItem ID: {}", saved.getId());
     return saved;
@@ -62,7 +62,7 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
     ValidateAttributesUtils.validateQuantity(quantity);
     PurchaseItem found = getPurchaseItemById(id);
     found.addQuantity(quantity);
-    productUseCase.validateAvailabilityOrThrow(found.getProductId(), found.getQuantity());
+    productUseCase.validateAvailability(found.getProductId(), found.getQuantity());
     PurchaseItem saved = purchaseItemAdapterPort.saveUpdatePurchaseItem(found);
     log.info("[PURCHASE_ITEM_SERVICE][ADDED_QUANTITY] Add quantity {} in purchaseItem ID {}", quantity, id);
     return saved;

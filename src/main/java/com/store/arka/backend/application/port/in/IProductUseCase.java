@@ -30,5 +30,5 @@ public interface IProductUseCase {
 
   Product restoreProduct(UUID id);
 
-  void validateAvailabilityOrThrow(UUID id, Integer quantity);
+  void validateAvailability(UUID id, Integer quantity);
 }

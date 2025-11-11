@@ -114,7 +114,7 @@ public class PurchaseService implements IPurchaseUseCase {
   @Override
   @Transactional
   public Purchase updatePurchaseItemQuantity(UUID id, UUID productId, Integer quantity) {
-    productUseCase.validateAvailabilityOrThrow(productId, quantity);
+    productUseCase.validateAvailability(productId, quantity);
     Purchase purchaseFound = getPurchaseById(id);
     Product productFound = findProductOrThrow(productId);
     purchaseFound.ensurePurchaseIsModifiable();
