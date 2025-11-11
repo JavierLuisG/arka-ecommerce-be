@@ -2,6 +2,7 @@ package com.store.arka.backend.infrastructure.web.controller;
 
 import com.store.arka.backend.application.port.in.IPurchaseUseCase;
 import com.store.arka.backend.domain.enums.PurchaseStatus;
+import com.store.arka.backend.domain.model.Purchase;
 import com.store.arka.backend.infrastructure.web.dto.MessageResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.purchase.request.CreatePurchaseDto;
 import com.store.arka.backend.infrastructure.web.dto.purchase.request.ReceivePurchaseDto;
@@ -44,12 +45,11 @@ public class PurchaseController {
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @GetMapping
   public ResponseEntity<List<PurchaseResponseDto>> getAllPurchases(@RequestParam(required = false) String status) {
-    if (status == null) {
-      return ResponseEntity.ok(purchaseUseCase.getAllPurchases().stream().map(mapper::toDto).collect(Collectors.toList()));
-    }
-    PurchaseStatus statusEnum = PathUtils.validateEnumOrThrow(PurchaseStatus.class, status, "PurchaseStatus");
-    return ResponseEntity.ok(purchaseUseCase.getAllPurchasesByStatus(statusEnum)
-        .stream().map(mapper::toDto).collect(Collectors.toList()));
+    List<Purchase> purchases = (status == null)
+        ? purchaseUseCase.getAllPurchases()
+        : purchaseUseCase.getAllPurchasesByStatus(
+            PathUtils.validateEnumOrThrow(PurchaseStatus.class, status, "PurchaseStatus"));
+    return ResponseEntity.ok(purchases.stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")

@@ -55,36 +55,6 @@ public class Purchase {
     return items.stream().anyMatch(item -> item.getProductId().equals(productId));
   }
 
-  public void addPurchaseItem(Product product, Integer quantity, BigDecimal unitCost) {
-    ensurePurchaseIsModifiable();
-    items.stream()
-        .filter(purchaseItem -> purchaseItem.getProductId().equals(product.getId()))
-        .findFirst()
-        .ifPresentOrElse(
-            purchaseItem -> purchaseItem.addQuantity(quantity),
-            () -> {
-              PurchaseItem created = PurchaseItem.create(product, quantity, unitCost);
-              items.add(created);
-            }
-        );
-    recalculateTotal();
-  }
-
-  public void updatePurchaseItem(Product product, Integer quantity) {
-    ensurePurchaseIsModifiable();
-    items.stream()
-        .filter(purchaseItem -> purchaseItem.getProductId().equals(product.getId()))
-        .findFirst()
-        .ifPresentOrElse(purchaseItem -> {
-              purchaseItem.updateQuantity(quantity);
-              recalculateTotal();
-            },
-            () -> {
-              throw new ModelNotFoundException("Product not found in Purchase");
-            }
-        );
-  }
-
   public void removePurchaseItem(Product product) {
     ensurePurchaseIsModifiable();
     PurchaseItem found = this.items.stream()

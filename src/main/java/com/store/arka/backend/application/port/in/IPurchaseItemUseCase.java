@@ -14,7 +14,7 @@ public interface IPurchaseItemUseCase {
 
   List<PurchaseItem> getAllPurchaseItemsByProductId(UUID productId);
 
-  PurchaseItem addQuantityById(UUID id, Integer quantity);
+  PurchaseItem addQuantity(UUID id, Integer quantity);
 
   PurchaseItem updateQuantity(UUID id, Integer quantity);
 }

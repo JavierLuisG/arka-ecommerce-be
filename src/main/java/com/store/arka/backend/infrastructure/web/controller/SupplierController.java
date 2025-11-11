@@ -26,7 +26,7 @@ public class SupplierController {
   private final ISupplierUseCase supplierUseCase;
   private final SupplierDtoMapper mapper;
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PostMapping
   public ResponseEntity<SupplierResponseDto> postSupplier(@RequestBody @Valid SupplierDto dto) {
     return ResponseEntity.status(HttpStatus.CREATED)
@@ -73,7 +73,7 @@ public class SupplierController {
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}")
   public ResponseEntity<SupplierResponseDto> updateSupplier(
       @PathVariable("id") String id,
@@ -82,7 +82,7 @@ public class SupplierController {
     return ResponseEntity.ok(mapper.toDto(supplierUseCase.updateFieldsSupplier(uuid, mapper.toDomain(dto))));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/product/{productId}/add")
   public ResponseEntity<SupplierResponseDto> addProduct(
       @PathVariable("id") String id,
@@ -92,7 +92,7 @@ public class SupplierController {
     return ResponseEntity.ok(mapper.toDto(supplierUseCase.addProduct(uuid, productUuid)));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/product/{productId}/remove")
   public ResponseEntity<SupplierResponseDto> removeProduct(
       @PathVariable("id") String id,
@@ -102,7 +102,7 @@ public class SupplierController {
     return ResponseEntity.ok(mapper.toDto(supplierUseCase.removeProduct(uuid, productUuid)));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @DeleteMapping("/{id}")
   public ResponseEntity<MessageResponseDto> softDeleteSupplier(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
@@ -110,7 +110,7 @@ public class SupplierController {
     return ResponseEntity.ok(new MessageResponseDto("Supplier with ID " + id + " eliminated successfully"));
   }
 
-  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/restore")
   public ResponseEntity<SupplierResponseDto> restoreSupplier(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
