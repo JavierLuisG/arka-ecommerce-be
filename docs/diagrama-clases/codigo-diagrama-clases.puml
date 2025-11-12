@@ -1,0 +1,250 @@
+@startuml
+' === Core Entities ===
+package "Core Entities" {
+  class Customer {
+    +UUID id
+    +UUID userId
+    +Document document
+    +String firstName
+    +String lastName
+    +String email
+    +CustomerStatus status
+  }
+
+  class Product {
+    +UUID id
+    +String sku
+    +String name
+    +BigDecimal price
+    +Integer stock
+    +ProductStatus status
+  }
+
+  class Category {
+    +UUID id
+    +String name
+    +String description
+    +CategoryStatus status
+  }
+
+  class Supplier {
+    +UUID id
+    +String commercialName
+    +String contactName
+    +String email
+    +String taxId
+    +SupplierStatus status
+  }
+
+  class Document {
+    +UUID id
+    +DocumentType type
+    +String number
+    +DocumentStatus status
+  }
+
+  class User {
+    +UUID id
+    +String userName
+    +String email
+    +UserRole role
+    +UserStatus status
+  }
+
+  class Notification {
+    +UUID id
+    +Customer customer
+    +Order order
+    +NotificationType type
+    +String message
+    +NotificationStatus status
+  }
+}
+
+' === Shopping & Sales ===
+package "Shopping & Sales" {
+  class Cart {
+    +UUID id
+    +Customer customer
+    +List~CartItem~ items
+    +CartStatus status
+    +LocalDateTime abandonedAt
+  }
+
+  class CartItem {
+    +UUID id
+    +UUID productId
+    +Integer quantity
+  }
+
+  class Order {
+    +UUID id
+    +UUID cartId
+    +Customer customer
+    +List~OrderItem~ items
+    +BigDecimal total
+    +OrderStatus status
+  }
+
+  class OrderItem {
+    +UUID id
+    +UUID productId
+    +Integer quantity
+    +BigDecimal productPrice
+    +BigDecimal subtotal
+  }
+
+  class Payment {
+    +UUID id
+    +Order order
+    +BigDecimal amount
+    +PaymentMethod method
+    +PaymentStatus status
+  }
+}
+
+' === Purchasing & Inventory ===
+package "Purchasing & Inventory" {
+  class Purchase {
+    +UUID id
+    +Supplier supplier
+    +List~PurchaseItem~ items
+    +BigDecimal total
+    +PurchaseStatus status
+  }
+
+  class PurchaseItem {
+    +UUID id
+    +UUID productId
+    +Integer quantity
+    +BigDecimal unitCost
+    +BigDecimal subtotal
+  }
+}
+
+' === Relaciones principales ===
+Customer "1" <-- "0..*" Cart : owns
+Cart "1" --> "0..*" CartItem : contains
+CartItem "0..*" --> "1" Product : references
+
+Customer "1" <-- "0..*" Order : places
+Order "1" --> "0..*" OrderItem : contains
+OrderItem "0..*" --> "1" Product : references
+
+Order "1" <-- "0..1" Payment : paid-by
+Payment "1" --> "1" Order : for
+
+Supplier "1" <-- "0..*" Purchase : creates
+Purchase "1" --> "0..*" PurchaseItem : contains
+PurchaseItem "0..*" --> "1" Product : references
+
+Product "0..*" <-- "0..*" Category : categorized-in
+Product "1" <-- "0..*" Supplier : provided-by
+
+Notification "1" --> "1" Customer
+Notification "1" --> "1" Order
+
+Document "0..1" <-- "1" Customer : has
+
+' === Enums ===
+enum CartStatus {
+  ACTIVE
+  CHECKED_OUT
+  ABANDONED
+}
+
+enum OrderStatus {
+  CREATED
+  CONFIRMED
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PAYPAL
+  BANK_TRANSFER
+  CASH
+}
+
+enum PurchaseStatus {
+  CREATED
+  CONFIRMED
+  RESCHEDULED
+  RECEIVED
+  CLOSED
+}
+
+enum ProductStatus {
+  ACTIVE
+  EXHAUSTED
+  ELIMINATED
+}
+
+enum CategoryStatus {
+  ACTIVE
+  ELIMINATED
+}
+
+enum SupplierStatus {
+  ACTIVE
+  ELIMINATED
+}
+
+enum CustomerStatus {
+  ACTIVE
+  ELIMINATED
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  MANAGER
+  PURCHASES
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum DocumentStatus {
+  ACTIVE
+  ELIMINATED
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+}
+
+enum NotificationType {
+  ORDER_CONFIRMED
+  ORDER_PAID
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  ORDER_CANCELED
+}
+
+enum DocumentType {
+  DNI
+  PP
+  RUT
+  NIT
+}
+
+' === Layout hints ===
+Customer -down-> Order
+Cart -down-> Order
+Product -right-> Purchase
+@enduml
