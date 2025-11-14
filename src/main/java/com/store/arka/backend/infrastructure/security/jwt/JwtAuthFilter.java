@@ -51,16 +51,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       }
     } catch (ExpiredJwtException e) {
       log.warn("[JWI_AUTH_FILTER][FILTER_INTERNAL] Token expired: {}", e.getMessage());
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
     } catch (SignatureException e) {
       log.error("[JWI_AUTH_FILTER][FILTER_INTERNAL] Invalid signature: {}", e.getMessage());
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
     } catch (Exception e) {
       log.error("[JWI_AUTH_FILTER][FILTER_INTERNAL] Other error: {}", e.getMessage());
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
     }
     filterChain.doFilter(request, response);
   }
