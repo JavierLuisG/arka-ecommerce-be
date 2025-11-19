@@ -31,7 +31,7 @@ public class ProductService implements IProductUseCase {
   @Override
   @Transactional
   public Product createProduct(Product product) {
-    ValidateAttributesUtils.throwIfModelNull(product, "Product");
+    ValidateAttributesUtils.validateModel(product, "Product");
     validateSkuExistence(product.getSku());
     Product created = Product.create(
         product.getSku(),
@@ -49,7 +49,7 @@ public class ProductService implements IProductUseCase {
   @Override
   @Transactional(readOnly = true)
   public Product getProductById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "Product ID");
+    ValidateAttributesUtils.validateId(id, "Product ID");
     return productAdapterPort.findProductById(id)
         .orElseThrow(() -> {
           log.warn("[PRODUCT_SERVICE][GET_BY_ID] Product(id={}) not found", id);
@@ -60,11 +60,11 @@ public class ProductService implements IProductUseCase {
   @Override
   @Transactional(readOnly = true)
   public Product getProductBySku(String sku) {
-    String normalizedSku = ValidateAttributesUtils.throwIfNullOrEmpty(sku, "SKU");
+    ValidateAttributesUtils.validateNullOrEmpty(sku, "SKU");
     return productAdapterPort.findProductBySku(sku)
         .orElseThrow(() -> {
-          log.warn("[PRODUCT_SERVICE][GET_BY_SKU] Product with SKU=({}) not found", normalizedSku);
-          return new ModelNotFoundException("Product with SKU " + normalizedSku + " not found");
+          log.warn("[PRODUCT_SERVICE][GET_BY_SKU] Product with SKU=({}) not found", sku);
+          return new ModelNotFoundException("Product with SKU " + sku + " not found");
         });
   }
 
@@ -85,7 +85,7 @@ public class ProductService implements IProductUseCase {
   @Override
   @Transactional
   public Product updateFieldsProduct(UUID id, Product product) {
-    ValidateAttributesUtils.throwIfModelNull(product, "Product");
+    ValidateAttributesUtils.validateModel(product, "Product");
     Product found = getProductById(id);
     found.updateFields(product.getName(), product.getDescription(), product.getPrice());
     Product saved = productAdapterPort.saveUpdateProduct(found);
@@ -122,7 +122,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.decreaseStock(quantity);
     productAdapterPort.saveUpdateProduct(found);
-    log.info("[PRODUCT_SERVICE][DECREASED_STOCK] User(id={}) has decreased {} its stock in Product(id={})",
+    log.info("[PRODUCT_SERVICE][DECREASED_STOCK] User(id={}) has decreased=({}) its stock in Product(id={})",
         securityUtils.getCurrentUserId(), quantity, found.getId());
   }
 
@@ -132,7 +132,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.increaseStock(quantity);
     productAdapterPort.saveUpdateProduct(found);
-    log.info("[PRODUCT_SERVICE][INCREASED_STOCK] User(id={}) has increased {} its stock in Product(id={})",
+    log.info("[PRODUCT_SERVICE][INCREASED_STOCK] User(id={}) has increased=({}) its stock in Product(id={})",
         securityUtils.getCurrentUserId(), quantity, found.getId());
   }
 
@@ -142,7 +142,7 @@ public class ProductService implements IProductUseCase {
     Product found = getProductById(id);
     found.delete();
     productAdapterPort.saveUpdateProduct(found);
-    log.info("[PRODUCT_SERVICE][DELETED] User(id={}) has marked the Product(id={}) whit status={}",
+    log.info("[PRODUCT_SERVICE][DELETED] User(id={}) has marked the Product(id={}) whit status=({})",
         securityUtils.getCurrentUserId(), found.getId(), found.getStatus());
   }
 
@@ -164,10 +164,10 @@ public class ProductService implements IProductUseCase {
   }
 
   private void validateSkuExistence(String sku) {
-    String normalizedSku = ValidateAttributesUtils.throwIfNullOrEmpty(sku, "SKU");
-    if (productAdapterPort.existsProductBySku(normalizedSku)) {
-      log.warn("[PRODUCT_SERVICE][CREATED] SKU={} already exists", normalizedSku);
-      throw new FieldAlreadyExistsException("SKU " + normalizedSku + " already exists. Choose a different SKU");
+    ValidateAttributesUtils.validateNullOrEmpty(sku, "SKU");
+    if (productAdapterPort.existsProductBySku(sku)) {
+      log.warn("[PRODUCT_SERVICE][CREATED] SKU=({}) already exists", sku);
+      throw new FieldAlreadyExistsException("SKU " + sku + " already exists. Choose a different SKU");
     }
   }
 }

@@ -31,11 +31,12 @@ public class CustomerService implements ICustomerUseCase {
   @Override
   @Transactional
   public Customer createCustomer(Customer customer) {
-    ValidateAttributesUtils.throwIfModelNull(customer, "Customer");
+    securityUtils.requireOwnerOrRoles(customer.getUserId(), "ADMIN");
+    ValidateAttributesUtils.validateModel(customer, "Customer");
     validateUserExistence(customer.getUserId());
-    ValidateAttributesUtils.throwIfModelNull(customer.getDocument(), "Document in Customer");
     validateUserIdUniqueness(customer.getUserId());
     validateEmailUniqueness(customer.getEmail(), null);
+    ValidateAttributesUtils.validateModel(customer.getDocument(), "Document in Customer");
     Document documentCreated = documentUseCase.createDocument(customer.getDocument());
     Customer created = Customer.create(
         customer.getUserId(),
@@ -57,7 +58,7 @@ public class CustomerService implements ICustomerUseCase {
   @Override
   @Transactional(readOnly = true)
   public Customer getCustomerById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "Customer ID");
+    ValidateAttributesUtils.validateId(id, "Customer ID");
     return customerAdapterPort.findCustomerById(id)
         .orElseThrow(() -> {
           log.warn("[CUSTOMER_SERVICE][GET_BY_ID] Customer(id={}) not found", id);
@@ -76,11 +77,11 @@ public class CustomerService implements ICustomerUseCase {
   @Override
   @Transactional(readOnly = true)
   public Customer getCustomerByUserId(UUID userId) {
-    ValidateAttributesUtils.throwIfIdNull(userId, "User ID in Customer");
+    ValidateAttributesUtils.validateId(userId, "User ID in Customer");
     Customer found = customerAdapterPort.findCustomerByUserId(userId)
         .orElseThrow(() -> {
           log.warn("[CUSTOMER_SERVICE][GET_BY_USER] Customer with User(id={}) not found", userId);
-          return new ModelNotFoundException("Customer with user ID" + userId + " not found");
+          return new ModelNotFoundException("Customer with user ID " + userId + " not found");
         });
     securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN", "MANAGER");
     return found;
@@ -89,10 +90,10 @@ public class CustomerService implements ICustomerUseCase {
   @Override
   @Transactional(readOnly = true)
   public Customer getCustomerByDocumentNumber(String number) {
-    String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(number, "Number");
+    ValidateAttributesUtils.validateNullOrEmpty(number, "Number");
     Customer found = customerAdapterPort.findCustomerByDocumentNumber(number)
         .orElseThrow(() -> {
-          log.warn("[CUSTOMER_SERVICE][GET_BY_NUMBER] Customer(number={}) not found", normalizedNumber);
+          log.warn("[CUSTOMER_SERVICE][GET_BY_NUMBER] Customer(number={}) not found", number);
           return new ModelNotFoundException("Customer with document number " + number + " not found");
         });
     securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN", "MANAGER");
@@ -118,7 +119,7 @@ public class CustomerService implements ICustomerUseCase {
   public Customer updateFieldsCustomer(UUID id, Customer customer) {
     Customer found = getCustomerById(id);
     securityUtils.requireOwnerOrRoles(found.getUserId(), "ADMIN");
-    ValidateAttributesUtils.throwIfModelNull(customer, "Customer");
+    ValidateAttributesUtils.validateModel(customer, "Customer");
     validateEmailUniqueness(customer.getEmail(), found.getEmail());
     found.updateFields(
         customer.getFirstName(),
@@ -161,7 +162,7 @@ public class CustomerService implements ICustomerUseCase {
   }
 
   private void validateUserExistence(UUID userId) {
-    ValidateAttributesUtils.throwIfIdNull(userId, "User ID in Customer");
+    ValidateAttributesUtils.validateId(userId, "User ID in Customer");
     if (!userAdapterPort.existsUserById(userId)) {
       log.warn("[CUSTOMER_SERVICE][CREATED] User(id={}) not found in database", userId);
       throw new ModelNotFoundException("User ID " + userId + " not found in database");
@@ -169,6 +170,7 @@ public class CustomerService implements ICustomerUseCase {
   }
 
   private void validateUserIdUniqueness(UUID userId) {
+    ValidateAttributesUtils.validateId(userId, "User ID in Customer");
     if (customerAdapterPort.existsCustomerByUserId(userId)) {
       log.warn("[CUSTOMER_SERVICE][CREATED] User(id={}) already exists for creating a Customer", userId);
       throw new FieldAlreadyExistsException("User ID " + userId + " already exists. Choose a different");
@@ -176,15 +178,15 @@ public class CustomerService implements ICustomerUseCase {
   }
 
   private void validateEmailUniqueness(String newEmail, String oldEmail) {
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(newEmail, "Email in Customer");
-    boolean exists = customerAdapterPort.existsCustomerByEmail(normalizedEmail);
+    ValidateAttributesUtils.validateValueNotAllowed(newEmail, "Email in Customer");
+    boolean exists = customerAdapterPort.existsCustomerByEmail(newEmail);
     if (oldEmail == null && exists) {
-      log.warn("[CUSTOMER_SERVICE][CREATED] Email {} already exists for creating a Customer", normalizedEmail);
-      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
+      log.warn("[CUSTOMER_SERVICE][CREATED] Email=({}) already exists for creating a Customer", newEmail);
+      throw new FieldAlreadyExistsException("Email " + newEmail + " already exists. Choose a different");
     }
-    if (exists && !oldEmail.equals(normalizedEmail)) {
-      log.warn("[CUSTOMER_SERVICE][UPDATED] Email {} already exists for updating a Customer", normalizedEmail);
-      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists. Choose a different");
+    if (exists && !oldEmail.equals(newEmail)) {
+      log.warn("[CUSTOMER_SERVICE][UPDATED] Email=({}) already exists for updating a Customer", newEmail);
+      throw new FieldAlreadyExistsException("Email " + newEmail + " already exists. Choose a different");
     }
   }
 }

@@ -31,8 +31,9 @@ public class PurchaseController {
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PostMapping
   public ResponseEntity<PurchaseResponseDto> postPurchase(@RequestBody @Valid CreatePurchaseDto dto) {
+    UUID supplierUuid = PathUtils.validateAndParseUUID(dto.supplierId());
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(mapper.toDto(purchaseUseCase.createPurchase(mapper.toDomain(dto), dto.supplierId())));
+        .body(mapper.toDto(purchaseUseCase.createPurchase(mapper.toDomain(dto), supplierUuid)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
@@ -102,7 +103,7 @@ public class PurchaseController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/confirm")
-  public ResponseEntity<MessageResponseDto> confirmPurchaseById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> confirmPurchase(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     purchaseUseCase.confirmPurchase(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully confirmed with ID " + id));
@@ -110,7 +111,7 @@ public class PurchaseController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/receive")
-  public ResponseEntity<MessageResponseDto> receivePurchaseById(
+  public ResponseEntity<MessageResponseDto> receivePurchase(
       @PathVariable("id") String id,
       @RequestBody @Valid ReceivePurchaseDto request) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
@@ -120,7 +121,7 @@ public class PurchaseController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @PutMapping("/{id}/close")
-  public ResponseEntity<MessageResponseDto> closePurchaseById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> closePurchase(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     purchaseUseCase.closePurchase(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully closed with ID " + id));
@@ -128,7 +129,7 @@ public class PurchaseController {
 
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES')")
   @DeleteMapping("/{id}")
-  public ResponseEntity<MessageResponseDto> deletePurchaseById(@PathVariable("id") String id) {
+  public ResponseEntity<MessageResponseDto> deletePurchase(@PathVariable("id") String id) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
     purchaseUseCase.deletePurchase(uuid);
     return ResponseEntity.ok(new MessageResponseDto("Purchase has been successfully deleted with ID " + id));

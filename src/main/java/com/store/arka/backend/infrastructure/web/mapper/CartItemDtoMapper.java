@@ -3,6 +3,7 @@ package com.store.arka.backend.infrastructure.web.mapper;
 import com.store.arka.backend.domain.model.CartItem;
 import com.store.arka.backend.infrastructure.web.dto.cart.request.CreateCartItemDto;
 import com.store.arka.backend.infrastructure.web.dto.cart.response.CartItemResponseDto;
+import com.store.arka.backend.shared.util.PathUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ public class CartItemDtoMapper {
   private final ProductDtoMapper productDtoMapper;
 
   public CartItemResponseDto toDto(CartItem domain) {
+    if (domain == null) return null;
     return new CartItemResponseDto(
         domain.getId(),
         productDtoMapper.toOrderDto(domain.getProduct()),
@@ -28,7 +30,7 @@ public class CartItemDtoMapper {
     listDto.forEach(dto -> {
       response.add(new CartItem(
           null,
-          dto.productId(),
+          PathUtils.validateAndParseUUID(dto.productId()),
           null,
           dto.quantity(),
           null

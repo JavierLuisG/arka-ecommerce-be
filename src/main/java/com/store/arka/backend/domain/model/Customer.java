@@ -33,25 +33,25 @@ public class Customer {
 
   public static Customer create(UUID userId, Document document, String firstName, String lastName, String email, String phone,
                                 String address, String city, Country country) {
-    ValidateAttributesUtils.throwIfIdNull(userId, "User ID in Customer");
-    ValidateAttributesUtils.throwIfModelNull(document, "Document in Customer");
-    String normalizedFirstName = ValidateAttributesUtils.throwIfValueNotAllowed(firstName, "First name");
-    String normalizedLastName = ValidateAttributesUtils.throwIfValueNotAllowed(lastName, "Last name");
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
-    String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
-    String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
-    String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
-    ValidateAttributesUtils.throwIfModelNull(country, "Country in Customer");
+    ValidateAttributesUtils.validateId(userId, "User ID in Customer");
+    ValidateAttributesUtils.validateModel(document, "Document in Customer");
+    ValidateAttributesUtils.validateValueNotAllowed(firstName, "First name");
+    ValidateAttributesUtils.validateValueNotAllowed(lastName, "Last name");
+    ValidateAttributesUtils.validateValueNotAllowed(email, "Email");
+    ValidateAttributesUtils.validateValueNotAllowed(phone, "Phone");
+    ValidateAttributesUtils.validateValueNotAllowed(address, "Address");
+    ValidateAttributesUtils.validateValueNotAllowed(city, "City");
+    ValidateAttributesUtils.validateModel(country, "Country in Customer");
     return new Customer(
         null,
         userId,
         document,
-        normalizedFirstName,
-        normalizedLastName,
-        normalizedEmail,
-        normalizedPhone,
-        normalizedAddress,
-        normalizedCity,
+        firstName,
+        lastName,
+        email,
+        phone,
+        address,
+        city,
         country,
         CustomerStatus.ACTIVE,
         null,
@@ -62,19 +62,19 @@ public class Customer {
   public void updateFields(String firstName, String lastName, String email, String phone,
                            String address, String city, Country country) {
     throwIfDeleted();
-    String normalizedFirstName = ValidateAttributesUtils.throwIfValueNotAllowed(firstName, "First name");
-    String normalizedLastName = ValidateAttributesUtils.throwIfValueNotAllowed(lastName, "Last name");
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
-    String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
-    String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
-    String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
-    ValidateAttributesUtils.throwIfModelNull(country, "Country in Customer");
-    this.firstName = normalizedFirstName;
-    this.lastName = normalizedLastName;
-    this.email = normalizedEmail;
-    this.phone = normalizedPhone;
-    this.address = normalizedAddress;
-    this.city = normalizedCity;
+    ValidateAttributesUtils.validateValueNotAllowed(firstName, "First name");
+    ValidateAttributesUtils.validateValueNotAllowed(lastName, "Last name");
+    ValidateAttributesUtils.validateValueNotAllowed(email, "Email");
+    ValidateAttributesUtils.validateValueNotAllowed(phone, "Phone");
+    ValidateAttributesUtils.validateValueNotAllowed(address, "Address");
+    ValidateAttributesUtils.validateValueNotAllowed(city, "City");
+    ValidateAttributesUtils.validateModel(country, "Country in Customer");
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.phone = phone;
+    this.address = address;
+    this.city = city;
     this.country = country;
   }
 
@@ -100,7 +100,3 @@ public class Customer {
     if (isDeleted()) throw new ModelDeletionException("Customer deleted previously");
   }
 }
-
-
-
-

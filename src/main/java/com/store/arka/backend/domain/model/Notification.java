@@ -26,9 +26,9 @@ public class Notification {
   private LocalDateTime readAt;
 
   public static Notification create(Customer customer, Order order, NotificationType type) {
-    ValidateAttributesUtils.throwIfModelNull(customer, "Customer in Notification");
-    ValidateAttributesUtils.throwIfModelNull(order, "Order in Notification");
-    ValidateAttributesUtils.throwIfModelNull(type, "Notification type");
+    ValidateAttributesUtils.validateModel(customer, "Customer in Notification");
+    ValidateAttributesUtils.validateModel(order, "Order in Notification");
+    ValidateAttributesUtils.validateModel(type, "Notification type");
     String fullName = customer.getFirstName() + " " + customer.getLastName();
     return new Notification(
         null,

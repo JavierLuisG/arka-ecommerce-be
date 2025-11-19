@@ -24,12 +24,11 @@ public class Category {
   private LocalDateTime updatedAt;
 
   public static Category create(String name, String description) {
-    String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(name, "Category Name");
-    String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
+    ValidateAttributesUtils.validateValueNotAllowed(name, "Category Name");
     return new Category(
         null,
-        normalizedName,
-        normalizedDescription,
+        name,
+        description,
         CategoryStatus.ACTIVE,
         null,
         null
@@ -38,8 +37,9 @@ public class Category {
 
   public void update(Category category) {
     if (isDeleted()) throw new ModelDeletionException("Category deleted previously");
-    ValidateAttributesUtils.throwIfModelNull(category, "Category");
-    this.description = ValidateAttributesUtils.throwIfNullOrEmpty(category.getDescription(), "Description");
+    ValidateAttributesUtils.validateModel(category, "Category");
+    ValidateAttributesUtils.validateNullOrEmpty(category.getDescription(), "Description");
+    this.description = category.getDescription();
   }
 
   public void delete() {

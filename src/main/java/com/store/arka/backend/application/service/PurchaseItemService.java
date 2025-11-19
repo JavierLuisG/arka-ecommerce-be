@@ -24,9 +24,10 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
   private final SecurityUtils securityUtils;
 
   @Override
+  @Transactional
   public PurchaseItem addPurchaseItem(UUID purchaseId, PurchaseItem purchaseItem) {
-    ValidateAttributesUtils.throwIfIdNull(purchaseId, "Purchase ID in PurchaseItem");
-    ValidateAttributesUtils.throwIfModelNull(purchaseItem, "PurchaseItem");
+    ValidateAttributesUtils.validateId(purchaseId, "Purchase ID in PurchaseItem");
+    ValidateAttributesUtils.validateModel(purchaseItem, "PurchaseItem");
     productUseCase.validateAvailability(purchaseItem.getProductId(), purchaseItem.getQuantity());
     PurchaseItem saved = purchaseItemAdapterPort.saveAddPurchaseItem(purchaseId, purchaseItem);
     log.info("[PURCHASE_ITEM_SERVICE][CREATED] User(id={}) has created new PurchaseItem(id={})",
@@ -37,7 +38,7 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
   @Override
   @Transactional(readOnly = true)
   public PurchaseItem getPurchaseItemById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "PurchaseItem ID");
+    ValidateAttributesUtils.validateId(id, "PurchaseItem ID");
     return purchaseItemAdapterPort.findPurchaseItemById(id)
         .orElseThrow(() -> {
           log.warn("[PURCHASE_ITEM_SERVICE][GET_BY_ID] PurchaseItem(id={}) not found", id);
@@ -55,30 +56,32 @@ public class PurchaseItemService implements IPurchaseItemUseCase {
   @Override
   @Transactional(readOnly = true)
   public List<PurchaseItem> getAllPurchaseItemsByProductId(UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in PurchaseItem");
+    ValidateAttributesUtils.validateId(productId, "Product ID in PurchaseItem");
     log.info("[PURCHASE_ITEM_SERVICE][GET_ALL_BY_PRODUCT] Fetching all PurchaseItems with Product(id={})", productId);
     return purchaseItemAdapterPort.findAllPurchaseItemsByProductId(productId);
   }
 
   @Override
+  @Transactional
   public PurchaseItem addQuantity(UUID id, Integer quantity) {
     ValidateAttributesUtils.validateQuantity(quantity);
     PurchaseItem found = getPurchaseItemById(id);
     found.addQuantity(quantity);
     productUseCase.validateAvailability(found.getProductId(), found.getQuantity());
     PurchaseItem saved = purchaseItemAdapterPort.saveUpdatePurchaseItem(found);
-    log.info("[PURCHASE_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has added quantity {} in PurchaseItem(id={})",
+    log.info("[PURCHASE_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has added quantity=({}) in PurchaseItem(id={})",
         securityUtils.getCurrentUserId(), quantity, found.getId());
     return saved;
   }
 
   @Override
+  @Transactional
   public PurchaseItem updateQuantity(UUID id, Integer quantity) {
     ValidateAttributesUtils.validateQuantity(quantity);
     PurchaseItem found = getPurchaseItemById(id);
     found.updateQuantity(quantity);
     PurchaseItem saved = purchaseItemAdapterPort.saveUpdatePurchaseItem(found);
-    log.info("[PURCHASE_ITEM_SERVICE][UPDATED_QUANTITY] User(id={}) has updated quantity {} in PurchaseItem(id={})",
+    log.info("[PURCHASE_ITEM_SERVICE][UPDATED_QUANTITY] User(id={}) has updated quantity=({}) in PurchaseItem(id={})",
         securityUtils.getCurrentUserId(), quantity, found.getId());
     return saved;
   }

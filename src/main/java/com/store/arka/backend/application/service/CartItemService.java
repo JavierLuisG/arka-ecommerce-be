@@ -24,9 +24,10 @@ public class CartItemService implements ICartItemUseCase {
   private final SecurityUtils securityUtils;
 
   @Override
+  @Transactional
   public CartItem addCartItem(UUID cartId, CartItem cartItem) {
-    ValidateAttributesUtils.throwIfIdNull(cartId, "Cart ID in CartItem");
-    ValidateAttributesUtils.throwIfModelNull(cartItem, "CartItem");
+    ValidateAttributesUtils.validateId(cartId, "Cart ID in CartItem");
+    ValidateAttributesUtils.validateModel(cartItem, "CartItem");
     productUseCase.validateAvailability(cartItem.getProductId(), cartItem.getQuantity());
     CartItem saved = cartItemAdapterPort.saveAddCartItem(cartId, cartItem);
     log.info("[CART_ITEM_SERVICE][CREATED] User(id={}) has created new CartItem(id={})",
@@ -37,7 +38,7 @@ public class CartItemService implements ICartItemUseCase {
   @Override
   @Transactional(readOnly = true)
   public CartItem getCartItemById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "CartItem ID");
+    ValidateAttributesUtils.validateId(id, "CartItem ID");
     return cartItemAdapterPort.findCartItemById(id)
         .orElseThrow(() -> {
           log.warn("[CART_ITEM_SERVICE][GET_BY_ID] CartItem(id={}) not found", id);
@@ -55,31 +56,31 @@ public class CartItemService implements ICartItemUseCase {
   @Override
   @Transactional(readOnly = true)
   public List<CartItem> getAllCartItemsByProductId(UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in CartItem");
+    ValidateAttributesUtils.validateId(productId, "Product ID in CartItem");
     log.info("[CART_ITEM_SERVICE][GET_ALL_BY_PRODUCT] Fetching all CartItems with Product(id={})", productId);
     return cartItemAdapterPort.findAllCartItemsByProductId(productId);
   }
 
   @Override
+  @Transactional
   public CartItem addQuantityById(UUID id, Integer quantity) {
-    ValidateAttributesUtils.validateQuantity(quantity);
     CartItem found = getCartItemById(id);
     found.addQuantity(quantity);
     productUseCase.validateAvailability(found.getProductId(), found.getQuantity());
     CartItem saved = cartItemAdapterPort.saveUpdateCartItem(found);
-    log.info("[CART_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has added quantity {} in CartItem(id={})",
+    log.info("[CART_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has added quantity=({}) in CartItem(id={})",
         securityUtils.getCurrentUserId(), quantity, id);
     return saved;
   }
 
   @Override
+  @Transactional
   public CartItem updateQuantity(UUID id, Integer quantity) {
-    ValidateAttributesUtils.validateQuantity(quantity);
     CartItem found = getCartItemById(id);
     found.updateQuantity(quantity);
     productUseCase.validateAvailability(found.getProductId(), found.getQuantity());
     CartItem saved = cartItemAdapterPort.saveUpdateCartItem(found);
-    log.info("[CART_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has updated quantity {} in CartItem(id={})",
+    log.info("[CART_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has updated quantity=({}) in CartItem(id={})",
         securityUtils.getCurrentUserId(), quantity, id);
     return saved;
   }

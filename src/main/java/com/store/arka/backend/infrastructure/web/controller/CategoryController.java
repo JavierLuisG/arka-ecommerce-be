@@ -7,6 +7,7 @@ import com.store.arka.backend.infrastructure.web.dto.category.request.CreateCate
 import com.store.arka.backend.infrastructure.web.dto.category.request.UpdateCategoryDto;
 import com.store.arka.backend.infrastructure.web.dto.category.response.CategoryResponseDto;
 import com.store.arka.backend.infrastructure.web.mapper.CategoryDtoMapper;
+import com.store.arka.backend.shared.util.NormalizationUtils;
 import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,8 @@ public class CategoryController {
 
   @GetMapping("/name/{name}")
   public ResponseEntity<CategoryResponseDto> getCategoryByName(@PathVariable("name") String name) {
-    return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryByName(name)));
+    String normalizeName = NormalizationUtils.normalizeShortText(name);
+    return ResponseEntity.ok(mapper.toDto(categoryUseCase.getCategoryByName(normalizeName)));
   }
 
   @GetMapping

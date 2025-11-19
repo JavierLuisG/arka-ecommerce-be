@@ -31,7 +31,7 @@ public class CartService implements ICartUseCase {
   public Cart createCart(Cart cart, UUID customerId) {
     Customer customerFound = findCustomerOrThrow(customerId);
     securityUtils.requireOwnerOrRoles(customerFound.getUserId(), "ADMIN");
-    ValidateAttributesUtils.throwIfModelNull(cart, "Cart");
+    ValidateAttributesUtils.validateModel(cart, "Cart");
     List<CartItem> cartItems = new ArrayList<>();
     cart.getItems().forEach(item -> {
       Product productFound = findProductOrThrow(item.getProductId());
@@ -47,7 +47,7 @@ public class CartService implements ICartUseCase {
   @Override
   @Transactional(readOnly = true)
   public Cart getCartById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "Cart ID");
+    ValidateAttributesUtils.validateId(id, "ID in Cart");
     return cartAdapterPort.findCartById(id)
         .orElseThrow(() -> {
           log.warn("[CART_SERVICE][GET_BY_ID] Cart(id={}) not found", id);
@@ -192,14 +192,14 @@ public class CartService implements ICartUseCase {
   }
 
   private Customer findCustomerOrThrow(UUID customerId) {
-    ValidateAttributesUtils.throwIfIdNull(customerId, "Customer ID in Cart");
+    ValidateAttributesUtils.validateId(customerId, "Customer ID in Cart");
     Customer customer = customerUseCase.getCustomerById(customerId);
     customer.throwIfDeleted();
     return customer;
   }
 
   private Product findProductOrThrow(UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Cart");
+    ValidateAttributesUtils.validateId(productId, "Product ID in Cart");
     Product product = productUseCase.getProductById(productId);
     product.throwIfDeleted();
     return product;

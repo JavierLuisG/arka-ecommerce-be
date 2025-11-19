@@ -21,7 +21,7 @@ public class PurchaseReschedulerService {
   public void markPurchaseAsRescheduled(Purchase purchase) {
     purchase.reschedule();
     purchaseAdapterPort.saveUpdatePurchase(purchase);
-    log.info("[PURCHASE_RESCHEDULED][MARK_AS_RESCHEDULED] User(id={}) has marked as Purchase(id={}) as {} due to discrepancies",
+    log.info("[PURCHASE_RESCHEDULED][MARK_AS_RESCHEDULED] User(id={}) has marked Purchase(id={}) as status=({}) due to discrepancies",
         securityUtils.getCurrentUserId(), purchase.getId(), PurchaseStatus.RESCHEDULED);
   }
 }

@@ -1,6 +1,8 @@
 package com.store.arka.backend.infrastructure.web.controller;
 
 import com.store.arka.backend.application.port.in.IPaymentUseCase;
+import com.store.arka.backend.domain.enums.PaymentMethod;
+import com.store.arka.backend.domain.enums.PaymentStatus;
 import com.store.arka.backend.infrastructure.web.dto.payment.request.CreatePaymentDto;
 import com.store.arka.backend.infrastructure.web.dto.payment.request.UpdatePaymentMethodDto;
 import com.store.arka.backend.infrastructure.web.dto.payment.response.PaymentResponseDto;
@@ -27,8 +29,9 @@ public class PaymentController {
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PostMapping
   public ResponseEntity<PaymentResponseDto> postPayment(@RequestBody @Valid CreatePaymentDto request) {
+    UUID orderUuid = PathUtils.validateAndParseUUID(request.orderId());
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(mapper.toDto(paymentUseCase.createPayment(request.orderId(), mapper.toDomain(request))));
+        .body(mapper.toDto(paymentUseCase.createPayment(orderUuid, mapper.toDomain(request))));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
@@ -50,7 +53,11 @@ public class PaymentController {
   public ResponseEntity<List<PaymentResponseDto>> getAllPaymentsByFilters(
       @RequestParam(required = false) String method,
       @RequestParam(required = false) String status) {
-    return ResponseEntity.ok(paymentUseCase.getAllPaymentsByFilters(method, status)
+    PaymentMethod methodEnum = null;
+    PaymentStatus statusEnum = null;
+    if (method != null) methodEnum = PathUtils.validateEnumOrThrow(PaymentMethod.class, method, "PaymentMethod");
+    if (status != null) statusEnum = PathUtils.validateEnumOrThrow(PaymentStatus.class, status, "PaymentStatus");
+    return ResponseEntity.ok(paymentUseCase.getAllPaymentsByFilters(methodEnum, statusEnum)
         .stream().map(mapper::toDto).collect(Collectors.toList()));
   }
 
@@ -62,12 +69,12 @@ public class PaymentController {
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
-  @PutMapping("/{id}/change-method")
-  public ResponseEntity<PaymentResponseDto> changePaymentMethod(
+  @PutMapping("/{id}/method")
+  public ResponseEntity<PaymentResponseDto> updateMethod(
       @PathVariable("id") String id,
-      @RequestBody @Valid UpdatePaymentMethodDto methodDto) {
+      @RequestBody @Valid UpdatePaymentMethodDto dto) {
     UUID uuid = PathUtils.validateAndParseUUID(id);
-    return ResponseEntity.ok(mapper.toDto(paymentUseCase.changePaymentMethod(uuid, methodDto.method())));
+    return ResponseEntity.ok(mapper.toDto(paymentUseCase.updateMethod(uuid, mapper.toDomain(dto))));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")

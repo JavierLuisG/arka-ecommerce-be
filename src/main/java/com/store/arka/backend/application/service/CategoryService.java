@@ -26,7 +26,7 @@ public class CategoryService implements ICategoryUseCase {
   @Override
   @Transactional
   public Category createCategory(Category category) {
-    ValidateAttributesUtils.throwIfModelNull(category, "Category");
+    ValidateAttributesUtils.validateModel(category, "Category");
     validateCategoryNameExistence(category.getName());
     Category created = Category.create(category.getName(), category.getDescription());
     Category saved = categoryAdapterPort.saveCategory(created);
@@ -36,7 +36,7 @@ public class CategoryService implements ICategoryUseCase {
   }
 
   private void validateCategoryNameExistence(String name) {
-    ValidateAttributesUtils.throwIfValueNotAllowed(name, "Category Name");
+    ValidateAttributesUtils.validateValueNotAllowed(name, "Category Name");
     if (categoryAdapterPort.existsCategoryByName(name)) {
       log.warn("[CATEGORY_SERVICE][CREATED] Category(name={}) already exists", name);
       throw new FieldAlreadyExistsException("Category with name " + name + " already exists. Choose a different name");
@@ -46,7 +46,7 @@ public class CategoryService implements ICategoryUseCase {
   @Override
   @Transactional(readOnly = true)
   public Category getCategoryById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "Category ID");
+    ValidateAttributesUtils.validateId(id, "Category ID");
     return categoryAdapterPort.findCategoryById(id)
         .orElseThrow(() -> {
           log.warn("[CATEGORY_SERVICE][GET_BY_ID] Category(id={}) not found", id);
@@ -57,11 +57,10 @@ public class CategoryService implements ICategoryUseCase {
   @Override
   @Transactional(readOnly = true)
   public Category getCategoryByName(String name) {
-    String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(name, "Category Name");
-    return categoryAdapterPort.findCategoryByName(normalizedName)
+    return categoryAdapterPort.findCategoryByName(name)
         .orElseThrow(() -> {
-          log.warn("[CATEGORY_SERVICE][GET_BY_NAME] Category(name={}) not found", normalizedName);
-          return new ModelNotFoundException("Category with name " + normalizedName + " not found");
+          log.warn("[CATEGORY_SERVICE][GET_BY_NAME] Category(name={}) not found", name);
+          return new ModelNotFoundException("Category with name " + name + " not found");
         });
   }
 

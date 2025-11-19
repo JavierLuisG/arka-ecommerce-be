@@ -34,7 +34,7 @@ public class PurchaseService implements IPurchaseUseCase {
   @Override
   @Transactional
   public Purchase createPurchase(Purchase purchase, UUID supplierId) {
-    ValidateAttributesUtils.throwIfModelNull(purchase, "Purchase");
+    ValidateAttributesUtils.validateModel(purchase, "Purchase");
     Supplier supplierFound = findSupplierOrThrow(supplierId);
     List<PurchaseItem> purchaseItems = new ArrayList<>();
     purchase.getItems().forEach(item -> {
@@ -51,7 +51,7 @@ public class PurchaseService implements IPurchaseUseCase {
   @Override
   @Transactional(readOnly = true)
   public Purchase getPurchaseById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "Purchase ID");
+    ValidateAttributesUtils.validateId(id, "Purchase ID");
     return purchaseAdapterPort.findPurchaseById(id)
         .orElseThrow(() -> {
           log.warn("[PURCHASE_SERVICE][GET_BY_ID] Purchase(id={}) not found", id);
@@ -100,7 +100,7 @@ public class PurchaseService implements IPurchaseUseCase {
       PurchaseItem purchaseItem = findPurchaseItemOrThrow(productId, purchaseFound);
       purchaseItemUseCase.addQuantity(purchaseItem.getId(), quantity);
       purchaseFound = getPurchaseById(id);
-      log.info("[PURCHASE_SERVICE][ADDED_ITEM] User(id={}) has added quantity {} in PurchaseItem(id={})",
+      log.info("[PURCHASE_SERVICE][ADDED_ITEM] User(id={}) has added quantity=({}) in PurchaseItem(id={})",
           securityUtils.getCurrentUserId(), quantity, purchaseItem.getId());
     } else {
       PurchaseItem newItem = PurchaseItem.create(productFound, quantity, BigDecimal.valueOf(1000));
@@ -132,7 +132,7 @@ public class PurchaseService implements IPurchaseUseCase {
     Purchase purchaseUpdated = getPurchaseById(id);
     purchaseUpdated.recalculateTotal();
     Purchase saved = purchaseAdapterPort.saveUpdatePurchase(purchaseUpdated);
-    log.info("[PURCHASE_SERVICE][UPDATED_ITEM_QUANTITY] User(id={}) has updated quantity {} in PurchaseItem(id={})",
+    log.info("[PURCHASE_SERVICE][UPDATED_ITEM_QUANTITY] User(id={}) has updated quantity=({}) in PurchaseItem(id={})",
         securityUtils.getCurrentUserId(), quantity, saved.getId());
     return saved;
   }
@@ -160,7 +160,7 @@ public class PurchaseService implements IPurchaseUseCase {
     Purchase purchaseFound = getPurchaseById(id);
     purchaseFound.confirm();
     purchaseAdapterPort.saveUpdatePurchase(purchaseFound);
-    log.info("[PURCHASE_SERVICE][CONFIRMED] User(id={}) has marked {} in Purchase(id={})",
+    log.info("[PURCHASE_SERVICE][CONFIRMED] User(id={}) has marked status=({}) in Purchase(id={})",
         securityUtils.getCurrentUserId(), PurchaseStatus.CONFIRMED, id);
   }
 
@@ -177,7 +177,7 @@ public class PurchaseService implements IPurchaseUseCase {
       });
       purchaseFound.receive();
       purchaseAdapterPort.saveUpdatePurchase(purchaseFound);
-      log.info("[PURCHASE_SERVICE][RECEIVED] User(id={}) has marked {} in Purchase(id={})",
+      log.info("[PURCHASE_SERVICE][RECEIVED] User(id={}) has marked status=({}) in Purchase(id={})",
           securityUtils.getCurrentUserId(), PurchaseStatus.RECEIVED, id);
     } catch (InvalidArgumentException | InvalidStateException ex) {
       reschedulerService.markPurchaseAsRescheduled(purchaseFound);
@@ -192,7 +192,7 @@ public class PurchaseService implements IPurchaseUseCase {
     Purchase purchaseFound = getPurchaseById(id);
     purchaseFound.close();
     purchaseAdapterPort.saveUpdatePurchase(purchaseFound);
-    log.info("[PURCHASE_SERVICE][CLOSED] User(id={}) has marked {} in Purchase(id={})",
+    log.info("[PURCHASE_SERVICE][CLOSED] User(id={}) has marked status=({}) in Purchase(id={})",
         securityUtils.getCurrentUserId(), PurchaseStatus.CLOSED, id);
   }
 
@@ -202,25 +202,25 @@ public class PurchaseService implements IPurchaseUseCase {
     Purchase purchaseFound = getPurchaseById(id);
     purchaseFound.ensurePurchaseIsModifiable();
     purchaseAdapterPort.deletePurchaseById(purchaseFound.getId());
-    log.info("[PURCHASE_SERVICE][DELETED] Purchase ID {} was deleted", id);
+    log.info("[PURCHASE_SERVICE][DELETED] Purchase(id={}) was deleted", id);
   }
 
   private Supplier findSupplierOrThrow(UUID supplierId) {
-    ValidateAttributesUtils.throwIfIdNull(supplierId, "Supplier ID in Purchase");
+    ValidateAttributesUtils.validateId(supplierId, "Supplier ID in Purchase");
     Supplier supplier = supplierUseCase.getSupplierById(supplierId);
     supplier.throwIfDeleted();
     return supplier;
   }
 
   private Product findProductOrThrow(UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Purchase");
+    ValidateAttributesUtils.validateId(productId, "Product ID in Purchase");
     Product product = productUseCase.getProductById(productId);
     product.throwIfDeleted();
     return product;
   }
 
   private PurchaseItem findPurchaseItemOrThrow(UUID productId, Purchase purchaseFound) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Purchase");
+    ValidateAttributesUtils.validateId(productId, "Product ID in Purchase");
     return purchaseFound.getItems()
         .stream()
         .filter(item -> item.getProductId().equals(productId))
@@ -234,7 +234,7 @@ public class PurchaseService implements IPurchaseUseCase {
 
   private void validateReceivedPurchase(Purchase receivedPurchase, Purchase purchaseFound) {
     if (purchaseFound.getItems().size() != receivedPurchase.getItems().size()) {
-      log.warn("[PURCHASE_SERVICE][RECEIVED] Number of products does not match in purchase(id={})}", purchaseFound.getId());
+      log.warn("[PURCHASE_SERVICE][RECEIVED] Number of products does not match in purchase(id={})", purchaseFound.getId());
       throw new InvalidArgumentException("Number of products does not match original purchase");
     }
     receivedPurchase.getItems().forEach(item -> {
@@ -242,8 +242,8 @@ public class PurchaseService implements IPurchaseUseCase {
           .filter(purchaseItem -> purchaseItem.getProductId().equals(item.getProductId()))
           .findFirst()
           .orElseThrow(() -> {
-            log.warn("[PURCHASE_SERVICE][RECEIVED] Product(id={}) not found in Purchase(id={})", item.getProduct().getId(), purchaseFound.getId());
-            return new InvalidArgumentException("Product " + item.getProduct().getName() + " not found in original Purchase");
+            log.warn("[PURCHASE_SERVICE][RECEIVED] Product(id={}) not found in Purchase(id={})", item.getProductId(), purchaseFound.getId());
+            return new InvalidArgumentException("Product ID " + item.getProductId() + " not found in original Purchase");
           });
       if (!itemFound.hasCorrectQuantity(item.getQuantity())) {
         log.warn("[PURCHASE_SERVICE][RECEIVED] Quantity mismatch in Product(id={})", itemFound.getProduct().getId());

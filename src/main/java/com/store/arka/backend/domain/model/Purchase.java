@@ -27,7 +27,7 @@ public class Purchase {
   private LocalDateTime updatedAt;
 
   public static Purchase create(Supplier supplier, List<PurchaseItem> items) {
-    ValidateAttributesUtils.throwIfModelNull(supplier, "Supplier in Purchase");
+    ValidateAttributesUtils.validateModel(supplier, "Supplier in Purchase");
     supplier.throwIfDeleted();
     if (items == null) items = new ArrayList<>();
     return new Purchase(
@@ -51,7 +51,7 @@ public class Purchase {
   }
 
   public boolean containsProduct(UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Purchase");
+    ValidateAttributesUtils.validateId(productId, "Product ID in Purchase");
     return items.stream().anyMatch(item -> item.getProductId().equals(productId));
   }
 

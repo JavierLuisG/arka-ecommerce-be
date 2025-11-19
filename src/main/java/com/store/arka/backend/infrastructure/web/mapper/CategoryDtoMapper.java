@@ -6,6 +6,7 @@ import com.store.arka.backend.infrastructure.web.dto.category.request.CreateCate
 import com.store.arka.backend.infrastructure.web.dto.category.request.UpdateCategoryDto;
 import com.store.arka.backend.infrastructure.web.dto.category.response.CategoryResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.category.response.CategoryResponseToProductDto;
+import com.store.arka.backend.shared.util.NormalizationUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -15,10 +16,11 @@ import java.util.Set;
 @Component
 public class CategoryDtoMapper {
   public Category toDomain(CreateCategoryDto dto) {
+    if (dto == null) return null;
     return new Category(
         null,
-        dto.name(),
-        dto.description(),
+        NormalizationUtils.normalizeShortText(dto.name()),
+        NormalizationUtils.normalizeLongText(dto.description()),
         null,
         null,
         null
@@ -26,10 +28,11 @@ public class CategoryDtoMapper {
   }
 
   public Category toDomain(UpdateCategoryDto dto) {
+    if (dto == null) return null;
     return new Category(
         null,
         null,
-        dto.description(),
+        NormalizationUtils.normalizeLongText(dto.description()),
         null,
         null,
         null
@@ -37,6 +40,7 @@ public class CategoryDtoMapper {
   }
 
   public CategoryResponseDto toDto(Category domain) {
+    if (domain == null) return null;
     return new CategoryResponseDto(
         domain.getId(),
         domain.getName(),

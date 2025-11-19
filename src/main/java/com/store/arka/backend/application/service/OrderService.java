@@ -51,7 +51,7 @@ public class OrderService implements IOrderUseCase {
   @Override
   @Transactional(readOnly = true)
   public Order getOrderById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "Order ID");
+    ValidateAttributesUtils.validateId(id, "Order ID");
     return orderAdapterPort.findOrderById(id)
         .orElseThrow(() -> {
           log.warn("[ORDER_SERVICE][GET_BY_ID] Order(id={}) not found", id);
@@ -100,7 +100,7 @@ public class OrderService implements IOrderUseCase {
 
   @Override
   @Transactional
-  public Order addOrderItemById(UUID id, UUID productId, Integer quantity) {
+  public Order addOrderItem(UUID id, UUID productId, Integer quantity) {
     Order orderFound = getOrderById(id);
     securityUtils.requireOwnerOrRoles(orderFound.getCustomer().getUserId(), "ADMIN");
     ValidateAttributesUtils.validateQuantity(quantity);
@@ -110,7 +110,7 @@ public class OrderService implements IOrderUseCase {
       OrderItem orderItem = findOrderItemOrThrow(productId, orderFound);
       orderItemUseCase.addQuantityById(orderItem.getId(), quantity);
       orderFound = getOrderById(id);
-      log.info("[ORDER_SERVICE][ADDED_ITEM] User(id={}) has added quantity {} in OrderItem(id={})",
+      log.info("[ORDER_SERVICE][ADDED_ITEM] User(id={}) has added quantity=({}) in OrderItem(id={})",
           securityUtils.getCurrentUserId(), quantity, orderItem.getId());
     } else {
       OrderItem newItem = OrderItem.create(productFound, quantity);
@@ -128,7 +128,7 @@ public class OrderService implements IOrderUseCase {
 
   @Override
   @Transactional
-  public Order updateOrderItemQuantityById(UUID id, UUID productId, Integer quantity) {
+  public Order updateOrderItemQuantity(UUID id, UUID productId, Integer quantity) {
     Order orderFound = getOrderById(id);
     securityUtils.requireOwnerOrRoles(orderFound.getCustomer().getUserId(), "ADMIN");
     productUseCase.validateAvailability(productId, quantity);
@@ -143,14 +143,14 @@ public class OrderService implements IOrderUseCase {
     Order orderUpdated = getOrderById(id);
     orderUpdated.recalculateTotal();
     Order saved = orderAdapterPort.saveUpdateOrder(orderUpdated);
-    log.info("[ORDER_SERVICE][UPDATED_ITEM_QUANTITY] User(id={}) has updated quantity {} in OrderItem(id={})",
-        securityUtils.getCurrentUserId(), quantity, saved.getId());
+    log.info("[ORDER_SERVICE][UPDATED_ITEM_QUANTITY] User(id={}) has updated quantity=({}) in OrderItem(id={})",
+        securityUtils.getCurrentUserId(), quantity, orderItem.getId());
     return saved;
   }
 
   @Override
   @Transactional
-  public Order removeOrderItemById(UUID id, UUID productId) {
+  public Order removeOrderItem(UUID id, UUID productId) {
     Order orderFound = getOrderById(id);
     securityUtils.requireOwnerOrRoles(orderFound.getCustomer().getUserId(), "ADMIN");
     Product productFound = findProductOrThrow(productId);
@@ -168,7 +168,7 @@ public class OrderService implements IOrderUseCase {
 
   @Override
   @Transactional
-  public void confirmOrderById(UUID id) {
+  public void confirmOrder(UUID id) {
     Order orderFound = getOrderById(id);
     securityUtils.requireOwnerOrRoles(orderFound.getCustomer().getUserId(), "ADMIN");
     orderFound.getItems()
@@ -182,7 +182,7 @@ public class OrderService implements IOrderUseCase {
 
   @Override
   @Transactional
-  public void payOrderById(UUID id) {
+  public void payOrder(UUID id) {
     Order orderFound = getOrderById(id);
     securityUtils.requireOwnerOrRoles(orderFound.getCustomer().getUserId(), "ADMIN");
     orderFound.pay();
@@ -194,7 +194,7 @@ public class OrderService implements IOrderUseCase {
 
   @Override
   @Transactional
-  public void shippedOrderById(UUID id) {
+  public void shippedOrder(UUID id) {
     Order orderFound = getOrderById(id);
     orderFound.shipped();
     Order saved = orderAdapterPort.saveUpdateOrder(orderFound);
@@ -205,7 +205,7 @@ public class OrderService implements IOrderUseCase {
 
   @Override
   @Transactional
-  public void deliverOrderById(UUID id) {
+  public void deliverOrder(UUID id) {
     Order orderFound = getOrderById(id);
     orderFound.deliver();
     Order saved = orderAdapterPort.saveUpdateOrder(orderFound);
@@ -216,7 +216,7 @@ public class OrderService implements IOrderUseCase {
 
   @Override
   @Transactional
-  public void cancelOrderById(UUID id) {
+  public void cancelOrder(UUID id) {
     Order orderFound = getOrderById(id);
     securityUtils.requireOwnerOrRoles(orderFound.getCustomer().getUserId(), "ADMIN");
     orderFound.getItems()
@@ -229,7 +229,7 @@ public class OrderService implements IOrderUseCase {
   }
 
   private Cart findCartOrThrow(UUID cartId) {
-    ValidateAttributesUtils.throwIfIdNull(cartId, "Cart ID in Order");
+    ValidateAttributesUtils.validateId(cartId, "Cart ID in Order");
     Cart found = cartAdapterPort.findCartById(cartId)
         .orElseThrow(() -> {
           log.warn("[ORDER_SERVICE][FIND_CARD] Cart(id={}) in order not found", cartId);
@@ -243,21 +243,21 @@ public class OrderService implements IOrderUseCase {
   }
 
   private Customer findCustomerOrThrow(UUID customerId) {
-    ValidateAttributesUtils.throwIfIdNull(customerId, "Customer ID in Order");
+    ValidateAttributesUtils.validateId(customerId, "Customer ID in Order");
     Customer customer = customerUseCase.getCustomerById(customerId);
     customer.throwIfDeleted();
     return customer;
   }
 
   private Product findProductOrThrow(UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Order");
+    ValidateAttributesUtils.validateId(productId, "Product ID in Order");
     Product product = productUseCase.getProductById(productId);
     product.throwIfDeleted();
     return product;
   }
 
   private OrderItem findOrderItemOrThrow(UUID productId, Order orderFound) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Order");
+    ValidateAttributesUtils.validateId(productId, "Product ID in Order");
     return orderFound.getItems()
         .stream()
         .filter(item -> item.getProductId().equals(productId))

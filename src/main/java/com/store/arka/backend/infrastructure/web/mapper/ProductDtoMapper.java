@@ -7,6 +7,7 @@ import com.store.arka.backend.infrastructure.web.dto.product.response.ProductRes
 import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseToOrderDto;
 import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseToPurchaseDto;
 import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseToSupplierDto;
+import com.store.arka.backend.shared.util.NormalizationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,9 +24,9 @@ public class ProductDtoMapper {
     if (dto == null) return null;
     return new Product(
         null,
-        dto.sku(),
-        dto.name(),
-        dto.description(),
+        NormalizationUtils.normalizeIdentifier(dto.sku()),
+        NormalizationUtils.normalizeShortText(dto.name()),
+        NormalizationUtils.normalizeLongText(dto.description()),
         dto.price(),
         Collections.emptySet(),
         dto.stock(),
@@ -40,8 +41,8 @@ public class ProductDtoMapper {
     return new Product(
         null,
         null,
-        dto.name(),
-        dto.description(),
+        NormalizationUtils.normalizeShortText(dto.name()),
+        NormalizationUtils.normalizeLongText(dto.description()),
         dto.price(),
         null,
         null,

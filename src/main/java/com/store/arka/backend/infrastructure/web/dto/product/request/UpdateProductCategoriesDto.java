@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public record UpdateProductCategoriesDto(
-    @NotNull(message = "Categories is required")
+    @NotNull(message = "categories is required")
     Set<UUID> categories
 ) {
 }

@@ -1,5 +1,7 @@
 package com.store.arka.backend.application.port.in;
 
+import com.store.arka.backend.domain.enums.UserRole;
+import com.store.arka.backend.domain.enums.UserStatus;
 import com.store.arka.backend.domain.model.User;
 
 import java.util.List;
@@ -14,13 +16,15 @@ public interface IUserUseCase {
 
   User getUserByEmail(String email);
 
-  List<User> getAllUsersByFilters(String role, String status);
+  List<User> getAllUsersByFilters(UserRole role, UserStatus status);
 
-  User updateUserName(UUID id, String userName);
+  User updateStaffAccountRole(User user);
 
-  User updateEmail(UUID id, String email);
+  User updateUserName(User user);
 
-  User updatePassword(UUID id, String password);
+  User updateEmail(User user);
+
+  User updatePassword(User user);
 
   void softDeleteUser(UUID id);
 

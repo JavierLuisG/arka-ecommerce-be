@@ -7,6 +7,7 @@ import com.store.arka.backend.domain.exception.FieldAlreadyExistsException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.Document;
 import com.store.arka.backend.shared.security.SecurityUtils;
+import com.store.arka.backend.shared.util.NormalizationUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -24,8 +26,9 @@ public class DocumentService implements IDocumentUseCase {
   private final SecurityUtils securityUtils;
 
   @Override
+  @Transactional
   public Document createDocument(Document document) {
-    ValidateAttributesUtils.throwIfModelNull(document, "Document");
+    ValidateAttributesUtils.validateModel(document, "Document");
     validateNumberExistence(document.getNumber(), null);
     Document created = Document.create(document.getType(), document.getNumber());
     Document saved = documentAdapterPort.saveDocument(created);
@@ -37,7 +40,7 @@ public class DocumentService implements IDocumentUseCase {
   @Override
   @Transactional(readOnly = true)
   public Document getDocumentById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "Document ID");
+    ValidateAttributesUtils.validateId(id, "Document ID");
     return documentAdapterPort.findDocumentById(id)
         .orElseThrow(() -> {
           log.warn("[DOCUMENT_SERVICE][GET_BY_ID] Document(id={}) not found", id);
@@ -48,11 +51,11 @@ public class DocumentService implements IDocumentUseCase {
   @Override
   @Transactional(readOnly = true)
   public Document getDocumentByNumber(String number) {
-    String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(number, "Number");
-    return documentAdapterPort.findDocumentByNumber(normalizedNumber)
+    ValidateAttributesUtils.validateNullOrEmpty(number, "Number");
+    return documentAdapterPort.findDocumentByNumber(number)
         .orElseThrow(() -> {
-          log.warn("[DOCUMENT_SERVICE][GET_BY_NUMBER] Document(number={}) not found", normalizedNumber);
-          return new ModelNotFoundException("Document with number " + normalizedNumber + " not found");
+          log.warn("[DOCUMENT_SERVICE][GET_BY_NUMBER] Document(number={}) not found", number);
+          return new ModelNotFoundException("Document with number " + number + " not found");
         });
   }
 
@@ -73,7 +76,7 @@ public class DocumentService implements IDocumentUseCase {
   @Override
   @Transactional
   public Document updateDocument(UUID id, Document document) {
-    ValidateAttributesUtils.throwIfModelNull(document, "Document");
+    ValidateAttributesUtils.validateModel(document, "Document");
     Document found = getDocumentById(id);
     validateNumberExistence(document.getNumber(), found.getNumber());
     found.update(document.getType(), document.getNumber());
@@ -84,6 +87,7 @@ public class DocumentService implements IDocumentUseCase {
   }
 
   @Override
+  @Transactional
   public void softDeleteDocument(UUID id) {
     Document found = getDocumentById(id);
     found.delete();
@@ -93,6 +97,7 @@ public class DocumentService implements IDocumentUseCase {
   }
 
   @Override
+  @Transactional
   public Document restoreDocument(UUID id) {
     Document found = getDocumentById(id);
     found.restore();
@@ -103,16 +108,15 @@ public class DocumentService implements IDocumentUseCase {
   }
 
   private void validateNumberExistence(String newNumber, String oldNumber) {
-    String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(newNumber, "Document number");
-    boolean exists = documentAdapterPort.existsDocumentByNumber(normalizedNumber);
+    ValidateAttributesUtils.validateNullOrEmpty(newNumber, "Document number");
+    String normalizedNewNumber = NormalizationUtils.normalizeIdentifier(newNumber);
+    boolean exists = documentAdapterPort.existsDocumentByNumber(normalizedNewNumber);
     if (oldNumber == null && exists) {
-      log.warn("[DOCUMENT_SERVICE][CREATED] Document(number={}) already exists",
-          normalizedNumber);
-      throw new FieldAlreadyExistsException("Document number " + normalizedNumber + " already exists. Choose a different");
+      log.warn("[DOCUMENT_SERVICE][CREATED] Document(number={}) already exists", normalizedNewNumber);
+      throw new FieldAlreadyExistsException("Document number " + normalizedNewNumber + " already exists. Choose a different");
     }
-    if (exists && !oldNumber.equals(normalizedNumber)) {
-      log.warn("[DOCUMENT_SERVICE][UPDATED] Document(number={}) already exists",
-          normalizedNumber);
+    if (exists && !Objects.equals(oldNumber, normalizedNewNumber)) {
+      log.warn("[DOCUMENT_SERVICE][UPDATED] Document(number={}) already exists", normalizedNewNumber);
       throw new FieldAlreadyExistsException("Document number already exists. Choose a different");
     }
   }

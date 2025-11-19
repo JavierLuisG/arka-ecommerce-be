@@ -51,7 +51,7 @@ public class NotificationService implements INotificationUseCase {
   @Override
   @Transactional(readOnly = true)
   public Notification getNotificationById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "Notification ID");
+    ValidateAttributesUtils.validateId(id, "Notification ID");
     return notificationAdapterPort.findNotificationById(id)
         .orElseThrow(() -> {
           log.warn("[NOTIFICATION_SERVICE][GET_BY_ID] Notification(id={}) not found", id);
@@ -117,24 +117,24 @@ public class NotificationService implements INotificationUseCase {
   }
 
   private Order findOrderOrThrow(UUID orderId) {
-    ValidateAttributesUtils.throwIfIdNull(orderId,"Order ID in Notification");
+    ValidateAttributesUtils.validateId(orderId,"Order ID in Notification");
     return orderAdapterPort.findOrderById(orderId)
         .orElseThrow(() -> {
-          log.warn("[NOTIFICATION_SERVICE][FIND_ORDER] Order(id={}) in Notification not found", orderId);
+          log.warn("[NOTIFICATION_SERVICE][FIND_ORDER] Order(id={}) not found", orderId);
           return new ModelNotFoundException("Order ID " + orderId + " not found");
         });
   }
 
   private Customer findCustomerOrThrow(UUID customerId) {
-    ValidateAttributesUtils.throwIfIdNull(customerId, "Customer ID in Notification");
+    ValidateAttributesUtils.validateId(customerId, "Customer ID in Notification");
     Customer customer = customerUseCase.getCustomerById(customerId);
     customer.throwIfDeleted();
     return customer;
   }
 
   private void validateNotificationUniqueness(UUID orderId, NotificationType type) {
-    ValidateAttributesUtils.throwIfIdNull(orderId, "Order ID in Notification");
-    ValidateAttributesUtils.throwIfModelNull(type, "Notification type");
+    ValidateAttributesUtils.validateId(orderId, "Order ID in Notification");
+    ValidateAttributesUtils.validateModel(type, "Notification type");
     if (notificationAdapterPort.existsNotificationByOrderIdAndType(orderId, type)) {
       log.warn("[NOTIFICATION_SERVICE][CREATED] Notification(id={}) already exists in Order(id={})", type, orderId);
       throw new FieldAlreadyExistsException("Already exists Notification " + type + " in Order " + orderId);

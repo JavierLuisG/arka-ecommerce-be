@@ -7,6 +7,7 @@ import com.store.arka.backend.infrastructure.web.dto.customer.request.CreateCust
 import com.store.arka.backend.infrastructure.web.dto.customer.request.UpdateFieldsCustomerDto;
 import com.store.arka.backend.infrastructure.web.dto.customer.response.CustomerResponseDto;
 import com.store.arka.backend.infrastructure.web.mapper.CustomerDtoMapper;
+import com.store.arka.backend.shared.util.NormalizationUtils;
 import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +51,8 @@ public class CustomerController {
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
   @GetMapping("/number/{number}")
   public ResponseEntity<CustomerResponseDto> getCustomerByNumber(@PathVariable("number") String number) {
-    return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerByDocumentNumber(number)));
+    String normalizeNumber = NormalizationUtils.normalizeIdentifier(number);
+    return ResponseEntity.ok(mapper.toDto(customerUseCase.getCustomerByDocumentNumber(normalizeNumber)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")

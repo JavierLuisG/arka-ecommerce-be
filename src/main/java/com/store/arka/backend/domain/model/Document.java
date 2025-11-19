@@ -25,12 +25,12 @@ public class Document {
   private LocalDateTime updatedAt;
 
   public static Document create(DocumentType type, String number) {
-    ValidateAttributesUtils.throwIfModelNull(type, "Document type");
-    String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(number, "Document number");
+    ValidateAttributesUtils.validateModel(type, "Document type");
+    ValidateAttributesUtils.validateNullOrEmpty(number, "Document number");
     return new Document(
         null,
         type,
-        normalizedNumber,
+        number,
         DocumentStatus.ACTIVE,
         null,
         null
@@ -39,10 +39,10 @@ public class Document {
 
   public void update(DocumentType type, String number) {
     throwIfDeleted();
-    ValidateAttributesUtils.throwIfModelNull(type, "Document type");
-    String normalizedNumber = ValidateAttributesUtils.throwIfNullOrEmpty(number, "Document number");
+    ValidateAttributesUtils.validateModel(type, "Document type");
+    ValidateAttributesUtils.validateNullOrEmpty(number, "Document number");
     this.type = type;
-    this.number = normalizedNumber;
+    this.number = number;
   }
 
   public void delete() {

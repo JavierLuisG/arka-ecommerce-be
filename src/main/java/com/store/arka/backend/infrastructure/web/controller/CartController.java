@@ -29,8 +29,9 @@ public class CartController {
   @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
   @PostMapping
   public ResponseEntity<CartResponseDto> postCart(@RequestBody @Valid CreateCartDto dto) {
+    UUID customerUuid = PathUtils.validateAndParseUUID(dto.customerId());
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(mapper.toDto(cartUseCase.createCart(mapper.toDomain(dto), dto.customerId())));
+        .body(mapper.toDto(cartUseCase.createCart(mapper.toDomain(dto), customerUuid)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")

@@ -1,10 +1,9 @@
 package com.store.arka.backend.infrastructure.web.dto.customer.request;
 
-import com.store.arka.backend.domain.enums.Country;
 import jakarta.validation.constraints.*;
 
 public record UpdateFieldsCustomerDto(
-    @NotBlank(message = "First name is required")
+    @NotBlank(message = "first_name is required")
     @Size(min = 1, max = 50, message = "First name must be between 1 and 50 characters")
     @Pattern(
         regexp = "^(?!.* {2,})[A-Za-zÑñ0-9 _-]+$",
@@ -12,26 +11,26 @@ public record UpdateFieldsCustomerDto(
             " multiple consecutive spaces and accented letters are NOT allowed."
     )
     String firstName,
-    @NotBlank(message = "Last name is required")
+    @NotBlank(message = "last_name is required")
     @Size(min = 1, max = 50, message = "Last name must be between 1 and 50 characters")
     String lastName,
-    @NotBlank(message = "Email is required")
+    @NotBlank(message = "email is required")
     @Email(message = "Email format is invalid")
     @Size(min = 10, max = 100, message = "Email must be between 10 and 100 characters")
     String email,
-    @NotBlank(message = "Phone is required")
+    @NotBlank(message = "phone is required")
     @Pattern(
         regexp = "^[0-9]{10}$",
         message = "Phone must contain exactly 10 characters and numbers only"
     )
     String phone,
-    @NotBlank(message = "Address is required")
+    @NotBlank(message = "address is required")
     @Size(min = 10, max = 100, message = "Address must be between 10 and 100 characters")
     String address,
-    @NotBlank(message = "City is required")
-    @Size(min = 5, max = 50, message = "City must be between 5 and 50 characters")
+    @NotBlank(message = "city is required")
+    @Size(min = 1, max = 50, message = "City must be between 5 and 50 characters")
     String city,
-    @NotNull(message = "Country is required")
-    Country country
+    @NotBlank(message = "country is required")
+    String country
 ) {
 }

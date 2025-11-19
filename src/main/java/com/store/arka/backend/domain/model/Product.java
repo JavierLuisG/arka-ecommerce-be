@@ -29,17 +29,16 @@ public class Product {
   private LocalDateTime updatedAt;
 
   public static Product create(String sku, String name, String description, BigDecimal price, Integer stock) {
-    String normalizedSku = ValidateAttributesUtils.throwIfNullOrEmpty(sku, "SKU");
-    String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(name, "Product Name");
-    String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
+    ValidateAttributesUtils.validateNullOrEmpty(sku, "SKU");
+    ValidateAttributesUtils.validateValueNotAllowed(name, "Product Name");
     validatePrice(price);
     ProductStatus assignStatus = ProductStatus.ACTIVE;
     if (!validateStock(stock)) assignStatus = ProductStatus.EXHAUSTED;
     return new Product(
         null,
-        normalizedSku,
-        normalizedName,
-        normalizedDescription,
+        sku,
+        name,
+        description,
         price,
         null,
         stock,
@@ -51,11 +50,10 @@ public class Product {
 
   public void updateFields(String name, String description, BigDecimal price) {
     throwIfDeleted();
-    String normalizedName = ValidateAttributesUtils.throwIfValueNotAllowed(name, "Product Name");
-    String normalizedDescription = ValidateAttributesUtils.throwIfNullOrEmpty(description, "Description");
+    ValidateAttributesUtils.validateValueNotAllowed(name, "Product Name");
     validatePrice(price);
-    this.name = normalizedName;
-    this.description = normalizedDescription;
+    this.name = name;
+    this.description = description;
     this.price = price;
   }
 

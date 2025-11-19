@@ -25,15 +25,15 @@ public class User {
   private final LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
-  public static User create(String userName, String email, String password) {
-    String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
-    String normalizedPassword = ValidateAttributesUtils.throwIfNullOrEmpty(password, "Password");
+  public static User registerCustomer(String userName, String email, String password) {
+    ValidateAttributesUtils.validateValueNotAllowed(userName, "UserName");
+    ValidateAttributesUtils.validateValueNotAllowed(email, "Email");
+    ValidateAttributesUtils.validateNullOrEmpty(password, "Password");
     return new User(
         null,
-        normalizedUserName,
-        normalizedEmail,
-        normalizedPassword,
+        userName,
+        email,
+        password,
         UserRole.CUSTOMER,
         UserStatus.ACTIVE,
         null,
@@ -41,20 +41,44 @@ public class User {
     );
   }
 
+  public static User createWithRole(String userName, String email, String password, UserRole role) {
+    if (role == UserRole.CUSTOMER) throw new InvalidStateException("User Customer cannot be created with this endpoint");
+    ValidateAttributesUtils.validateValueNotAllowed(userName, "UserName");
+    ValidateAttributesUtils.validateValueNotAllowed(email, "Email");
+    ValidateAttributesUtils.validateNullOrEmpty(password, "Password");
+    ValidateAttributesUtils.validateModel(role, "Role");
+    return new User(
+        null,
+        userName,
+        email,
+        password,
+        role,
+        UserStatus.ACTIVE,
+        null,
+        null
+    );
+  }
+
+  public void updateStaffAccountRole(UserRole role) {
+    ValidateAttributesUtils.validateModel(role, "Role");
+    throwIfDisabled();
+    this.role = role;
+  }
+
   public void updateUserName(String userName) {
-    ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
+    ValidateAttributesUtils.validateValueNotAllowed(userName, "UserName");
     throwIfDisabled();
     this.userName = userName;
   }
 
   public void updateEmail(String email) {
-    ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email in User");
+    ValidateAttributesUtils.validateValueNotAllowed(email, "Email in User");
     throwIfDisabled();
     this.email = email;
   }
 
   public void updatePassword(String password) {
-    ValidateAttributesUtils.throwIfNullOrEmpty(password, "Password");
+    ValidateAttributesUtils.validateNullOrEmpty(password, "Password");
     throwIfDisabled();
     this.password = password;
   }

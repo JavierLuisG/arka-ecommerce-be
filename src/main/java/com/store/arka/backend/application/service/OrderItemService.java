@@ -24,9 +24,10 @@ public class OrderItemService implements IOrderItemUseCase {
   private final SecurityUtils securityUtils;
 
   @Override
+  @Transactional
   public OrderItem addOrderItem(UUID orderId, OrderItem orderItem) {
-    ValidateAttributesUtils.throwIfIdNull(orderId, "Order ID in OrderItem");
-    ValidateAttributesUtils.throwIfModelNull(orderItem, "OrderItem");
+    ValidateAttributesUtils.validateId(orderId, "Order ID in OrderItem");
+    ValidateAttributesUtils.validateModel(orderItem, "OrderItem");
     productUseCase.validateAvailability(orderItem.getProductId(), orderItem.getQuantity());
     OrderItem saved = orderItemAdapterPort.saveAddOrderItem(orderId, orderItem);
     log.info("[ORDER_ITEM_SERVICE][CREATED] User(id={}) has created new OrderItem(id={})",
@@ -37,7 +38,7 @@ public class OrderItemService implements IOrderItemUseCase {
   @Override
   @Transactional(readOnly = true)
   public OrderItem getOrderItemById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "OrderItem ID");
+    ValidateAttributesUtils.validateId(id, "OrderItem ID");
     return orderItemAdapterPort.findOrderItemById(id)
         .orElseThrow(() -> {
           log.warn("[ORDER_ITEM_SERVICE][GET_BY_ID] OrderItem(id={}) not found", id);
@@ -55,31 +56,31 @@ public class OrderItemService implements IOrderItemUseCase {
   @Override
   @Transactional(readOnly = true)
   public List<OrderItem> getAllOrderItemsByProductId(UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in OrderItem");
+    ValidateAttributesUtils.validateId(productId, "Product ID in OrderItem");
     log.info("[ORDER_ITEM_SERVICE][GET_ALL_BY_PRODUCT] Fetching all orderItems with product(id={})", productId);
     return orderItemAdapterPort.findAllOrderItemsByProductId(productId);
   }
 
   @Override
+  @Transactional
   public OrderItem addQuantityById(UUID id, Integer quantity) {
-    ValidateAttributesUtils.validateQuantity(quantity);
     OrderItem found = getOrderItemById(id);
     found.addQuantity(quantity);
     productUseCase.validateAvailability(found.getProductId(), found.getQuantity());
     OrderItem saved = orderItemAdapterPort.saveUpdateOrderItem(found);
-    log.info("[ORDER_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has added quantity {} in OrderItem(id={})",
+    log.info("[ORDER_ITEM_SERVICE][ADDED_QUANTITY] User(id={}) has added quantity=({}) in OrderItem(id={})",
         securityUtils.getCurrentUserId(), quantity, id);
     return saved;
   }
 
   @Override
+  @Transactional
   public OrderItem updateQuantity(UUID id, Integer quantity) {
-    ValidateAttributesUtils.validateQuantity(quantity);
     OrderItem found = getOrderItemById(id);
     found.updateQuantity(quantity);
     productUseCase.validateAvailability(found.getProductId(), found.getQuantity());
     OrderItem saved = orderItemAdapterPort.saveUpdateOrderItem(found);
-    log.info("[ORDER_ITEM_SERVICE][UPDATED_QUANTITY] User(id={}) has updated quantity {} in OrderItem(id={})",
+    log.info("[ORDER_ITEM_SERVICE][UPDATED_QUANTITY] User(id={}) has updated quantity=({}) in OrderItem(id={})",
         securityUtils.getCurrentUserId(), quantity, id);
     return saved;
   }

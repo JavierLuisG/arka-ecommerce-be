@@ -88,12 +88,17 @@ public class UserPersistenceAdapter implements IUserAdapterPort {
   }
 
   @Override
-  public boolean existUserByUserName(String userName) {
+  public boolean existsUserByUserName(String userName) {
     return jpaUserRepository.existsByUserName(userName);
   }
 
   @Override
-  public boolean existUserByEmail(String email) {
+  public boolean existsUserByEmail(String email) {
     return jpaUserRepository.existsByEmail(email);
+  }
+
+  @Override
+  public boolean existsUserByRole(UserRole role) {
+    return jpaUserRepository.existsByRole(role);
   }
 }

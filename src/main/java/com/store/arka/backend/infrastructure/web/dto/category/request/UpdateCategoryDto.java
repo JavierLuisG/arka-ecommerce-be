@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record UpdateCategoryDto(
-    @NotBlank(message = "Description is required")
+    @NotBlank(message = "description is required")
     @Size(min = 10, max = 500, message = "Description must be between 10 and 500 characters")
     @Pattern(
         regexp = "^(?!.* {2,})[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,;:!?()_-]+$",

@@ -1,8 +1,10 @@
 package com.store.arka.backend.infrastructure.web.mapper;
 
 import com.store.arka.backend.domain.model.PurchaseItem;
+import com.store.arka.backend.infrastructure.web.dto.purchase.request.CreatePurchaseItemDto;
 import com.store.arka.backend.infrastructure.web.dto.purchase.request.ReceivePurchaseItemDto;
 import com.store.arka.backend.infrastructure.web.dto.purchase.response.PurchaseItemResponseDto;
+import com.store.arka.backend.shared.util.PathUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -25,15 +27,31 @@ public class PurchaseItemDtoMapper {
     );
   }
 
-  public List<PurchaseItem> toDomain(List<ReceivePurchaseItemDto> listDto) {
+  public List<PurchaseItem> toCreateDomain(List<CreatePurchaseItemDto> listDto) {
     List<PurchaseItem> response = new ArrayList<>();
     listDto.forEach(dto -> {
       response.add(new PurchaseItem(
           null,
-          dto.productId(),
+          PathUtils.validateAndParseUUID(dto.productId()),
           null,
           dto.quantity(),
           dto.unitCost(),
+          null,
+          null
+      ));
+    });
+    return response;
+  }
+
+  public List<PurchaseItem> toReceiveDomain(List<ReceivePurchaseItemDto> listDto) {
+    List<PurchaseItem> response = new ArrayList<>();
+    listDto.forEach(dto -> {
+      response.add(new PurchaseItem(
+          null,
+          PathUtils.validateAndParseUUID(dto.productId()),
+          null,
+          dto.quantity(),
+          null,
           null,
           null
       ));

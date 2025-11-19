@@ -1,14 +1,11 @@
 package com.store.arka.backend.infrastructure.web.dto.payment.request;
 
-import com.store.arka.backend.domain.enums.PaymentMethod;
-import jakarta.validation.constraints.NotNull;
-
-import java.util.UUID;
+import jakarta.validation.constraints.NotBlank;
 
 public record CreatePaymentDto(
-    @NotNull(message = "Order_id is required")
-    UUID orderId,
-    @NotNull(message = "Payment method is required")
-    PaymentMethod method
+    @NotBlank(message = "order_id is required")
+    String orderId,
+    @NotBlank(message = "method is required")
+    String method
 ) {
 }

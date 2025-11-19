@@ -28,7 +28,7 @@ public class Cart {
   private LocalDateTime abandonedAt;
 
   public static Cart create(Customer customer, List<CartItem> items) {
-    ValidateAttributesUtils.throwIfModelNull(customer, "Customer in Cart");
+    ValidateAttributesUtils.validateModel(customer, "Customer in Cart");
     customer.throwIfDeleted();
     if (items == null) items = new ArrayList<>();
     return new Cart(
@@ -52,12 +52,12 @@ public class Cart {
   }
 
   public boolean containsProduct(UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Cart");
+    ValidateAttributesUtils.validateId(productId, "Product ID in Cart");
     return items.stream().anyMatch(item -> item.getProductId().equals(productId));
   }
 
   public void removeCartItem(Product product) {
-    ValidateAttributesUtils.throwIfModelNull(product, "Product in Cart");
+    ValidateAttributesUtils.validateModel(product, "Product in Cart");
     ensureCartIsModifiable();
     CartItem found = this.items.stream()
         .filter(cartItem -> cartItem.getProductId().equals(product.getId()))

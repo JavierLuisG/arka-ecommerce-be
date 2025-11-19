@@ -29,7 +29,9 @@ public interface IUserAdapterPort {
 
   boolean existsUserById(UUID id);
 
-  boolean existUserByUserName(String userName);
+  boolean existsUserByUserName(String userName);
 
-  boolean existUserByEmail(String email);
+  boolean existsUserByEmail(String email);
+
+  boolean existsUserByRole(UserRole role);
 }

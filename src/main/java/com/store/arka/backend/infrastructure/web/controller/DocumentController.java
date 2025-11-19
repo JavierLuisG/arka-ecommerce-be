@@ -6,6 +6,7 @@ import com.store.arka.backend.domain.model.Document;
 import com.store.arka.backend.infrastructure.web.dto.customer.request.DocumentRequestDto;
 import com.store.arka.backend.infrastructure.web.dto.customer.response.DocumentResponseDto;
 import com.store.arka.backend.infrastructure.web.mapper.DocumentDtoMapper;
+import com.store.arka.backend.shared.util.NormalizationUtils;
 import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,8 @@ public class DocumentController {
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
   @GetMapping("/number/{number}")
   public ResponseEntity<DocumentResponseDto> getDocumentByNumber(@PathVariable("number") String number) {
-    return ResponseEntity.ok(mapper.toDto(documentUseCase.getDocumentByNumber(number)));
+    String normalizeNumber = NormalizationUtils.normalizeIdentifier(number);
+    return ResponseEntity.ok(mapper.toDto(documentUseCase.getDocumentByNumber(normalizeNumber)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")

@@ -23,7 +23,7 @@ public class OrderItem {
   private LocalDateTime createdAt;
 
   public static OrderItem create(Product product, Integer quantity) {
-    ValidateAttributesUtils.throwIfModelNull(product, "Product in OrderItem");
+    ValidateAttributesUtils.validateModel(product, "Product in OrderItem");
     ValidateAttributesUtils.validateQuantity(quantity);
     return new OrderItem(
         null,

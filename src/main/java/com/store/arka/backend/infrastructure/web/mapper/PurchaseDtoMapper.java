@@ -7,9 +7,6 @@ import com.store.arka.backend.infrastructure.web.dto.purchase.response.PurchaseR
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class PurchaseDtoMapper {
@@ -17,10 +14,11 @@ public class PurchaseDtoMapper {
   private final PurchaseItemDtoMapper purchaseItemDtoMapper;
 
   public Purchase toDomain(CreatePurchaseDto dto) {
+    if (dto == null) return null;
     return new Purchase(
         null,
         null,
-        purchaseItemDtoMapper.toDomain(dto.purchaseItems()),
+        purchaseItemDtoMapper.toCreateDomain(dto.purchaseItems()),
         null,
         null,
         null,
@@ -29,10 +27,11 @@ public class PurchaseDtoMapper {
   }
 
   public Purchase toDomain(ReceivePurchaseDto dto) {
+    if (dto == null) return null;
     return new Purchase(
         null,
         null,
-        purchaseItemDtoMapper.toDomain(dto.purchaseItems()),
+        purchaseItemDtoMapper.toReceiveDomain(dto.purchaseItems()),
         null,
         null,
         null,
@@ -41,6 +40,7 @@ public class PurchaseDtoMapper {
   }
 
   public PurchaseResponseDto toDto(Purchase domain) {
+    if (domain == null) return null;
     return new PurchaseResponseDto(
         domain.getId(),
         supplierDtoMapper.toPurchaseDto(domain.getSupplier()),

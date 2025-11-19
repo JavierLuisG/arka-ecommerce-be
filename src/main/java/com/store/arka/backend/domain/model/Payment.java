@@ -30,7 +30,7 @@ public class Payment {
   private static final int MAX_FAILED_ATTEMPTS = 3;
 
   public static Payment create(Order order, PaymentMethod method) {
-    ValidateAttributesUtils.throwIfModelNull(order, "Order in Payment");
+    ValidateAttributesUtils.validateModel(order, "Order in Payment");
     if (!order.isConfirmed()) throw new InvalidStateException("Order must be CONFIRMED to create a payment");
     throwIfBadAmount(order.getTotal());
     return new Payment(

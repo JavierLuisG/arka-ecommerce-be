@@ -7,6 +7,7 @@ import com.store.arka.backend.infrastructure.web.dto.MessageResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.supplier.request.SupplierDto;
 import com.store.arka.backend.infrastructure.web.dto.supplier.response.SupplierResponseDto;
 import com.store.arka.backend.infrastructure.web.mapper.SupplierDtoMapper;
+import com.store.arka.backend.shared.util.NormalizationUtils;
 import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,13 +44,15 @@ public class SupplierController {
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @GetMapping("/email/{email}")
   public ResponseEntity<SupplierResponseDto> getSupplierByEmail(@PathVariable("email") String email) {
-    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByEmail(email)));
+    String normalizeEmail = NormalizationUtils.normalizeEmail(email);
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByEmail(normalizeEmail)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")
   @GetMapping("/tax-id/{taxId}")
   public ResponseEntity<SupplierResponseDto> getSupplierByTaxId(@PathVariable("taxId") String taxId) {
-    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByTaxId(taxId)));
+    String normalizeTaxId = NormalizationUtils.normalizeIdentifier(taxId);
+    return ResponseEntity.ok(mapper.toDto(supplierUseCase.getSupplierByTaxId(normalizeTaxId)));
   }
 
   @PreAuthorize("hasAnyRole('ADMIN', 'PURCHASES', 'MANAGER')")

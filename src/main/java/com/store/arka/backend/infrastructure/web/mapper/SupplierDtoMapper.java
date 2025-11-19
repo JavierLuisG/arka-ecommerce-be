@@ -1,9 +1,12 @@
 package com.store.arka.backend.infrastructure.web.mapper;
 
+import com.store.arka.backend.domain.enums.Country;
 import com.store.arka.backend.domain.model.Supplier;
 import com.store.arka.backend.infrastructure.web.dto.supplier.request.SupplierDto;
 import com.store.arka.backend.infrastructure.web.dto.supplier.response.SupplierResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.supplier.response.SupplierResponseToPurchaseDto;
+import com.store.arka.backend.shared.util.NormalizationUtils;
+import com.store.arka.backend.shared.util.PathUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,14 +18,14 @@ public class SupplierDtoMapper {
   public Supplier toDomain(SupplierDto dto) {
     return new Supplier(
         null,
-        dto.commercialName(),
-        dto.contactName(),
-        dto.email(),
-        dto.phone(),
-        dto.taxId(),
-        dto.address(),
-        dto.city(),
-        dto.country(),
+        NormalizationUtils.normalizeShortText(dto.commercialName()),
+        NormalizationUtils.normalizeShortText(dto.contactName()),
+        NormalizationUtils.normalizeEmail(dto.email()),
+        NormalizationUtils.normalizePhone(dto.phone()),
+        NormalizationUtils.normalizeIdentifier(dto.taxId()),
+        NormalizationUtils.normalizeShortText(dto.address()),
+        NormalizationUtils.normalizeShortText(dto.city()),
+        PathUtils.validateEnumOrThrow(Country.class, dto.country(), "Country"),
         null,
         null,
         null,

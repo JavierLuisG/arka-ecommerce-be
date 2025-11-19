@@ -5,10 +5,10 @@ import com.store.arka.backend.application.port.out.IUserAdapterPort;
 import com.store.arka.backend.domain.enums.UserRole;
 import com.store.arka.backend.domain.enums.UserStatus;
 import com.store.arka.backend.domain.exception.FieldAlreadyExistsException;
+import com.store.arka.backend.domain.exception.InvalidStateException;
 import com.store.arka.backend.domain.exception.ModelNotFoundException;
 import com.store.arka.backend.domain.model.User;
 import com.store.arka.backend.shared.security.SecurityUtils;
-import com.store.arka.backend.shared.util.PathUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +30,7 @@ public class UserService implements IUserUseCase {
   @Override
   @Transactional(readOnly = true)
   public User getUserById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "User ID");
+    ValidateAttributesUtils.validateId(id, "ID in User");
     return userAdapterPort.findUserById(id)
         .orElseThrow(() -> {
           log.warn("[USER_SERVICE][GET_BY_ID] User(id={}) not found", id);
@@ -49,11 +49,11 @@ public class UserService implements IUserUseCase {
   @Override
   @Transactional(readOnly = true)
   public User getUserByUserName(String userName) {
-    String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
-    User found = userAdapterPort.findUserByUserName(normalizedUserName)
+    ValidateAttributesUtils.validateValueNotAllowed(userName, "UserName");
+    User found = userAdapterPort.findUserByUserName(userName)
         .orElseThrow(() -> {
-          log.warn("[USER_SERVICE][GET_BY_USERNAME] User(username=({}) not found", normalizedUserName);
-          return new ModelNotFoundException("User with user_name " + normalizedUserName + " not found");
+          log.warn("[USER_SERVICE][GET_BY_USERNAME] User(username=({}) not found", userName);
+          return new ModelNotFoundException("User with user_name " + userName + " not found");
         });
     securityUtils.requireOwnerOrRoles(found.getId(), "ADMIN", "MANAGER");
     return found;
@@ -62,11 +62,11 @@ public class UserService implements IUserUseCase {
   @Override
   @Transactional(readOnly = true)
   public User getUserByEmail(String email) {
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
-    User found = userAdapterPort.findUserByEmail(normalizedEmail)
+    ValidateAttributesUtils.validateValueNotAllowed(email, "Email");
+    User found = userAdapterPort.findUserByEmail(email)
         .orElseThrow(() -> {
-          log.warn("[USER_SERVICE][GET_BY_EMAIL] User(email={}) not found", normalizedEmail);
-          return new ModelNotFoundException("User with email " + normalizedEmail + " not found");
+          log.warn("[USER_SERVICE][GET_BY_EMAIL] User(email={}) not found", email);
+          return new ModelNotFoundException("User with email " + email + " not found");
         });
     securityUtils.requireOwnerOrRoles(found.getId(), "ADMIN", "MANAGER");
     return found;
@@ -74,22 +74,18 @@ public class UserService implements IUserUseCase {
 
   @Override
   @Transactional(readOnly = true)
-  public List<User> getAllUsersByFilters(String role, String status) {
+  public List<User> getAllUsersByFilters(UserRole role, UserStatus status) {
     if (role != null && status != null) {
-      UserRole roleEnum = PathUtils.validateEnumOrThrow(UserRole.class, role, "UserRole");
-      UserStatus statusEnum = PathUtils.validateEnumOrThrow(UserStatus.class, status, "UserStatus");
-      log.info("[USER_SERVICE][GET_ALL] Fetching all Users with role=({}) and status=({})", roleEnum, statusEnum);
-      return userAdapterPort.findAllUsersByRoleAndStatus(roleEnum, statusEnum);
+      log.info("[USER_SERVICE][GET_ALL] Fetching all Users with role=({}) and status=({})", role, status);
+      return userAdapterPort.findAllUsersByRoleAndStatus(role, status);
     }
     if (role != null) {
-      UserRole roleEnum = PathUtils.validateEnumOrThrow(UserRole.class, role, "UserRole");
-      log.info("[USER_SERVICE][GET_ALL] Fetching all Users with role=({})", roleEnum);
-      return userAdapterPort.findAllUsersByRole(roleEnum);
+      log.info("[USER_SERVICE][GET_ALL] Fetching all Users with role=({})", role);
+      return userAdapterPort.findAllUsersByRole(role);
     }
     if (status != null) {
-      UserStatus statusEnum = PathUtils.validateEnumOrThrow(UserStatus.class, status, "UserStatus");
-      log.info("[USER_SERVICE][GET_ALL] Fetching all Users with status=({})", statusEnum);
-      return userAdapterPort.findAllUsersByStatus(statusEnum);
+      log.info("[USER_SERVICE][GET_ALL] Fetching all Users with status=({})", status);
+      return userAdapterPort.findAllUsersByStatus(status);
     }
     log.info("[USER_SERVICE][GET_ALL] Fetching all Users");
     return userAdapterPort.findAllUsers();
@@ -97,15 +93,30 @@ public class UserService implements IUserUseCase {
 
   @Override
   @Transactional
-  public User updateUserName(UUID id, String userName) {
-    User found = getUserById(id);
-    securityUtils.requireOwnerOrRoles(found.getId(), "ADMIN");
-    String normalizedUserName = ValidateAttributesUtils.throwIfValueNotAllowed(userName, "UserName");
-    if (userAdapterPort.existUserByUserName(normalizedUserName) && !found.getUserName().equals(normalizedUserName)) {
-      log.warn("[USER_SERVICE][UPDATED_USERNAME] Username={} already exists in users", normalizedUserName);
-      throw new FieldAlreadyExistsException("Username " + normalizedUserName + " is already taken");
+  public User updateStaffAccountRole(User user) {
+    User found = getUserById(user.getId());
+    if (found.getRole() == UserRole.CUSTOMER) {
+      log.warn("[USER_SERVICE][UPDATED_ROLE] User(id={}) whit role={} cannot be updated",
+          securityUtils.getCurrentUserId(), found.getRole());
+      throw new InvalidStateException("User Customer cannot be updated");
     }
-    found.updateUserName(normalizedUserName);
+    found.updateStaffAccountRole(user.getRole());
+    User saved = userAdapterPort.saveUpdateUser(found);
+    log.info("[USER_SERVICE][UPDATED_ROLE] User(id={}) has updated role={} in User(id={})",
+        securityUtils.getCurrentUserId(), saved.getRole(), saved.getId());
+    return saved;
+  }
+
+  @Override
+  @Transactional
+  public User updateUserName(User user) {
+    User found = getUserById(user.getId());
+    securityUtils.requireOwnerOrRoles(found.getId(), "ADMIN");
+    if (userAdapterPort.existsUserByUserName(user.getUserName()) && !found.getUserName().equals(user.getUserName())) {
+      log.warn("[USER_SERVICE][UPDATED_USERNAME] Username={} already exists in users", user.getUserName());
+      throw new FieldAlreadyExistsException("Username " + user.getUserName() + " is already taken");
+    }
+    found.updateUserName(user.getUserName());
     User saved = userAdapterPort.saveUpdateUser(found);
     log.info("[USER_SERVICE][UPDATED_USERNAME] User(id={}) has updated username={} in User(id={})",
         securityUtils.getCurrentUserId(), saved.getUserName(), saved.getId());
@@ -114,15 +125,14 @@ public class UserService implements IUserUseCase {
 
   @Override
   @Transactional
-  public User updateEmail(UUID id, String email) {
-    User found = getUserById(id);
+  public User updateEmail(User user) {
+    User found = getUserById(user.getId());
     securityUtils.requireOwnerOrRoles(found.getId(), "ADMIN");
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email in User");
-    if (userAdapterPort.existUserByEmail(normalizedEmail) && !found.getEmail().equals(normalizedEmail)) {
-      log.warn("[USER_SERVICE][UPDATED_EMAIL] Email={} already exists for register in Users", normalizedEmail);
-      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " is already taken");
+    if (userAdapterPort.existsUserByEmail(user.getEmail()) && !found.getEmail().equals(user.getEmail())) {
+      log.warn("[USER_SERVICE][UPDATED_EMAIL] Email={} already exists for register in Users", user.getEmail());
+      throw new FieldAlreadyExistsException("Email " + user.getEmail() + " is already taken");
     }
-    found.updateEmail(normalizedEmail);
+    found.updateEmail(user.getEmail());
     User saved = userAdapterPort.saveUpdateUser(found);
     log.info("[USER_SERVICE][UPDATED_EMAIL] User(id={}) has updated email={} in User(id={})",
         securityUtils.getCurrentUserId(), saved.getEmail(), saved.getId());
@@ -131,11 +141,10 @@ public class UserService implements IUserUseCase {
 
   @Override
   @Transactional
-  public User updatePassword(UUID id, String password) {
-    User found = getUserById(id);
+  public User updatePassword(User user) {
+    User found = getUserById(user.getId());
     securityUtils.requireOwnerOrRoles(found.getId(), "ADMIN");
-    String normalizedPassword = ValidateAttributesUtils.throwIfNullOrEmpty(password, "Password");
-    String encodedPassword = passwordEncoder.encode(normalizedPassword);
+    String encodedPassword = passwordEncoder.encode(user.getPassword());
     found.updatePassword(encodedPassword);
     User saved = userAdapterPort.saveUpdateUser(found);
     log.info("[USER_SERVICE][UPDATED_PASSWORD] User(id={}) has updated password in User(id={})",

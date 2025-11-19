@@ -36,23 +36,23 @@ public class Supplier {
 
   public static Supplier create(String commercialName, String contactName, String email, String phone, String taxId,
                                 String address, String city, Country country) {
-    String normalizedCommercialName = ValidateAttributesUtils.throwIfValueNotAllowed(commercialName, "Commercial name");
-    String normalizedContactName = ValidateAttributesUtils.throwIfValueNotAllowed(contactName, "Contact name");
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
-    String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
-    String normalizedTaxId = ValidateAttributesUtils.throwIfValueNotAllowed(taxId, "Tax id");
-    String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
-    String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
-    ValidateAttributesUtils.throwIfModelNull(country, "Country in Supplier");
+    ValidateAttributesUtils.validateValueNotAllowed(commercialName, "Commercial name");
+    ValidateAttributesUtils.validateValueNotAllowed(contactName, "Contact name");
+    ValidateAttributesUtils.validateValueNotAllowed(email, "Email");
+    ValidateAttributesUtils.validateValueNotAllowed(phone, "Phone");
+    ValidateAttributesUtils.validateValueNotAllowed(taxId, "Tax id");
+    ValidateAttributesUtils.validateValueNotAllowed(address, "Address");
+    ValidateAttributesUtils.validateValueNotAllowed(city, "City");
+    ValidateAttributesUtils.validateModel(country, "Country in Supplier");
     return new Supplier(
         null,
-        normalizedCommercialName,
-        normalizedContactName,
-        normalizedEmail,
-        normalizedPhone,
-        normalizedTaxId,
-        normalizedAddress,
-        normalizedCity,
+        commercialName,
+        contactName,
+        email,
+        phone,
+        taxId,
+        address,
+        city,
         country,
         new ArrayList<>(),
         SupplierStatus.ACTIVE,
@@ -64,21 +64,21 @@ public class Supplier {
   public void updateFields(String commercialName, String contactName, String email, String phone, String taxId, String address, String city,
                            Country country) {
     throwIfDeleted();
-    String normalizedCommercialName = ValidateAttributesUtils.throwIfValueNotAllowed(commercialName, "Commercial name");
-    String normalizedContactName = ValidateAttributesUtils.throwIfValueNotAllowed(contactName, "Contact name");
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email");
-    String normalizedPhone = ValidateAttributesUtils.throwIfNullOrEmpty(phone, "Phone");
-    String normalizedTaxId = ValidateAttributesUtils.throwIfValueNotAllowed(taxId, "Tax id");
-    String normalizedAddress = ValidateAttributesUtils.throwIfNullOrEmpty(address, "Address");
-    String normalizedCity = ValidateAttributesUtils.throwIfValueNotAllowed(city, "City");
-    ValidateAttributesUtils.throwIfModelNull(country, "Country in Supplier");
-    this.commercialName = normalizedCommercialName;
-    this.contactName = normalizedContactName;
-    this.email = normalizedEmail;
-    this.phone = normalizedPhone;
-    this.taxId = normalizedTaxId;
-    this.address = normalizedAddress;
-    this.city = normalizedCity;
+    ValidateAttributesUtils.validateValueNotAllowed(commercialName, "Commercial name");
+    ValidateAttributesUtils.validateValueNotAllowed(contactName, "Contact name");
+    ValidateAttributesUtils.validateValueNotAllowed(email, "Email");
+    ValidateAttributesUtils.validateValueNotAllowed(phone, "Phone");
+    ValidateAttributesUtils.validateValueNotAllowed(taxId, "Tax id");
+    ValidateAttributesUtils.validateValueNotAllowed(address, "Address");
+    ValidateAttributesUtils.validateValueNotAllowed(city, "City");
+    ValidateAttributesUtils.validateModel(country, "Country in Supplier");
+    this.commercialName = commercialName;
+    this.contactName = contactName;
+    this.email = email;
+    this.phone = phone;
+    this.taxId = taxId;
+    this.address = address;
+    this.city = city;
     this.country = country;
   }
 
@@ -88,7 +88,7 @@ public class Supplier {
 
   public void addProduct(Product product) {
     throwIfDeleted();
-    ValidateAttributesUtils.throwIfModelNull(product, "Product in Supplier");
+    ValidateAttributesUtils.validateModel(product, "Product in Supplier");
     if (containsProduct(product.getId())) throw new InvalidArgumentException("Product already added to supplier");
     products.add(product);
   }

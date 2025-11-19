@@ -10,14 +10,14 @@ import java.util.UUID;
 
 @Slf4j
 public final class ValidateAttributesUtils {
-  public static void throwIfIdNull(UUID id, String name) {
+  public static void validateId(UUID id, String name) {
     if (id == null) {
       log.warn("[VALIDATE_ATTRIBUTES][ID_NULL] ID is required");
       throw new InvalidArgumentException(name + "  is required");
     }
   }
 
-  public static void throwIfModelNull(Object obj, String name) {
+  public static void validateModel(Object obj, String name) {
     if (obj == null) {
       log.warn("[VALIDATE_ATTRIBUTES][MODEL_NULL] An attempt was made to enter a null value: {}", name);
       throw new ModelNullException(name + " cannot be null");
@@ -35,22 +35,19 @@ public final class ValidateAttributesUtils {
     }
   }
 
-  public static String throwIfValueNotAllowed(String value, String name) {
-    throwIfNullOrEmpty(value, name);
-    String normalized = value.trim().toLowerCase();
+  public static void validateValueNotAllowed(String value, String name) {
+    validateNullOrEmpty(value, name);
     List<String> forbiddenNames = List.of("null", "default", "admin");
-    if (forbiddenNames.contains(normalized)) {
+    if (forbiddenNames.contains(value)) {
       log.warn("[VALIDATE_ATTRIBUTES][VALUE_ALLOWED] An attempt was made to enter a wrong value: {}", name);
       throw new InvalidArgumentException("This " + name + " is not allowed");
     }
-    return normalized;
   }
 
-  public static String throwIfNullOrEmpty(String value, String field) {
-    if (value == null || value.isEmpty()) {
+  public static void validateNullOrEmpty(String value, String field) {
+    if (value == null || value.trim().isEmpty()) {
       log.warn("[VALIDATE_ATTRIBUTES][NULL_OR_EMPTY] An attempt was made to enter a null value: {}", field);
       throw new InvalidArgumentException(field + " cannot be null or empty");
     }
-    return value.trim();
   }
 }

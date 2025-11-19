@@ -29,8 +29,8 @@ public class Order {
   private LocalDateTime updatedAt;
 
   public static Order create(UUID cartId, Customer customer, List<OrderItem> items) {
-    ValidateAttributesUtils.throwIfIdNull(cartId, "Cart ID in Order");
-    ValidateAttributesUtils.throwIfModelNull(customer, "Customer in Order");
+    ValidateAttributesUtils.validateId(cartId, "Cart ID in Order");
+    ValidateAttributesUtils.validateModel(customer, "Customer in Order");
     customer.throwIfDeleted();
     if (items == null) items = new ArrayList<>();
     return new Order(
@@ -55,12 +55,12 @@ public class Order {
   }
 
   public boolean containsProduct(UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Order");
+    ValidateAttributesUtils.validateId(productId, "Product ID in Order");
     return items.stream().anyMatch(item -> item.getProductId().equals(productId));
   }
 
   public void removeOrderItem(Product product) {
-    ValidateAttributesUtils.throwIfModelNull(product, "Product in Order");
+    ValidateAttributesUtils.validateModel(product, "Product in Order");
     ensureOrderIsModifiable();
     OrderItem found = this.items.stream()
         .filter(orderItem -> orderItem.getProductId().equals(product.getId()))

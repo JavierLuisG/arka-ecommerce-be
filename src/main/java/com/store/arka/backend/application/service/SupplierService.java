@@ -28,7 +28,7 @@ public class SupplierService implements ISupplierUseCase {
   @Override
   @Transactional
   public Supplier createSupplier(Supplier supplier) {
-    ValidateAttributesUtils.throwIfModelNull(supplier, "Supplier");
+    ValidateAttributesUtils.validateModel(supplier, "Supplier");
     validateEmailExistence(supplier.getEmail(), null);
     validateTaxIdExistence(supplier.getTaxId(), null);
     Supplier created = Supplier.create(
@@ -50,7 +50,7 @@ public class SupplierService implements ISupplierUseCase {
   @Override
   @Transactional(readOnly = true)
   public Supplier getSupplierById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "Supplier ID");
+    ValidateAttributesUtils.validateId(id, "Supplier ID");
     return supplierAdapterPort.findSupplierById(id)
         .orElseThrow(() -> {
           log.warn("[SUPPLIER_SERVICE][GET_BY_ID] Supplier(id={}) not found", id);
@@ -61,22 +61,22 @@ public class SupplierService implements ISupplierUseCase {
   @Override
   @Transactional(readOnly = true)
   public Supplier getSupplierByEmail(String email) {
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(email, "Email in Supplier");
-    return supplierAdapterPort.findSupplierByEmail(normalizedEmail)
+    ValidateAttributesUtils.validateValueNotAllowed(email, "Email in Supplier");
+    return supplierAdapterPort.findSupplierByEmail(email)
         .orElseThrow(() -> {
-          log.warn("[SUPPLIER_SERVICE][GET_BY_EMAIL] Supplier(email={}) not found", normalizedEmail);
-          return new ModelNotFoundException("Supplier with email " + normalizedEmail + " not found");
+          log.warn("[SUPPLIER_SERVICE][GET_BY_EMAIL] Supplier(email={}) not found", email);
+          return new ModelNotFoundException("Supplier with email " + email + " not found");
         });
   }
 
   @Override
   @Transactional(readOnly = true)
   public Supplier getSupplierByTaxId(String taxId) {
-    String normalizedTaxId = ValidateAttributesUtils.throwIfValueNotAllowed(taxId, "TaxId in Supplier");
-    return supplierAdapterPort.findSupplierByTaxId(normalizedTaxId)
+    ValidateAttributesUtils.validateValueNotAllowed(taxId, "TaxId in Supplier");
+    return supplierAdapterPort.findSupplierByTaxId(taxId)
         .orElseThrow(() -> {
-          log.warn("[SUPPLIER_SERVICE][GET_BY_TAX] Supplier(taxId={}) not found", normalizedTaxId);
-          return new ModelNotFoundException("Supplier with taxId " + normalizedTaxId + " not found");
+          log.warn("[SUPPLIER_SERVICE][GET_BY_TAX] Supplier(taxId={}) not found", taxId);
+          return new ModelNotFoundException("Supplier with taxId " + taxId + " not found");
         });
   }
 
@@ -105,7 +105,7 @@ public class SupplierService implements ISupplierUseCase {
   @Override
   @Transactional
   public Supplier updateFieldsSupplier(UUID id, Supplier supplier) {
-    ValidateAttributesUtils.throwIfModelNull(supplier, "Supplier");
+    ValidateAttributesUtils.validateModel(supplier, "Supplier");
     Supplier found = getSupplierById(id);
     validateEmailExistence(supplier.getEmail(), found.getEmail());
     validateTaxIdExistence(supplier.getTaxId(), found.getTaxId());
@@ -170,35 +170,35 @@ public class SupplierService implements ISupplierUseCase {
   }
 
   private Product findProductOrThrow(UUID productId) {
-    ValidateAttributesUtils.throwIfIdNull(productId, "Product ID in Supplier");
+    ValidateAttributesUtils.validateId(productId, "Product ID in Supplier");
     Product product =  productUseCase.getProductById(productId);
     product.throwIfDeleted();
     return product;
   }
 
   private void validateTaxIdExistence(String newTaxId, String oldTaxId) {
-    String normalizedTaxId = ValidateAttributesUtils.throwIfValueNotAllowed(newTaxId, "TaxId");
-    boolean exists = supplierAdapterPort.existsSupplierByTaxId(normalizedTaxId);
+    ValidateAttributesUtils.validateValueNotAllowed(newTaxId, "TaxId");
+    boolean exists = supplierAdapterPort.existsSupplierByTaxId(newTaxId);
     if (exists && oldTaxId == null) {
-      log.warn("[SUPPLIER_SERVICE][CREATED] TaxId={} already exists for creating a Supplier", normalizedTaxId);
-      throw new FieldAlreadyExistsException("TaxId " + normalizedTaxId + " already exists in Supplier");
+      log.warn("[SUPPLIER_SERVICE][CREATED] TaxId={} already exists for creating a Supplier", newTaxId);
+      throw new FieldAlreadyExistsException("TaxId " + newTaxId + " already exists in Supplier");
     }
-    if (exists && !oldTaxId.equals(normalizedTaxId)) {
-      log.warn("[SUPPLIER_SERVICE][UPDATED] TaxId={} already exists for updating a Supplier", normalizedTaxId);
-      throw new FieldAlreadyExistsException("TaxId " + normalizedTaxId + " already exists in Supplier");
+    if (exists && !oldTaxId.equals(newTaxId)) {
+      log.warn("[SUPPLIER_SERVICE][UPDATED] TaxId=({}) already exists for updating a Supplier", newTaxId);
+      throw new FieldAlreadyExistsException("TaxId " + newTaxId + " already exists in Supplier");
     }
   }
 
   private void validateEmailExistence(String newEmail, String oldEmail) {
-    String normalizedEmail = ValidateAttributesUtils.throwIfValueNotAllowed(newEmail, "Email");
-    boolean exists = supplierAdapterPort.existsSupplierByEmail(normalizedEmail);
+    ValidateAttributesUtils.validateValueNotAllowed(newEmail, "Email");
+    boolean exists = supplierAdapterPort.existsSupplierByEmail(newEmail);
     if (oldEmail == null && exists) {
-      log.warn("[SUPPLIER_SERVICE][CREATED] Email={} already exists for creating a Supplier", normalizedEmail);
-      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists in Supplier");
+      log.warn("[SUPPLIER_SERVICE][CREATED] Email=({}) already exists for creating a Supplier", newEmail);
+      throw new FieldAlreadyExistsException("Email " + newEmail + " already exists in Supplier");
     }
-    if (exists && !oldEmail.equals(normalizedEmail)) {
-      log.warn("[SUPPLIER_SERVICE][UPDATED] Email={} already exists for updating a Supplier", normalizedEmail);
-      throw new FieldAlreadyExistsException("Email " + normalizedEmail + " already exists in Supplier");
+    if (exists && !oldEmail.equals(newEmail)) {
+      log.warn("[SUPPLIER_SERVICE][UPDATED] Email=({}) already exists for updating a Supplier", newEmail);
+      throw new FieldAlreadyExistsException("Email " + newEmail + " already exists in Supplier");
     }
   }
 }

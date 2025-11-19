@@ -14,6 +14,7 @@ public class OrderItemDtoMapper {
   private final ProductDtoMapper productDtoMapper;
 
   public OrderItemResponseDto toDto(OrderItem domain) {
+    if (domain == null) return null;
     return new OrderItemResponseDto(
         domain.getId(),
         productDtoMapper.toOrderDto(domain.getProduct()),

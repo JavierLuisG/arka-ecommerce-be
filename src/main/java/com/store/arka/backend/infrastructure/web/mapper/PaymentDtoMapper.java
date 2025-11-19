@@ -1,8 +1,11 @@
 package com.store.arka.backend.infrastructure.web.mapper;
 
+import com.store.arka.backend.domain.enums.PaymentMethod;
 import com.store.arka.backend.domain.model.Payment;
 import com.store.arka.backend.infrastructure.web.dto.payment.request.CreatePaymentDto;
+import com.store.arka.backend.infrastructure.web.dto.payment.request.UpdatePaymentMethodDto;
 import com.store.arka.backend.infrastructure.web.dto.payment.response.PaymentResponseDto;
+import com.store.arka.backend.shared.util.PathUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,7 +16,22 @@ public class PaymentDtoMapper {
         null,
         null,
         null,
-        dto.method(),
+        PathUtils.validateEnumOrThrow(PaymentMethod.class, dto.method(), "PaymentMethod"),
+        null,
+        null,
+        null,
+        null,
+        null
+    );
+  }
+
+  public Payment toDomain(UpdatePaymentMethodDto dto) {
+    if (dto == null) return null;
+    return new Payment(
+        null,
+        null,
+        null,
+        PathUtils.validateEnumOrThrow(PaymentMethod.class, dto.method(), "PaymentMethod"),
         null,
         null,
         null,

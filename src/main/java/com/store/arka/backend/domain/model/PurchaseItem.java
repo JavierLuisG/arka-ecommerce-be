@@ -23,7 +23,7 @@ public class PurchaseItem {
   private LocalDateTime createdAt;
 
   public static PurchaseItem create(Product product, Integer quantity, BigDecimal unitCost) {
-    ValidateAttributesUtils.throwIfModelNull(product, "Product in PurchaseItem");
+    ValidateAttributesUtils.validateModel(product, "Product in PurchaseItem");
     ValidateAttributesUtils.validateQuantity(quantity);
     return new PurchaseItem(
         null,

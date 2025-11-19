@@ -21,19 +21,19 @@ public interface IOrderUseCase {
 
   List<Order> getAllOrdersByItemsProductId(UUID productId);
 
-  Order addOrderItemById(UUID id, UUID productId, Integer quantity);
+  Order addOrderItem(UUID id, UUID productId, Integer quantity);
 
-  Order updateOrderItemQuantityById(UUID id, UUID productId, Integer quantity);
+  Order updateOrderItemQuantity(UUID id, UUID productId, Integer quantity);
 
-  Order removeOrderItemById(UUID id, UUID productId);
+  Order removeOrderItem(UUID id, UUID productId);
 
-  void confirmOrderById(UUID id);
+  void confirmOrder(UUID id);
 
-  void payOrderById(UUID id);
+  void payOrder(UUID id);
 
-  void shippedOrderById(UUID id);
+  void shippedOrder(UUID id);
 
-  void deliverOrderById(UUID id);
+  void deliverOrder(UUID id);
 
-  void cancelOrderById(UUID id);
+  void cancelOrder(UUID id);
 }

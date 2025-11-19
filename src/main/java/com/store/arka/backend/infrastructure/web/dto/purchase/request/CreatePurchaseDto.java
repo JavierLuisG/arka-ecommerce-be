@@ -1,16 +1,16 @@
 package com.store.arka.backend.infrastructure.web.dto.purchase.request;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
-import java.util.UUID;
 
 public record CreatePurchaseDto(
-    @NotNull(message = "Supplier_id is required")
-    UUID supplierId,
+    @NotBlank(message = "supplier_id is required")
+    String supplierId,
     @Valid
-    @NotNull(message = "Purchase_items is required")
-    List<ReceivePurchaseItemDto> purchaseItems
+    @NotNull(message = "purchase_items is required")
+    List<CreatePurchaseItemDto> purchaseItems
 ) {
 }

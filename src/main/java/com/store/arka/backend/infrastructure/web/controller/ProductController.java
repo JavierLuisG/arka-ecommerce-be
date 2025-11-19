@@ -11,6 +11,7 @@ import com.store.arka.backend.infrastructure.web.dto.product.request.UpdateField
 import com.store.arka.backend.infrastructure.web.dto.product.response.CheckProductResponseDto;
 import com.store.arka.backend.infrastructure.web.dto.product.response.ProductResponseDto;
 import com.store.arka.backend.infrastructure.web.mapper.ProductDtoMapper;
+import com.store.arka.backend.shared.util.NormalizationUtils;
 import com.store.arka.backend.shared.util.PathUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -46,7 +47,8 @@ public class ProductController {
 
   @GetMapping("/sku/{sku}")
   public ResponseEntity<ProductResponseDto> getProductBySku(@PathVariable("sku") String sku) {
-    return ResponseEntity.ok(mapper.toDto(productUseCase.getProductBySku(sku)));
+    String normalizeSku = NormalizationUtils.normalizeIdentifier(sku);
+    return ResponseEntity.ok(mapper.toDto(productUseCase.getProductBySku(normalizeSku)));
   }
 
   @GetMapping

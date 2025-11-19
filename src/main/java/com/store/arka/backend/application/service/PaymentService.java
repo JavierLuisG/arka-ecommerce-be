@@ -10,7 +10,6 @@ import com.store.arka.backend.domain.exception.*;
 import com.store.arka.backend.domain.model.Order;
 import com.store.arka.backend.domain.model.Payment;
 import com.store.arka.backend.shared.security.SecurityUtils;
-import com.store.arka.backend.shared.util.PathUtils;
 import com.store.arka.backend.shared.util.ValidateAttributesUtils;
 import com.store.arka.backend.shared.util.ValidateStatusUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +34,7 @@ public class PaymentService implements IPaymentUseCase {
   public Payment createPayment(UUID orderId, Payment payment) {
     Order orderFound = requireOrderConfirmed(orderId);
     securityUtils.requireOwnerOrRoles(orderFound.getCustomer().getUserId(), "ADMIN");
-    ValidateAttributesUtils.throwIfModelNull(payment, "Payment");
+    ValidateAttributesUtils.validateModel(payment, "Payment");
     validateOrderIdExistence(orderId);
     Payment created = Payment.create(orderFound, payment.getMethod());
     Payment saved = paymentAdapterPort.saveCreatePayment(created);
@@ -47,7 +46,7 @@ public class PaymentService implements IPaymentUseCase {
   @Override
   @Transactional(readOnly = true)
   public Payment getPaymentById(UUID id) {
-    ValidateAttributesUtils.throwIfIdNull(id, "Payment ID");
+    ValidateAttributesUtils.validateId(id, "Payment ID");
     return paymentAdapterPort.findPaymentById(id)
         .orElseThrow(() -> {
           log.warn("[PAYMENT_SERVICE][GET_BY_ID] Payment(id={}) not found", id);
@@ -66,7 +65,7 @@ public class PaymentService implements IPaymentUseCase {
   @Override
   @Transactional(readOnly = true)
   public Payment getPaymentByOrderId(UUID orderId) {
-    Order found = ensureOrderExists(orderId);
+    Order found = findOrderOrThrow(orderId);
     return paymentAdapterPort.findPaymentByOrderId(found.getId())
         .orElseThrow(() -> {
           log.warn("[PAYMENT_SERVICE][GET_BY_ORDER] Payment not found by Order(id={})", orderId);
@@ -76,23 +75,19 @@ public class PaymentService implements IPaymentUseCase {
 
   @Override
   @Transactional(readOnly = true)
-  public List<Payment> getAllPaymentsByFilters(String method, String status) {
+  public List<Payment> getAllPaymentsByFilters(PaymentMethod method, PaymentStatus status) {
     if (method != null && status != null) {
-      PaymentStatus statusEnum = PathUtils.validateEnumOrThrow(PaymentStatus.class, status, "PaymentStatus");
-      PaymentMethod methodEnum = PathUtils.validateEnumOrThrow(PaymentMethod.class, method, "PaymentMethod");
       log.info("[PAYMENT_SERVICE][GET_ALL] Fetching all Payments with method=({}) and status=({})",
           method, status);
-      return paymentAdapterPort.findAllPaymentsByMethodAndStatus(methodEnum, statusEnum);
+      return paymentAdapterPort.findAllPaymentsByMethodAndStatus(method, status);
     }
     if (method != null) {
-      PaymentMethod methodEnum = PathUtils.validateEnumOrThrow(PaymentMethod.class, method, "PaymentMethod");
       log.info("[PAYMENT_SERVICE][GET_ALL] Fetching all Payments with method=({})", method);
-      return paymentAdapterPort.findAllPaymentsByMethod(methodEnum);
+      return paymentAdapterPort.findAllPaymentsByMethod(method);
     }
     if (status != null) {
-      PaymentStatus statusEnum = PathUtils.validateEnumOrThrow(PaymentStatus.class, status, "PaymentStatus");
       log.info("[PAYMENT_SERVICE][GET_ALL] Fetching all Payments with status=({})", status);
-      return paymentAdapterPort.findAllPaymentsByStatus(statusEnum);
+      return paymentAdapterPort.findAllPaymentsByStatus(status);
     }
     log.info("[PAYMENT_SERVICE][GET_ALL] Fetching all Payments");
     return paymentAdapterPort.findAllPayments();
@@ -106,6 +101,7 @@ public class PaymentService implements IPaymentUseCase {
     if (found.isExpiredByTime()) {
       found.markExpired();
       log.info("[PAYMENT_SERVICE][CONFIRMED] Payment(id={}) expired automatically due to time limit", found.getId());
+      orderPaymentSyncPort.markOrderCanceled(found.getOrder().getId());
       return paymentAdapterPort.saveUpdatePayment(found);
     }
     if (found.amountMismatch()) {
@@ -126,10 +122,10 @@ public class PaymentService implements IPaymentUseCase {
 
   @Override
   @Transactional
-  public Payment changePaymentMethod(UUID id, PaymentMethod method) {
+  public Payment updateMethod(UUID id, Payment payment) {
     Payment found = getPaymentById(id);
     securityUtils.requireOwnerOrRoles(found.getOrder().getCustomer().getUserId(), "ADMIN");
-    found.changeMethod(method);
+    found.changeMethod(payment.getMethod());
     Payment saved = paymentAdapterPort.saveUpdatePayment(found);
     log.info("[PAYMENT_SERVICE][CHANGE_METHOD] User(id={}) has updated method=({}) in Payment(id={})",
         securityUtils.getCurrentUserId(), saved.getMethod(), saved.getId());
@@ -149,21 +145,21 @@ public class PaymentService implements IPaymentUseCase {
   }
 
   private Order requireOrderConfirmed(UUID orderId) {
-    ValidateAttributesUtils.throwIfIdNull(orderId, "Order ID in Payment");
+    ValidateAttributesUtils.validateId(orderId, "Order ID in Payment");
     Order found = orderAdapterPort.findOrderById(orderId)
         .orElseThrow(() -> {
-          log.warn("[PAYMENT_SERVICE][REQUIRED_ORDER_CONFIRMED] Order(id={}) not found in Payment", orderId);
-          return new InvalidStateException("Order ID " + orderId + " not found in payment");
+          log.warn("[PAYMENT_SERVICE][REQUIRED_ORDER_CONFIRMED] Order(id={}) not found", orderId);
+          return new InvalidStateException("Order ID " + orderId + " not found");
         });
     ValidateStatusUtils.throwIfNotConfirmed(found.getStatus());
     return found;
   }
 
-  private Order ensureOrderExists(UUID orderId) {
-    ValidateAttributesUtils.throwIfIdNull(orderId, "Order ID in Payment");
+  private Order findOrderOrThrow(UUID orderId) {
+    ValidateAttributesUtils.validateId(orderId, "Order ID in Payment");
     return orderAdapterPort.findOrderById(orderId)
         .orElseThrow(() -> {
-          log.warn("[PAYMENT_SERVICE][ENSURE_ORDER_EXISTS] Order(id={}) not found in Payment", orderId);
+          log.warn("[PAYMENT_SERVICE][ENSURE_ORDER_EXISTS] Order(id={}) not found", orderId);
           return new InvalidStateException("Order must be CONFIRMED to create a payment");
         });
   }
