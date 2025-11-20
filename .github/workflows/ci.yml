@@ -37,6 +37,7 @@ jobs:
         run: chmod +x gradlew
       - name: Build and run test
         env:
+          SPRING_PROFILES_ACTIVE: ci
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/arkadb
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: 123asd

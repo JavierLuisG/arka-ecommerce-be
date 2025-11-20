@@ -1,0 +1,31 @@
+spring:
+  config:
+    activate:
+      on-profile: ci
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/arkadb
+    username: postgres
+    password: 123asd
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: test@example.com
+    password: testpassword
+
+jwt:
+  secret:
+    key: testsecret
+
+DEFAULT_ADMIN_USERNAME: admin_ci
+DEFAULT_ADMIN_EMAIL: admin_ci@example.com
+DEFAULT_ADMIN_PASSWORD: admin123
