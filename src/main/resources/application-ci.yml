@@ -24,7 +24,7 @@ spring:
 
 jwt:
   secret:
-    key: testsecret
+    key: qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234
 
 DEFAULT_ADMIN_USERNAME: admin_ci
 DEFAULT_ADMIN_EMAIL: admin_ci@example.com
