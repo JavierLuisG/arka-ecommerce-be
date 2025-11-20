@@ -20,6 +20,9 @@ services:
       EMAIL: ${EMAIL}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD}
       SECRET_KEY: ${SECRET_KEY}
+      DEFAULT_ADMIN_USERNAME: ${DEFAULT_ADMIN_USERNAME}
+      DEFAULT_ADMIN_EMAIL: ${DEFAULT_ADMIN_EMAIL}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
   db:
@@ -31,7 +34,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
