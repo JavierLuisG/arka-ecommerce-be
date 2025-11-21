@@ -8,6 +8,6 @@ RUN gradle clean build -x test --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-EXPOSE 8084
+EXPOSE 8080
 COPY --from=build /app/build/libs/*.jar app.jar
 ENTRYPOINT ["java","-jar","/app/app.jar"]
