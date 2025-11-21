@@ -1,8 +1,10 @@
-name: arka_continuous_deploy
+name: arka_continuous_delivery
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_run:
+    workflows: [ "CI"]
+    types:
+      - completed
 
 jobs:
   docker:
